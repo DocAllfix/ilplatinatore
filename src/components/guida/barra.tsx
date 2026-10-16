@@ -33,7 +33,7 @@ export function BarraProgressione({ articolo, ids, indice }: { articolo: number;
   }
 
   const comando =
-    "flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[0.6875rem] font-semibold transition-[background-color,color,transform] duration-150 active:scale-[0.97] md:flex-row md:gap-1.5 md:px-3 md:text-sm";
+    "flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[0.6875rem] font-semibold transition-[background-color,color,transform] duration-150 active:scale-[0.97] md:flex-row md:gap-1.5 md:px-3 md:text-sm [@media(hover:hover)]:hover:text-link";
 
   return (
     <div

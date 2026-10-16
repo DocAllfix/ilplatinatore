@@ -25,7 +25,10 @@ function Contatore({ fatti, totale }: { fatti: number; totale: number }) {
   );
 }
 
-/** Casella di spunta vera (input checkbox), disegnata sui token: tastiera e screen reader gratis. */
+/**
+ * Casella di spunta vera (input checkbox): tastiera e screen reader gratis. L'input invisibile copre
+ * 44x44 px intorno al quadratino visibile da 24 px, cosi' il pollice non manca il bersaglio.
+ */
 function Casella({ id, fatto, onCambia, etichetta }: { id: string; fatto: boolean; onCambia: () => void; etichetta: string }) {
   return (
     <span className="relative inline-flex size-6 shrink-0">
@@ -35,12 +38,16 @@ function Casella({ id, fatto, onCambia, etichetta }: { id: string; fatto: boolea
         checked={fatto}
         onChange={onCambia}
         aria-label={etichetta}
-        className="peer size-6 cursor-pointer appearance-none rounded-[4px] border-2 border-linea bg-sfondo transition-colors duration-150 checked:border-riempimento checked:bg-riempimento"
+        className="peer absolute -inset-2.5 z-10 size-11 cursor-pointer appearance-none rounded-sm"
+      />
+      <span
+        aria-hidden="true"
+        className="size-6 rounded-sm border-2 border-linea bg-sfondo transition-colors duration-150 peer-checked:border-riempimento peer-checked:bg-riempimento peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-link"
       />
       <CheckIcon
         weight="bold"
         aria-hidden="true"
-        className="pointer-events-none absolute inset-1 size-4 scale-50 text-sfondo opacity-0 transition-[opacity,transform] duration-150 ease-[var(--ease-uscita)] peer-checked:scale-100 peer-checked:opacity-100"
+        className="pointer-events-none absolute inset-1 size-4 scale-50 text-sfondo opacity-0 transition-[opacity,transform] duration-150 ease-(--ease-uscita) peer-checked:scale-100 peer-checked:opacity-100"
       />
     </span>
   );
@@ -53,7 +60,7 @@ function Dettagli({ d, inline = false }: { d: Gruppo["voci"][number]["dettagli"]
     <span className={`block text-sm text-tenue ${inline ? "" : "mt-0.5"}`}>
       {d.map((x, i) => (
         <span key={i} className="block">
-          <span className="text-tenue/80">{x.etichetta}:</span> {x.valore}
+          <span className="font-medium">{x.etichetta}:</span> {x.valore}
         </span>
       ))}
     </span>
@@ -68,7 +75,7 @@ export function ChecklistGruppo({ articolo, gruppo }: { articolo: number; gruppo
 
   const testa = (
     <div className="mb-2 flex items-center justify-between gap-3">
-      <p className="text-[0.8125rem] font-semibold uppercase tracking-[0.04em] text-tenue">Trofei da spuntare</p>
+      <p className="text-sm text-tenue">Spunta quelli che hai ottenuto</p>
       <Contatore fatti={n} totale={gruppo.voci.length} />
     </div>
   );
@@ -87,7 +94,7 @@ export function ChecklistGruppo({ articolo, gruppo }: { articolo: number; gruppo
               <li key={v.id} data-trofeo={v.id} data-fatto={fatto} className="scroll-mt-28 border-b border-linea">
                 <label
                   htmlFor={`a-${v.id}`}
-                  className={`flex min-h-11 cursor-pointer gap-3 py-3 transition-opacity duration-150 ${fatto ? "opacity-55" : ""}`}
+                  className={`-mx-2 flex min-h-11 cursor-pointer gap-3 rounded-lg px-2 py-3 transition-[opacity,background-color] duration-150 [@media(hover:hover)]:hover:bg-superficie ${fatto ? "opacity-55" : ""}`}
                 >
                   <Casella id={`a-${v.id}`} fatto={fatto} onCambia={() => cambia(v.id)} etichetta={v.nome} />
                   <span className="min-w-0">
@@ -214,7 +221,7 @@ export function NotaEAzzera({ articolo, ids }: { articolo: number; ids: string[]
             <button
               type="button"
               onClick={() => azzera(ids)}
-              className="inline-flex min-h-11 items-center rounded-lg border border-[var(--errore)] px-3 font-semibold text-[var(--errore)] active:scale-[0.97]"
+              className="inline-flex min-h-11 items-center rounded-lg border border-(--errore) px-3 font-semibold text-(--errore) active:scale-[0.97]"
             >
               Azzera
             </button>
