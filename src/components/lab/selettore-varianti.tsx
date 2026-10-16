@@ -8,7 +8,16 @@ import { useEffect, useState } from "react";
 
 type Variante = { id: string; nome: string };
 
-export function SelettoreVarianti({ varianti, sezione }: { varianti: Variante[]; sezione: string }) {
+export function SelettoreVarianti({
+  varianti,
+  sezione,
+  posizione = "basso",
+}: {
+  varianti: Variante[];
+  sezione: string;
+  /** «alto» quando in basso c'e' gia' un altro elemento fisso (la barra di progressione) */
+  posizione?: "basso" | "alto";
+}) {
   const [attiva, setAttiva] = useState(varianti[0].id);
   const [aperto, setAperto] = useState(false);
 
@@ -29,7 +38,7 @@ export function SelettoreVarianti({ varianti, sezione }: { varianti: Variante[];
   }
 
   return (
-    <div className="fixed bottom-3 left-1/2 z-50 -translate-x-1/2">
+    <div className={`fixed left-1/2 z-50 -translate-x-1/2 ${posizione === "alto" ? "top-3" : "bottom-3"}`}>
       <div className="flex items-center gap-1 rounded-full border border-linea bg-superficie-alta p-1 shadow-[0_8px_24px_rgb(0_0_0/0.45)]">
         <button
           type="button"

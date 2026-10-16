@@ -9,6 +9,10 @@ import { SchedaSovrapposta } from "@/components/guida/scheda";
 import { TestataCopertina, TestataGuida } from "@/components/guida/testata";
 import { SpazioPubblicitario } from "@/components/pubblicita";
 import { estraiScheda } from "@/lib/guida/scheda";
+import { aggiungiAncore, dividiCorpo, estraiChecklist } from "@/lib/guida/checklist";
+import { BarraProgressione } from "@/components/guida/barra";
+import { ChecklistGruppo, NotaEAzzera } from "@/components/guida/checklist";
+import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { jsonLd } from "@/lib/cms/seo";
 import { articoloPerSlug, indirizzoAttuale, tuttiGliArticoli } from "@/lib/cms/wp";
@@ -56,7 +60,24 @@ export async function generateMetadata({ params }: Parametri): Promise<Metadata>
 
 export default async function PaginaArticolo({ params }: Parametri) {
   const { articolo: a, seo } = await risolvi(params);
-  const { scheda, corpo } = estraiScheda(a.contenuto);
+  const { scheda, corpo: senzaScheda } = estraiScheda(a.contenuto);
+  const { gruppi, corpo: senzaTabelle } = estraiChecklist(senzaScheda);
+  const { html, indice } = aggiungiAncore(senzaTabelle);
+  const pezzi = dividiCorpo(html);
+  const idsTrofei = gruppi.flatMap((g) => g.voci.map((v) => v.id));
+  const ultimoGruppo = gruppi.at(-1)?.id;
+
+  const corpo = pezzi.map((p, i) => {
+    if ("html" in p) return <div key={i} className="contenuto" dangerouslySetInnerHTML={{ __html: p.html }} />;
+    const g = gruppi.find((x) => x.id === p.gruppo)!;
+    return (
+      <div key={i}>
+        <ChecklistGruppo articolo={a.id} gruppo={g} />
+        {g.id === ultimoGruppo && <NotaEAzzera articolo={a.id} ids={idsTrofei} />}
+      </div>
+    );
+  });
+
   return (
     <article>
       {seo.schema ? (
@@ -72,6 +93,7 @@ export default async function PaginaArticolo({ params }: Parametri) {
       ) : (
         <TestataGuida a={a} />
       )}
+      <div id="fine-scheda" />
 
       <SpazioPubblicitario />
 
@@ -87,7 +109,27 @@ export default async function PaginaArticolo({ params }: Parametri) {
           className="mb-6 h-auto w-full rounded-lg"
         />
       )}
-      <div className="contenuto" dangerouslySetInnerHTML={{ __html: corpo }} />
+
+      {gruppi.length ? (
+        // Prova del piano 02 (docs/brief/02-checklist-barra.md): tre varianti della riga, ?v=a|b|c.
+        <div id="lab" data-v="a" className="pb-24 md:pb-0">
+          <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]),#lab[data-v="c"] [data-variant]:not([data-variant="c"]){display:none}`}</style>
+          {corpo}
+          <BarraProgressione articolo={a.id} ids={idsTrofei} indice={indice} />
+          <SelettoreVarianti
+            sezione="Checklist"
+            posizione="alto"
+            varianti={[
+              { id: "a", nome: "Lista" },
+              { id: "b", nome: "Schede" },
+              { id: "c", nome: "Tabella" },
+            ]}
+          />
+        </div>
+      ) : (
+        corpo
+      )}
+
       {a.tag.length > 0 && (
         <ul className="mt-8 flex flex-wrap gap-2 text-sm">
           {a.tag.map((t) => (

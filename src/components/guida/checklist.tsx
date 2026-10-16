@@ -1,0 +1,226 @@
+"use client";
+
+// Un gruppo di trofei da spuntare, al posto della tabella della guida (piano 02). Le tre varianti
+// della riga stanno tutte qui dentro con data-variant; il selettore dell'anteprima sceglie quale si
+// vede. Dopo la scelta resta solo quella approvata.
+
+import { CheckIcon } from "@phosphor-icons/react/ssr";
+import type { Gruppo } from "@/lib/guida/checklist";
+import { useSpunte } from "./spunte";
+
+function Contatore({ fatti, totale }: { fatti: number; totale: number }) {
+  const completo = fatti === totale;
+  return (
+    <p className="cifre flex items-center gap-2 text-sm font-semibold" aria-live="polite">
+      {completo ? (
+        <span className="inline-flex items-center gap-1 rounded bg-azione px-2 py-0.5 text-su-azione">
+          <CheckIcon weight="bold" className="size-3.5" aria-hidden="true" />
+          Completato
+        </span>
+      ) : null}
+      <span key={fatti} className="inline-block animate-[scatto_250ms_var(--ease-uscita)] text-tenue">
+        {fatti} di {totale}
+      </span>
+    </p>
+  );
+}
+
+/** Casella di spunta vera (input checkbox), disegnata sui token: tastiera e screen reader gratis. */
+function Casella({ id, fatto, onCambia, etichetta }: { id: string; fatto: boolean; onCambia: () => void; etichetta: string }) {
+  return (
+    <span className="relative inline-flex size-6 shrink-0">
+      <input
+        id={id}
+        type="checkbox"
+        checked={fatto}
+        onChange={onCambia}
+        aria-label={etichetta}
+        className="peer size-6 cursor-pointer appearance-none rounded-[4px] border-2 border-linea bg-sfondo transition-colors duration-150 checked:border-riempimento checked:bg-riempimento"
+      />
+      <CheckIcon
+        weight="bold"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-1 size-4 scale-50 text-sfondo opacity-0 transition-[opacity,transform] duration-150 ease-[var(--ease-uscita)] peer-checked:scale-100 peer-checked:opacity-100"
+      />
+    </span>
+  );
+}
+
+function Dettagli({ d, inline = false }: { d: Gruppo["voci"][number]["dettagli"]; inline?: boolean }) {
+  if (!d.length) return null;
+  if (d.length === 1) return <span className="block text-sm text-tenue">{d[0].valore}</span>;
+  return (
+    <span className={`block text-sm text-tenue ${inline ? "" : "mt-0.5"}`}>
+      {d.map((x, i) => (
+        <span key={i} className="block">
+          <span className="text-tenue/80">{x.etichetta}:</span> {x.valore}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+export function ChecklistGruppo({ articolo, gruppo }: { articolo: number; gruppo: Gruppo }) {
+  const { fatti, filtro, cambia } = useSpunte(articolo);
+  const n = gruppo.voci.filter((v) => fatti.has(v.id)).length;
+  const visibili = gruppo.voci.filter((v) => !(filtro && fatti.has(v.id)));
+  const tuttiNascosti = filtro && visibili.length === 0;
+
+  const testa = (
+    <div className="mb-2 flex items-center justify-between gap-3">
+      <p className="text-[0.8125rem] font-semibold uppercase tracking-[0.04em] text-tenue">Trofei da spuntare</p>
+      <Contatore fatti={n} totale={gruppo.voci.length} />
+    </div>
+  );
+  const vuoto = tuttiNascosti ? <p className="py-3 text-sm text-tenue">Tutti i trofei di questo gruppo sono spuntati.</p> : null;
+
+  return (
+    <section aria-label={`Trofei: ${gruppo.titolo}`} className="my-6" id={gruppo.id}>
+      {/* A, «Lista»: spunta a sinistra, nome in grassetto, come ottenerlo sotto */}
+      <div data-variant="a">
+        {testa}
+        {vuoto}
+        <ul className="border-t border-linea">
+          {visibili.map((v) => {
+            const fatto = fatti.has(v.id);
+            return (
+              <li key={v.id} data-trofeo={v.id} data-fatto={fatto} className="scroll-mt-28 border-b border-linea">
+                <label
+                  htmlFor={`a-${v.id}`}
+                  className={`flex min-h-11 cursor-pointer gap-3 py-3 transition-opacity duration-150 ${fatto ? "opacity-55" : ""}`}
+                >
+                  <Casella id={`a-${v.id}`} fatto={fatto} onCambia={() => cambia(v.id)} etichetta={v.nome} />
+                  <span className="min-w-0">
+                    <span className="block font-semibold leading-snug">{v.nome}</span>
+                    <Dettagli d={v.dettagli} />
+                  </span>
+                </label>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* B, «Schede»: una scheda per trofeo, pulsante «Fatto» grande per il pollice */}
+      <div data-variant="b">
+        {testa}
+        {vuoto}
+        <ul className="grid gap-2">
+          {visibili.map((v) => {
+            const fatto = fatti.has(v.id);
+            return (
+              <li
+                key={v.id}
+                data-trofeo={v.id}
+                data-fatto={fatto}
+                className={`flex scroll-mt-28 items-center justify-between gap-3 rounded-lg border p-3 transition-[opacity,border-color] duration-150 ${
+                  fatto ? "border-linea opacity-60" : "border-linea bg-superficie"
+                }`}
+              >
+                <span className="min-w-0">
+                  <span className="block font-semibold leading-snug">{v.nome}</span>
+                  <Dettagli d={v.dettagli} />
+                </span>
+                <button
+                  type="button"
+                  onClick={() => cambia(v.id)}
+                  aria-pressed={fatto}
+                  aria-label={`${v.nome}: ${fatto ? "fatto" : "da fare"}`}
+                  className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold transition-[background-color,color,transform] duration-150 active:scale-[0.97] ${
+                    fatto ? "bg-azione text-su-azione" : "border border-linea text-testo"
+                  }`}
+                >
+                  {fatto && <CheckIcon weight="bold" className="size-4" aria-hidden="true" />}
+                  {fatto ? "Fatto" : "Segna"}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* C, «Tabella»: le colonne di oggi con la spunta in testa; da telefono le celle si impilano */}
+      <div data-variant="c">
+        {testa}
+        {vuoto}
+        <table className="w-full border-collapse text-left text-[0.9375rem]">
+          <thead className="max-sm:sr-only">
+            <tr className="border-b border-linea text-[0.8125rem] uppercase tracking-[0.04em] text-tenue">
+              <th className="w-10 py-2 font-semibold">
+                <span className="sr-only">Fatto</span>
+              </th>
+              <th className="py-2 pr-3 font-semibold">Trofeo</th>
+              {gruppo.voci[0]?.dettagli.map((d) => (
+                <th key={d.etichetta} className="py-2 pr-3 font-semibold">
+                  {d.etichetta}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {visibili.map((v) => {
+              const fatto = fatti.has(v.id);
+              return (
+                <tr
+                  key={v.id}
+                  data-trofeo={v.id}
+                  data-fatto={fatto}
+                  className={`scroll-mt-28 border-b border-linea align-top transition-opacity duration-150 max-sm:grid max-sm:grid-cols-[2.5rem_1fr] max-sm:py-2 ${fatto ? "opacity-55" : ""}`}
+                >
+                  <td className="py-3 max-sm:row-span-3 max-sm:py-1">
+                    <span className="flex min-h-11 items-start pt-0.5 max-sm:min-h-0">
+                      <Casella id={`c-${v.id}`} fatto={fatto} onCambia={() => cambia(v.id)} etichetta={v.nome} />
+                    </span>
+                  </td>
+                  <td className="py-3 pr-3 font-semibold max-sm:py-1">
+                    <label htmlFor={`c-${v.id}`} className="cursor-pointer">
+                      {v.nome}
+                    </label>
+                  </td>
+                  {v.dettagli.map((d) => (
+                    <td key={d.etichetta} className="py-3 pr-3 text-tenue max-sm:py-0 max-sm:text-sm">
+                      <span className="sm:hidden">{d.etichetta}: </span>
+                      {d.valore}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+/** Nota onesta sul salvataggio e azzeramento con conferma in linea (niente finestre). */
+export function NotaEAzzera({ articolo, ids }: { articolo: number; ids: string[] }) {
+  const { fatti, persistente, azzera } = useSpunte(articolo);
+  const quanti = ids.filter((i) => fatti.has(i)).length;
+  return (
+    <div className="my-6 rounded-lg border border-linea p-4 text-sm text-tenue">
+      <p>
+        {persistente
+          ? "Le spunte restano su questo dispositivo e in questo browser. Non sono collegate al tuo profilo PlayStation: una spunta non certifica il trofeo."
+          : "Questo browser non permette di salvare: le spunte valgono solo per questa visita."}
+      </p>
+      {quanti > 0 && (
+        <details className="group mt-3">
+          <summary className="inline-flex min-h-11 cursor-pointer list-none items-center font-medium text-link">
+            Azzera le spunte di questa guida
+          </summary>
+          <p className="mt-1 flex flex-wrap items-center gap-3">
+            <span>Sicuro? Le {quanti} spunte non si recuperano.</span>
+            <button
+              type="button"
+              onClick={() => azzera(ids)}
+              className="inline-flex min-h-11 items-center rounded-lg border border-[var(--errore)] px-3 font-semibold text-[var(--errore)] active:scale-[0.97]"
+            >
+              Azzera
+            </button>
+          </p>
+        </details>
+      )}
+    </div>
+  );
+}

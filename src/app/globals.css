@@ -117,6 +117,12 @@ body {
 .contenuto iframe { width: 100%; aspect-ratio: 16 / 9; height: auto; border: 0; border-radius: 8px; }
 .contenuto code { font-size: 0.9em; background: var(--superficie); padding: 0.1em 0.3em; border-radius: 4px; }
 
+/* il contatore che «scatta» quando cambia (piano 02): solo transform, ease-out */
+@keyframes scatto {
+  from { transform: scale(1.18); }
+  to { transform: scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
 }
