@@ -33,7 +33,7 @@ export function BarraProgressione({ articolo, ids, indice }: { articolo: number;
   }
 
   const comando =
-    "flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[0.6875rem] font-semibold transition-[background-color,color,transform] duration-150 active:scale-[0.97] md:flex-row md:gap-1.5 md:px-3 md:text-sm [@media(hover:hover)]:hover:text-link";
+    "flex whitespace-nowrap min-h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-1 text-[0.6875rem] font-semibold transition-[background-color,color,transform] duration-150 active:scale-[0.97] md:flex-row md:gap-1.5 md:px-3 md:text-sm [@media(hover:hover)]:hover:text-link";
 
   return (
     <div
@@ -73,9 +73,16 @@ export function BarraProgressione({ articolo, ids, indice }: { articolo: number;
           <ListBulletsIcon className="size-5" aria-hidden="true" />
           Indice
         </button>
-        <button type="button" onClick={() => impostaFiltro(!filtro)} aria-pressed={filtro} className={`${comando} ${filtro ? "bg-azione text-su-azione" : "text-testo"}`}>
+        <button
+          type="button"
+          onClick={() => impostaFiltro(!filtro)}
+          aria-pressed={filtro}
+          aria-label="Da completare"
+          className={`${comando} ${filtro ? "bg-azione text-su-azione" : "text-testo"}`}
+        >
           <FunnelSimpleIcon className="size-5" aria-hidden="true" />
-          Da completare
+          {/* «Da completare» (PDF 05) andrebbe a capo da telefono: in vista una parola sola */}
+          Mancanti
         </button>
         <button type="button" onClick={riprendi} disabled={n === ids.length} className={`${comando} text-testo disabled:opacity-40`}>
           <PlayIcon className="size-5" aria-hidden="true" />
