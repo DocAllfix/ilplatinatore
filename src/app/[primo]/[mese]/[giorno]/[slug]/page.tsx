@@ -11,9 +11,9 @@ import { SpazioPubblicitario } from "@/components/pubblicita";
 import { estraiScheda } from "@/lib/guida/scheda";
 import { collocaGruppi, schedaDaCampi, trofeiDaCampi } from "@/lib/guida/campi";
 import { aggiungiAncore, dividiCorpo, estraiChecklist } from "@/lib/guida/checklist";
-import { BarraProgressione, PillolaProgressione } from "@/components/guida/barra";
+import { PillolaProgressione } from "@/components/guida/barra";
+import { TornaSu } from "@/components/torna-su";
 import { ChecklistGruppo, NotaEAzzera } from "@/components/guida/checklist";
-import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { jsonLd } from "@/lib/cms/seo";
 import { articoloPerSlug, indirizzoAttuale, tuttiGliArticoli } from "@/lib/cms/wp";
@@ -97,6 +97,8 @@ export default async function PaginaArticolo({ params }: Parametri) {
 
   return (
     <article>
+      <div id="inizio-articolo" />
+      <TornaSu />
       {seo.schema ? (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(seo.schema) }} />
       ) : null}
@@ -128,29 +130,10 @@ export default async function PaginaArticolo({ params }: Parametri) {
       )}
 
       {gruppi.length ? (
-        // Piano 02, giro 2 (docs/brief/02-checklist-barra.md): riga «Lista» scelta; tre varianti
-        // della barra di progressione, ?v=a|b|c. Spazio in fondo perche' la barra non copra il testo.
-        <div id="lab" data-v="a" className="pb-24">
-          <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]),#lab[data-v="c"] [data-variant]:not([data-variant="c"]){display:none}`}</style>
+        // Piano 02 chiuso: riga «Lista» e progressione a «Pillola». Spazio in fondo per non coprire il testo.
+        <div className="pb-24">
           {corpo}
-          <div data-variant="a">
-            <BarraProgressione articolo={a.id} ids={idsTrofei} indice={indice} />
-          </div>
-          <div data-variant="b">
-            <PillolaProgressione articolo={a.id} ids={idsTrofei} indice={indice} />
-          </div>
-          <div data-variant="c">
-            <BarraProgressione articolo={a.id} ids={idsTrofei} indice={indice} alBisogno />
-          </div>
-          <SelettoreVarianti
-            sezione="Barra"
-            posizione="alto"
-            varianti={[
-              { id: "a", nome: "In basso" },
-              { id: "b", nome: "Pillola" },
-              { id: "c", nome: "Al bisogno" },
-            ]}
-          />
+          <PillolaProgressione articolo={a.id} ids={idsTrofei} indice={indice} />
         </div>
       ) : (
         corpo

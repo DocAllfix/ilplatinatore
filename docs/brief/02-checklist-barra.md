@@ -42,3 +42,9 @@ interaction-design, motion-design (spunta e contatore), spatial-design (barra fi
 ## 10. Domande aperte
 - Le misure d'uso (spunte, ritorni) richieste dal PDF: gli eventi si preparano qui, si attivano col contatore aggregato in Fase 5.
 - Gli altri trofei citati solo nel testo (Sfratto Abissale, Arsenal Absolute, Ambersmith…) restano fuori finché la lista non passa ai campi strutturati.
+
+## Scelte (16/10/2026)
+
+- Riga della checklist: **A, «Lista»**.
+- Barra: il proprietario non voleva la barra in alto. Giro 2 con tre barre in basso; scelta la **B, «Pillola»**, in basso a sinistra, con Indice, Mancanti, Riprendi.
+- «Inizio» tolto dalla pillola: al suo posto il pulsante con la freccia «Torna all'inizio», in basso a destra, **su tutti gli articoli**.

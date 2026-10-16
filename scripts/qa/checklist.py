@@ -62,8 +62,9 @@ def main() -> int:
             pg.wait_for_timeout(600)
             pg.evaluate("window.scrollBy(0, -200)")
             pg.wait_for_timeout(600)
-            if var == "b":
-                pg.get_by_role("button", name="Apri i comandi").click()
+            apri = pg.get_by_role("button", name="Apri i comandi")
+            if apri.count() and apri.first.is_visible():
+                apri.first.click()
             filtro = [x for x in pg.get_by_role("button", name="Da completare").all() if x.is_visible()][0]
             filtro.click()
             pg.wait_for_timeout(300)
