@@ -20,8 +20,10 @@ export type Scheda = {
   altre: VoceScheda[];
 };
 
+// Niente trattini lunghi (regola dei testi e della skill anti-slop): «15–25 ore» diventa «15-25 ore».
 const testo = (s: string) =>
   s
+    .replace(/\s*[–—]\s*/g, "-")
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")

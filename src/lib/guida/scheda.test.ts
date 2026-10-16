@@ -20,7 +20,7 @@ describe("scheda riassuntiva dalla tabella della guida", () => {
 
   it("riconosce la tabella e legge i dati principali", () => {
     expect(scheda?.difficolta).toEqual({ voto: 5, massimo: 10 });
-    expect(scheda?.tempo).toBe("15–25 ore");
+    expect(scheda?.tempo).toBe("15-25 ore"); // trattino normale, mai lungo
     expect(scheda?.partite).toBe("1");
     expect(scheda?.mancabili).toEqual({ numero: 1, nomi: "Sfratto Abissale" });
     expect(scheda?.online).toBe("0");

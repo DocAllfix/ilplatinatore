@@ -1,6 +1,7 @@
 // Scheda riassuntiva della guida (PDF 03), in tre varianti da scegliere sull'anteprima.
 // Solo HTML e CSS: il «tutti i dati» e' un <details> nativo. I numeri usano cifre tabulari.
 
+import { CaretDownIcon, WarningIcon } from "@phosphor-icons/react/ssr";
 import type { Scheda } from "@/lib/guida/scheda";
 
 const NOTA = "Stime della redazione: tempi e difficoltà dipendono dall'abilità e dalla versione del gioco.";
@@ -19,13 +20,6 @@ export function Tacche({ voto, massimo, piccole = false }: { voto: number; massi
   );
 }
 
-function IconaAvviso() {
-  return (
-    <svg viewBox="0 0 20 20" className="size-4 shrink-0" aria-hidden="true">
-      <path fill="currentColor" d="M10 2 1 18h18L10 2Zm0 5 .1 0c.5 0 .9.4.9.9l-.3 5c0 .4-.3.6-.7.6s-.7-.3-.7-.6l-.3-5c0-.5.4-.9 1-.9Zm0 9.2a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z" />
-    </svg>
-  );
-}
 
 function TuttiIDati({ s, apertoDa = "Tutti i dati" }: { s: Scheda; apertoDa?: string }) {
   const voci = [
@@ -50,11 +44,13 @@ function TuttiIDati({ s, apertoDa = "Tutti i dati" }: { s: Scheda; apertoDa?: st
   if (!voci.length) return null;
   return (
     <details className="group mt-3 border-t border-linea">
-      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-sm font-medium text-link">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-sm font-medium text-link [@media(hover:hover)]:hover:underline [@media(hover:hover)]:hover:underline-offset-4">
         {apertoDa} ({voci.length})
-        <span aria-hidden="true" className="transition-transform duration-200 group-open:rotate-180">
-          ▾
-        </span>
+        <CaretDownIcon
+          weight="bold"
+          aria-hidden="true"
+          className="size-4 transition-transform duration-[var(--durata-media)] ease-[var(--ease-uscita)] group-open:rotate-180"
+        />
       </summary>
       <dl className="grid gap-x-4 gap-y-2 pb-2 text-sm sm:grid-cols-2">
         {voci.map((v) => (
@@ -74,7 +70,7 @@ function Mancabili({ s }: { s: Scheda }) {
     return <p className="text-sm text-tenue">Nessun trofeo mancabile</p>;
   return (
     <p className="flex items-start gap-2 text-sm font-medium text-avviso">
-      <IconaAvviso />
+      <WarningIcon weight="fill" className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       <span>
         {s.mancabili.numero === 1 ? "1 trofeo mancabile" : `${s.mancabili.numero} trofei mancabili`}
         {s.mancabili.nomi && <span className="text-testo">: {s.mancabili.nomi}</span>}
