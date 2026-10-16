@@ -29,7 +29,9 @@ OUT = os.path.join(QUI, "out")
 
 PAGINE = [
     "/",
-    "/2026/10/13/valor-mortis-guida-platino-tutti-trofei/",
+    "/2026/10/13/valor-mortis-guida-platino-tutti-trofei/?v=a",
+    "/2026/10/13/valor-mortis-guida-platino-tutti-trofei/?v=b",
+    "/2026/10/13/valor-mortis-guida-platino-tutti-trofei/?v=c",
     "/2026/10/15/valor-mortis-collezionabili-capitolo-3/",
     "/tag/valor-mortis/",
     "/tag/crimson-desert/page/2/",
@@ -78,7 +80,8 @@ def main() -> int:
                     pagina.add_script_tag(path=AXE)
                     axe = pagina.evaluate(AXE_RUN)
                     oltre = pagina.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
-                    h1 = pagina.evaluate("document.querySelectorAll('h1').length")
+                    # solo gli h1 visibili: le varianti nascoste dell'anteprima non esistono per lo screen reader
+                    h1 = pagina.evaluate("[...document.querySelectorAll('h1')].filter(e => e.checkVisibility()).length")
                     piccoli = pagina.evaluate(PICCOLI) if nome == "m" else []
                     robots_meta = pagina.evaluate("document.querySelector('meta[name=robots]')?.content || ''")
                     robots_header = (r.headers.get("x-robots-tag", "") if r else "")
@@ -100,7 +103,7 @@ def main() -> int:
                         errori.append("NOINDEX MANCANTE")
                     problemi += len(errori)
                     print(f"{nome} {percorso:52} {voce['stato']} | " + ("ok" if not errori else " ; ".join(errori)))
-                    file = (percorso.strip("/").replace("/", "_") or "home") + f"-{nome}.png"
+                    file = (percorso.strip("/").replace("/", "_").replace("?", "_").replace("=", "") or "home") + f"-{nome}.png"
                     pagina.screenshot(path=os.path.join(OUT, file), full_page=False)
                 ctx.close()
         finally:

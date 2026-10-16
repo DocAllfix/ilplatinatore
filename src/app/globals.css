@@ -1,47 +1,118 @@
 @import "tailwindcss";
 
-/* Copia di verifica del sito attuale: aspetto sobrio e neutro. Il design vero arriva con
-   PRODUCT.md e DESIGN.md. Caratteri di sistema: nessuna richiesta a servizi esterni. */
+/* Token da DESIGN.md. Palette dei post social del Platinatore; tema scuro di base, chiaro se il
+   telefono lo chiede. Nessun #000 o #fff fuori dalla regola del Bianco su Viola. */
 
 :root {
-  --sfondo: #ffffff;
-  --testo: #18181b;
-  --tenue: #52525b;
-  --bordo: #e4e4e7;
-  --accento: #6d3fe0;
+  --notte: #0b0d12;
+  --piombo: #161a24;
+  --piombo-alto: #1d2230;
+  --bordo: #2a3040;
+  --platino: #e6eaf2;
+  --acciaio: #8a93a6;
+  --ciano: #35e0ff;
+  --acido: #d7ff3a;
+  --viola: #7c4dff;
+  --su-viola: #ffffff;
+  --errore: #ff6b6b;
+  --avviso: #ff9f6b;
+
+  /* ruoli */
+  --sfondo: var(--notte);
+  --superficie: var(--piombo);
+  --superficie-alta: var(--piombo-alto);
+  --linea: var(--bordo);
+  --testo: var(--platino);
+  --tenue: var(--acciaio);
+  --link: var(--ciano);
+  --azione: var(--acido);
+  --su-azione: var(--notte);
+
+  --ease-uscita: cubic-bezier(0.23, 1, 0.32, 1);
+  --durata-breve: 150ms;
+  --durata-media: 250ms;
+  --durata-lunga: 400ms;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --sfondo: #f4f6fa;
+    --superficie: #ffffff;
+    --superficie-alta: #eef1f6;
+    --linea: #d5dae5;
+    --testo: #0b0d12;
+    --tenue: #4b5468;
+    --link: #5b2fe0;
+    --avviso: #b34700;
+    --errore: #c62828;
+    color-scheme: light;
+  }
 }
 
 @theme inline {
   --color-sfondo: var(--sfondo);
+  --color-superficie: var(--superficie);
+  --color-superficie-alta: var(--superficie-alta);
+  --color-linea: var(--linea);
   --color-testo: var(--testo);
   --color-tenue: var(--tenue);
-  --color-bordo: var(--bordo);
-  --color-accento: var(--accento);
+  --color-link: var(--link);
+  --color-azione: var(--azione);
+  --color-su-azione: var(--su-azione);
+  --color-viola: var(--viola);
+  --color-su-viola: var(--su-viola);
+  --color-avviso: var(--avviso);
+  --color-notte: var(--notte);
+  --color-platino: var(--platino);
+  --font-sans: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
   background: var(--sfondo);
   color: var(--testo);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Il corpo degli articoli arriva da WordPress come HTML: stili minimi e leggibili da telefono. */
-.contenuto { font-size: 1.0625rem; line-height: 1.7; overflow-wrap: anywhere; }
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+/* La striscia a tre colori dei post social, in cima alla testata */
+.striscia {
+  height: 4px;
+  background: linear-gradient(90deg, var(--ciano) 0 50%, var(--viola) 50% 80%, var(--acido) 80% 100%);
+}
+
+.cifre {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Il corpo degli articoli arriva da WordPress come HTML: stili leggibili da telefono. */
+.contenuto { font-size: 1.125rem; line-height: 1.65; overflow-wrap: anywhere; max-width: 68ch; }
 .contenuto > * + * { margin-top: 1rem; }
-.contenuto h2 { font-size: 1.45rem; font-weight: 700; line-height: 1.3; margin-top: 2rem; scroll-margin-top: 1rem; }
-.contenuto h3 { font-size: 1.2rem; font-weight: 700; line-height: 1.35; margin-top: 1.5rem; scroll-margin-top: 1rem; }
-.contenuto h4 { font-weight: 700; margin-top: 1.25rem; }
-.contenuto a { color: var(--accento); text-decoration: underline; text-underline-offset: 2px; }
+.contenuto h2 { font-size: 1.5rem; font-weight: 700; line-height: 1.25; margin-top: 2.25rem; scroll-margin-top: 1rem; }
+.contenuto h3 { font-size: 1.1875rem; font-weight: 600; line-height: 1.3; margin-top: 1.5rem; scroll-margin-top: 1rem; }
+.contenuto h4 { font-weight: 600; margin-top: 1.25rem; }
+.contenuto a { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+.contenuto strong { font-weight: 600; }
 .contenuto ul { list-style: disc; padding-left: 1.4rem; }
 .contenuto ol { list-style: decimal; padding-left: 1.4rem; }
 .contenuto li + li { margin-top: 0.35rem; }
-.contenuto img { max-width: 100%; height: auto; border-radius: 6px; }
+.contenuto img { max-width: 100%; height: auto; border-radius: 8px; }
 .contenuto figure { margin: 1.5rem 0; }
 .contenuto figcaption { font-size: 0.875rem; color: var(--tenue); margin-top: 0.4rem; }
-.contenuto blockquote { border-left: 3px solid var(--bordo); padding-left: 1rem; color: var(--tenue); }
+.contenuto blockquote { border: 1px solid var(--linea); border-radius: 8px; padding: 0.75rem 1rem; color: var(--tenue); }
 .contenuto .wp-block-table, .contenuto figure.wp-block-table { overflow-x: auto; }
-.contenuto table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
-.contenuto th, .contenuto td { border: 1px solid var(--bordo); padding: 0.5rem 0.65rem; text-align: left; vertical-align: top; }
-.contenuto thead th { background: #f4f4f5; }
-.contenuto iframe { width: 100%; aspect-ratio: 16 / 9; height: auto; border: 0; }
-.contenuto code { font-size: 0.9em; background: #f4f4f5; padding: 0.1em 0.3em; border-radius: 4px; }
+.contenuto table { border-collapse: collapse; width: 100%; font-size: 1rem; }
+.contenuto th, .contenuto td { border-bottom: 1px solid var(--linea); padding: 0.6rem 0.65rem; text-align: left; vertical-align: top; }
+.contenuto thead th { color: var(--tenue); font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.contenuto tbody tr:nth-child(odd) { background: var(--superficie); }
+.contenuto iframe { width: 100%; aspect-ratio: 16 / 9; height: auto; border: 0; border-radius: 8px; }
+.contenuto code { font-size: 0.9em; background: var(--superficie); padding: 0.1em 0.3em; border-radius: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+}

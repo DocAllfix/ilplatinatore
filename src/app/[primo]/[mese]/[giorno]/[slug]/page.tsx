@@ -5,7 +5,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { dataLeggibile } from "@/components/archivio";
+import { SchedaCopertina, SchedaPannello, SchedaStriscia } from "@/components/guida/scheda";
+import { TestataCopertina, TestataGuida } from "@/components/guida/testata";
+import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
+import { SpazioPubblicitario } from "@/components/pubblicita";
+import { estraiScheda } from "@/lib/guida/scheda";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { jsonLd } from "@/lib/cms/seo";
 import { articoloPerSlug, indirizzoAttuale, tuttiGliArticoli } from "@/lib/cms/wp";
@@ -53,30 +57,52 @@ export async function generateMetadata({ params }: Parametri): Promise<Metadata>
 
 export default async function PaginaArticolo({ params }: Parametri) {
   const { articolo: a, seo } = await risolvi(params);
+  const { scheda, corpo } = estraiScheda(a.contenuto);
   return (
     <article>
       {seo.schema ? (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(seo.schema) }} />
       ) : null}
-      <nav aria-label="Briciole" className="text-sm text-tenue">
-        <Link href="/">Home</Link>
-        {a.categoria && (
-          <>
-            {" › "}
-            <Link href={`/category/${a.categoria.slug}/`}>{a.categoria.nome}</Link>
-          </>
-        )}
-      </nav>
-      <h1 className="mt-3 text-3xl font-bold leading-tight">{a.titolo}</h1>
-      <p className="mt-2 text-sm text-tenue">
-        {a.autore && (
-          <>
-            di <Link href={`/author/${a.autore.slug}/`}>{a.autore.nome}</Link> ·{" "}
-          </>
-        )}
-        <time dateTime={a.data}>{dataLeggibile(a.data)}</time>
-      </p>
-      {a.immagine && (
+
+      {scheda ? (
+        // Prova del piano 01 (docs/brief/01-guida-testata-scheda.md): tre varianti nella pagina,
+        // scelte con ?v=a|b|c. Dopo la scelta resta solo quella approvata.
+        <div id="lab" data-v="a">
+          <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]),#lab[data-v="c"] [data-variant]:not([data-variant="c"]){display:none}`}</style>
+          <div data-variant="a">
+            <TestataGuida a={a} />
+            <div className="mt-5">
+              <SchedaPannello s={scheda} />
+            </div>
+          </div>
+          <div data-variant="b">
+            <TestataGuida a={a} />
+            <div className="mt-4">
+              <SchedaStriscia s={scheda} />
+            </div>
+          </div>
+          <div data-variant="c">
+            <TestataCopertina a={a} />
+            <div className="-mx-4">
+              <SchedaCopertina s={scheda} />
+            </div>
+          </div>
+          <SelettoreVarianti
+            sezione="Scheda"
+            varianti={[
+              { id: "a", nome: "Pannello" },
+              { id: "b", nome: "Striscia" },
+              { id: "c", nome: "Copertina" },
+            ]}
+          />
+        </div>
+      ) : (
+        <TestataGuida a={a} />
+      )}
+
+      <SpazioPubblicitario />
+
+      {!scheda && a.immagine && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={a.immagine.src}
@@ -85,16 +111,15 @@ export default async function PaginaArticolo({ params }: Parametri) {
           alt={a.immagine.alt}
           width={a.immagine.larghezza}
           height={a.immagine.altezza}
-          fetchPriority="high"
-          className="mt-5 h-auto w-full rounded-lg"
+          className="mb-6 h-auto w-full rounded-lg"
         />
       )}
-      <div className="contenuto mt-6" dangerouslySetInnerHTML={{ __html: a.contenuto }} />
+      <div className="contenuto" dangerouslySetInnerHTML={{ __html: corpo }} />
       {a.tag.length > 0 && (
         <ul className="mt-8 flex flex-wrap gap-2 text-sm">
           {a.tag.map((t) => (
             <li key={t.slug}>
-              <Link href={`/tag/${t.slug}/`} className="rounded-full border border-bordo px-3 py-1 hover:border-accento">
+              <Link href={`/tag/${t.slug}/`} className="flex min-h-11 items-center rounded-full border border-linea px-4 hover:border-link">
                 #{t.nome}
               </Link>
             </li>
