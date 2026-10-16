@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import type { VoceIndice } from "@/lib/guida/checklist";
 import { useSpunte } from "./spunte";
 
-type Props = { articolo: number; ids: string[]; indice: VoceIndice[] };
+type Props = { articolo: number; ids: string[]; indice: VoceIndice[]; unita?: string };
 
 /** La scheda riassuntiva e' uscita dallo schermo? (IntersectionObserver, niente calcoli sullo scorrimento) */
 function useDopoLaScheda() {
@@ -30,7 +30,9 @@ function useComandi({ articolo, ids }: Props) {
   function riprendi() {
     const primo = ids.find((i) => !fatti.has(i));
     if (!primo) return;
-    const el = document.querySelector<HTMLElement>(`[data-trofeo="${primo}"]`);
+    // la riga puo' essere nascosta da un filtro per area: allora si va in testa all'elenco
+    const visibile = (sel: string) => [...document.querySelectorAll<HTMLElement>(sel)].find((x) => x.getClientRects().length);
+    const el = visibile(`[data-trofeo="${primo}"]`) ?? visibile("[data-collezionabili]");
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
     el?.querySelector<HTMLElement>("input,button")?.focus({ preventScroll: true });
   }
@@ -122,7 +124,7 @@ export function PillolaProgressione(props: Props) {
           <span key={n} className="inline-block animate-[scatto_250ms_var(--ease-uscita)]">
             {n}
           </span>{" "}
-          di {props.ids.length} <span className="font-medium text-tenue">trofei</span>
+          di {props.ids.length} <span className="font-medium text-tenue">{props.unita ?? "trofei"}</span>
         </span>
         <span className="block h-1 w-14 overflow-hidden rounded-full bg-linea" aria-hidden="true">
           <span

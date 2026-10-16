@@ -28,7 +28,7 @@ function Contatore({ fatti, totale }: { fatti: number; totale: number }) {
  * Casella di spunta vera (input checkbox): tastiera e screen reader gratis. L'input invisibile copre
  * 44x44 px intorno al quadratino visibile da 24 px, cosi' il pollice non manca il bersaglio.
  */
-function Casella({ id, fatto, onCambia, etichetta }: { id: string; fatto: boolean; onCambia: () => void; etichetta: string }) {
+export function Casella({ id, fatto, onCambia, etichetta }: { id: string; fatto: boolean; onCambia: () => void; etichetta: string }) {
   return (
     <span className="relative inline-flex size-6 shrink-0">
       <input

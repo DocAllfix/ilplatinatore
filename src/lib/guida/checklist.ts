@@ -97,13 +97,13 @@ export function estraiChecklist(html: string): { gruppi: Gruppo[]; corpo: string
   return { gruppi, corpo };
 }
 
-/** Divide il corpo nei pezzi di HTML e nei segnaposto, nell'ordine in cui compaiono. */
-export function dividiCorpo(corpo: string): Array<{ html: string } | { gruppo: string }> {
-  const out: Array<{ html: string } | { gruppo: string }> = [];
+/** Divide il corpo nei pezzi di HTML e nei segnaposto (checklist e correlati), nell'ordine in cui compaiono. */
+export function dividiCorpo(corpo: string): Array<{ html: string } | { gruppo: string } | { correlato: string }> {
+  const out: Array<{ html: string } | { gruppo: string } | { correlato: string }> = [];
   let ultimo = 0;
-  for (const m of corpo.matchAll(RX_SEGNAPOSTO)) {
+  for (const m of corpo.matchAll(/<!--(checklist|correlato):([a-z0-9-]+)-->/g)) {
     if (m.index! > ultimo) out.push({ html: corpo.slice(ultimo, m.index) });
-    out.push({ gruppo: m[1] });
+    out.push(m[1] === "checklist" ? { gruppo: m[2] } : { correlato: m[2] });
     ultimo = m.index! + m[0].length;
   }
   if (ultimo < corpo.length) out.push({ html: corpo.slice(ultimo) });

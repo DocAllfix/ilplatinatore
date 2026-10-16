@@ -20,10 +20,23 @@ Ogni guida può avere una **scheda riassuntiva** e una **checklist dei trofei** 
 | `pl_nota_stime` | testo | `Stima della redazione: ...` | da cosa dipendono tempo e difficoltà |
 | `pl_altri_dati` | testo su più righe | `Salvataggi manuali: No` | una voce per riga, «Etichetta: valore» |
 | `pl_trofei` | elenco | vedi sotto | un oggetto per trofeo |
+| `pl_collezionabili` | elenco | vedi sotto | negli articoli dei collezionabili, un oggetto per riga |
+| `pl_correlati` | elenco | vedi sotto | collegamenti ad altre guide nel punto in cui servono |
 
 Ogni voce di `pl_trofei` è `{"gruppo": "...", "nome": "...", "come": "..."}`. Il `gruppo` raggruppa la checklist e va scritto uguale per i trofei dello stesso gruppo. I gruppi prendono il posto delle tabelle di trofei nel testo, nell'ordine: il primo gruppo dove c'era la prima tabella, e così via.
 
 La scheda compare se ci sono almeno difficoltà o tempo. Un campo da solo non basta.
+
+Ogni voce di `pl_collezionabili` è `{"area": "...", "oggetto": "...", "tipo": "...", "prerequisito": "...", "sezione": "...", "spoiler": ""}`:
+- `area`: la zona o la Lanterna (raggruppa e filtra la tabella);
+- `tipo`: al singolare, `Ambra`, `Arma`, `Trasmutazione`, `Potenziamento`, `Fiaschetta`, `Indizio` (o altro); i contatori li sommano per tipo;
+- `prerequisito`: facoltativo, cosa serve prima (es. `Fuoco`);
+- `sezione`: il titolo h2 del paragrafo che spiega come prenderlo, **copiato uguale**; se non corrisponde a nessun titolo il link «Come prenderlo» non compare;
+- `spoiler`: `si` per nascondere il nome finché il lettore non lo chiede.
+
+La tabella dei mancanti compare in testa all'articolo, sopra il testo.
+
+Ogni voce di `pl_correlati` è `{"tipo": "Prima di continuare", "articolo": "slug-della-guida", "perche": "...", "dopo_sezione": "..."}`. Il riquadro compare alla **fine** della sezione `dopo_sezione` (titolo h2 copiato uguale), cioè subito prima del titolo successivo. `articolo` accetta lo slug o l'indirizzo intero; se la guida collegata non è pubblicata il riquadro non compare. Un `tipo` che contiene «Prima» o «Attenzione» si mostra come avviso; gli altri (es. «Prossimo obiettivo») come indicazione.
 
 ## Scrittura via REST (quello che fa wpvibe)
 
@@ -51,7 +64,7 @@ Content-Type: application/json; charset=utf-8
 
 Dopo il salvataggio il CMS avvisa il sito (webhook) e la pagina si aggiorna da sola in pochi secondi. Collaudato il 16/10/2026: 5-40 secondi, senza deploy.
 
-**Attenzione:** `pl_trofei` si sostituisce **per intero** a ogni scrittura. Per aggiungere un trofeo si rimanda l'elenco completo.
+**Attenzione:** gli elenchi (`pl_trofei`, `pl_collezionabili`, `pl_correlati`) si sostituiscono **per intero** a ogni scrittura. Per aggiungere una voce si rimanda l'elenco completo.
 
 ## Ripiego: le tabelle nel testo
 
@@ -64,3 +77,5 @@ Basta un'intestazione scritta diversa e la scheda non compare: per questo, d'ora
 ## Istruzione da dare a wpvibe
 
 > Quando scrivi una guida al platino, compila anche i campi `pl_*` del post via REST (formato in docs/guida-campi-wpvibe.md): difficoltà da 1 a 10, ore per il platino con trattino normale, partite, trofei mancabili con numero e nomi, trofei online, trofei totali, eventuali condizioni delle stime, e l'elenco dei trofei con gruppo, nome e come ottenerlo. Non usare trattini lunghi.
+
+> Quando scrivi un articolo sui collezionabili di un capitolo, compila `pl_collezionabili`: un oggetto per riga con area, nome, tipo al singolare, prerequisito se serve, e in `sezione` il titolo h2 esatto del paragrafo che lo spiega. Se una guida rimanda a un'altra in un punto preciso, aggiungi una voce in `pl_correlati` con lo slug, il perché in una frase e il titolo h2 dopo cui mostrarla.

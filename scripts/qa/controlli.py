@@ -29,10 +29,13 @@ OUT = os.path.join(QUI, "out")
 
 PAGINE = [
     "/",
+    # piano 03 in prova: correlati nella guida al platino, collezionabili nei capitoli
     "/2026/10/13/valor-mortis-guida-platino-tutti-trofei/?v=a",
     "/2026/10/13/valor-mortis-guida-platino-tutti-trofei/?v=b",
     "/2026/10/13/valor-mortis-guida-platino-tutti-trofei/?v=c",
-    "/2026/10/15/valor-mortis-collezionabili-capitolo-3/",
+    "/2026/10/15/valor-mortis-collezionabili-capitolo-2/?v=a",
+    "/2026/10/15/valor-mortis-collezionabili-capitolo-2/?v=b",
+    "/2026/10/15/valor-mortis-collezionabili-capitolo-2/?v=c",
     "/tag/valor-mortis/",
     "/tag/crimson-desert/page/2/",
     "/category/guide/",

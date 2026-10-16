@@ -243,6 +243,34 @@ function platinatore_campi_guida()
                 'come'   => array('type' => 'textarea', 'label' => 'Come ottenerlo'),
             ),
         ),
+        // PDF 06: tabella dei mancanti in testa agli articoli dei collezionabili
+        'pl_collezionabili'  => array(
+            'type'        => 'repeater',
+            'group'       => $g,
+            'label'       => 'Collezionabili da spuntare',
+            'description' => 'Un oggetto per riga. «Sezione»: il titolo (h2) del paragrafo che spiega come prenderlo, copiato uguale. «Spoiler»: «si» per nasconderne il nome.',
+            'sub_fields'  => array(
+                'area'         => array('type' => 'text', 'label' => 'Area'),
+                'oggetto'      => array('type' => 'text', 'label' => 'Oggetto'),
+                'tipo'         => array('type' => 'text', 'label' => 'Tipo (Ambra, Arma...)'),
+                'prerequisito' => array('type' => 'text', 'label' => 'Prerequisito'),
+                'sezione'      => array('type' => 'text', 'label' => 'Sezione con la soluzione'),
+                'spoiler'      => array('type' => 'text', 'label' => 'Spoiler (si/vuoto)'),
+            ),
+        ),
+        // PDF 07: correlati contestuali, nel punto del testo in cui servono
+        'pl_correlati'       => array(
+            'type'        => 'repeater',
+            'group'       => $g,
+            'label'       => 'Correlati nel testo',
+            'description' => 'Compare alla fine della sezione indicata (titolo h2 copiato uguale). «Articolo»: lo slug della guida collegata. Se non è pubblicata non compare.',
+            'sub_fields'  => array(
+                'tipo'         => array('type' => 'text', 'label' => 'Etichetta (es. «Prima di continuare»)'),
+                'articolo'     => array('type' => 'text', 'label' => 'Slug dell\'articolo'),
+                'perche'       => array('type' => 'textarea', 'label' => 'Perché leggerlo qui'),
+                'dopo_sezione' => array('type' => 'text', 'label' => 'Dopo la sezione'),
+            ),
+        ),
     );
 }
 
