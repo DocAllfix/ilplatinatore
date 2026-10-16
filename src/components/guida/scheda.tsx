@@ -83,9 +83,10 @@ function Mancabili({ s }: { s: Scheda }) {
   );
 }
 
-function Dato({ etichetta, children }: { etichetta: string; children: React.ReactNode }) {
+function Dato({ etichetta, children, className = "" }: { etichetta: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className="min-w-0">
+    // un <div> che raggruppa dt e dd e' figlio ammesso di <dl>: niente altri contenitori in mezzo
+    <div className={`min-w-0 ${className}`}>
       <dt className="text-[0.8125rem] font-semibold uppercase tracking-[0.04em] text-tenue">{etichetta}</dt>
       <dd className="mt-1">{children}</dd>
     </div>
@@ -107,15 +108,12 @@ function Griglia4({ s, linee = false }: { s: Scheda; linee?: boolean }) {
   return (
     <dl className={`grid grid-cols-2 ${linee ? "" : "gap-x-4 gap-y-5"}`}>
       {s.tempo && (
-        <div className={cella}>
-          <Dato etichetta="Platino in">
+        <Dato etichetta="Platino in" className={cella}>
             <BloccoAcido>{s.tempo}</BloccoAcido>
           </Dato>
-        </div>
       )}
       {s.difficolta && (
-        <div className={cella}>
-          <Dato etichetta="Difficoltà">
+        <Dato etichetta="Difficoltà" className={cella}>
             <span className="cifre text-[1.625rem] font-bold leading-none">
               {s.difficolta.voto}
               <span className="text-base font-medium text-tenue">/{s.difficolta.massimo}</span>
@@ -124,21 +122,16 @@ function Griglia4({ s, linee = false }: { s: Scheda; linee?: boolean }) {
               <Tacche {...s.difficolta} />
             </span>
           </Dato>
-        </div>
       )}
       {s.partite && (
-        <div className={cella}>
-          <Dato etichetta="Partite">
+        <Dato etichetta="Partite" className={cella}>
             <span className="cifre text-[1.625rem] font-bold leading-none">{s.partite}</span>
           </Dato>
-        </div>
       )}
       {s.trofei?.totale !== undefined && (
-        <div className={cella}>
-          <Dato etichetta="Trofei">
+        <Dato etichetta="Trofei" className={cella}>
             <span className="cifre text-[1.625rem] font-bold leading-none">{s.trofei.totale}</span>
           </Dato>
-        </div>
       )}
     </dl>
   );
