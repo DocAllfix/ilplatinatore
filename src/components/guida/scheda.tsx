@@ -12,7 +12,7 @@ export function Tacche({ voto, massimo, piccole = false }: { voto: number; massi
       {Array.from({ length: massimo }, (_, i) => (
         <span
           key={i}
-          className={`${piccole ? "h-1.5 w-2" : "h-2 w-full max-w-4"} rounded-full ${i < Math.round(voto) ? "bg-azione" : "bg-linea"}`}
+          className={`${piccole ? "h-1.5 w-2" : "h-2 w-full max-w-4"} rounded-full ${i < Math.round(voto) ? "bg-riempimento" : "bg-linea"}`}
         />
       ))}
     </span>

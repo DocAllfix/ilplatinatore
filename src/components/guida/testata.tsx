@@ -56,11 +56,9 @@ function Gioco({ a }: { a: Articolo }) {
   const gioco = a.tag[0];
   if (!gioco) return null;
   return (
-    <Link
-      href={`/tag/${gioco.slug}/`}
-      className="inline-flex max-w-full items-center rounded bg-viola px-2 py-0.5 text-[0.8125rem] font-semibold text-su-viola"
-    >
-      <span className="truncate">{gioco.nome}</span>
+    // bersaglio da 44 px per il pollice, etichetta visiva compatta dentro
+    <Link href={`/tag/${gioco.slug}/`} className="inline-flex min-h-11 max-w-full items-center self-start">
+      <span className="truncate rounded bg-viola px-2 py-0.5 text-[0.8125rem] font-semibold text-su-viola">{gioco.nome}</span>
     </Link>
   );
 }

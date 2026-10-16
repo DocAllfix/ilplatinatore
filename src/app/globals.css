@@ -27,6 +27,8 @@
   --link: var(--ciano);
   --azione: var(--acido);
   --su-azione: var(--notte);
+  /* riempimento di progresso (tacche, barre): Acido sullo scuro, Viola scurito sul chiaro, dove l'Acido non si vede */
+  --riempimento: var(--acido);
 
   --ease-uscita: cubic-bezier(0.23, 1, 0.32, 1);
   --durata-breve: 150ms;
@@ -44,6 +46,7 @@
     --testo: #0b0d12;
     --tenue: #4b5468;
     --link: #5b2fe0;
+    --riempimento: #5b2fe0;
     --avviso: #b34700;
     --errore: #c62828;
     color-scheme: light;
@@ -60,6 +63,7 @@
   --color-link: var(--link);
   --color-azione: var(--azione);
   --color-su-azione: var(--su-azione);
+  --color-riempimento: var(--riempimento);
   --color-viola: var(--viola);
   --color-su-viola: var(--su-viola);
   --color-avviso: var(--avviso);
