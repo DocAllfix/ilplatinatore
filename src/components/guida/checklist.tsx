@@ -1,8 +1,7 @@
 "use client";
 
-// Un gruppo di trofei da spuntare, al posto della tabella della guida (piano 02). Le tre varianti
-// della riga stanno tutte qui dentro con data-variant; il selettore dell'anteprima sceglie quale si
-// vede. Dopo la scelta resta solo quella approvata.
+// Un gruppo di trofei da spuntare, al posto della tabella della guida (piano 02, variante scelta:
+// «Lista»).
 
 import { CheckIcon } from "@phosphor-icons/react/ssr";
 import type { Gruppo } from "@/lib/guida/checklist";
@@ -83,8 +82,8 @@ export function ChecklistGruppo({ articolo, gruppo }: { articolo: number; gruppo
 
   return (
     <section aria-label={`Trofei: ${gruppo.titolo}`} className="my-6" id={gruppo.id}>
-      {/* A, «Lista»: spunta a sinistra, nome in grassetto, come ottenerlo sotto */}
-      <div data-variant="a">
+      {/* Scelta del piano 02: «Lista», spunta a sinistra, nome in grassetto, come ottenerlo sotto */}
+      <div>
         {testa}
         {vuoto}
         <ul className="border-t border-linea">
@@ -108,94 +107,6 @@ export function ChecklistGruppo({ articolo, gruppo }: { articolo: number; gruppo
         </ul>
       </div>
 
-      {/* B, «Schede»: una scheda per trofeo, pulsante «Fatto» grande per il pollice */}
-      <div data-variant="b">
-        {testa}
-        {vuoto}
-        <ul className="grid gap-2">
-          {visibili.map((v) => {
-            const fatto = fatti.has(v.id);
-            return (
-              <li
-                key={v.id}
-                data-trofeo={v.id}
-                data-fatto={fatto}
-                className={`flex scroll-mt-28 items-center justify-between gap-3 rounded-lg border p-3 transition-[opacity,border-color] duration-150 ${
-                  fatto ? "border-linea opacity-60" : "border-linea bg-superficie"
-                }`}
-              >
-                <span className="min-w-0">
-                  <span className="block font-semibold leading-snug">{v.nome}</span>
-                  <Dettagli d={v.dettagli} />
-                </span>
-                <button
-                  type="button"
-                  onClick={() => cambia(v.id)}
-                  aria-pressed={fatto}
-                  aria-label={`${v.nome}: ${fatto ? "fatto" : "da fare"}`}
-                  className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold transition-[background-color,color,transform] duration-150 active:scale-[0.97] ${
-                    fatto ? "bg-azione text-su-azione" : "border border-linea text-testo"
-                  }`}
-                >
-                  {fatto && <CheckIcon weight="bold" className="size-4" aria-hidden="true" />}
-                  {fatto ? "Fatto" : "Segna"}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      {/* C, «Tabella»: le colonne di oggi con la spunta in testa; da telefono le celle si impilano */}
-      <div data-variant="c">
-        {testa}
-        {vuoto}
-        <table className="w-full border-collapse text-left text-[0.9375rem]">
-          <thead className="max-sm:sr-only">
-            <tr className="border-b border-linea text-[0.8125rem] uppercase tracking-[0.04em] text-tenue">
-              <th className="w-10 py-2 font-semibold">
-                <span className="sr-only">Fatto</span>
-              </th>
-              <th className="py-2 pr-3 font-semibold">Trofeo</th>
-              {gruppo.voci[0]?.dettagli.map((d) => (
-                <th key={d.etichetta} className="py-2 pr-3 font-semibold">
-                  {d.etichetta}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {visibili.map((v) => {
-              const fatto = fatti.has(v.id);
-              return (
-                <tr
-                  key={v.id}
-                  data-trofeo={v.id}
-                  data-fatto={fatto}
-                  className={`scroll-mt-28 border-b border-linea align-top transition-opacity duration-150 max-sm:grid max-sm:grid-cols-[2.5rem_1fr] max-sm:py-2 ${fatto ? "opacity-55" : ""}`}
-                >
-                  <td className="py-3 max-sm:row-span-3 max-sm:py-1">
-                    <span className="flex min-h-11 items-start pt-0.5 max-sm:min-h-0">
-                      <Casella id={`c-${v.id}`} fatto={fatto} onCambia={() => cambia(v.id)} etichetta={v.nome} />
-                    </span>
-                  </td>
-                  <td className="py-3 pr-3 font-semibold max-sm:py-1">
-                    <label htmlFor={`c-${v.id}`} className="cursor-pointer">
-                      {v.nome}
-                    </label>
-                  </td>
-                  {v.dettagli.map((d) => (
-                    <td key={d.etichetta} className="py-3 pr-3 text-tenue max-sm:py-0 max-sm:text-sm">
-                      <span className="sm:hidden">{d.etichetta}: </span>
-                      {d.valore}
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
     </section>
   );
 }

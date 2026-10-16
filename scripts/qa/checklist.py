@@ -30,18 +30,20 @@ def main() -> int:
             pg = ctx.new_page()
             pg.goto(f"{url}?v={var}", wait_until="load", timeout=90_000)
             pg.wait_for_timeout(1000)
-            gruppo = pg.locator(f'section[aria-label^="Trofei"] [data-variant="{var}"]').first
+            gruppo = pg.locator('section[aria-label^="Trofei"]').first
             contatore = lambda: gruppo.locator('p[aria-live]').first.inner_text().strip()  # noqa: E731
-            barra = lambda: pg.locator('div.fixed p[aria-live]').first.inner_text().strip()  # noqa: E731
+            # il contatore della barra della variante visibile
+            barra = lambda: [x for x in pg.locator('[data-contatore-barra]').all() if x.evaluate("e => e.checkVisibility()")][0].inner_text().strip()  # noqa: E731
+            pg.evaluate("window.scrollTo(0, document.body.scrollHeight / 2)")
+            pg.wait_for_timeout(600)
+            pg.evaluate("window.scrollBy(0, -200)")  # la variante «al bisogno» compare risalendo
+            pg.wait_for_timeout(600)
             prima, barra_prima = contatore(), barra()
 
             riga = gruppo.locator("[data-trofeo]").first
             nome = riga.get_attribute("data-trofeo")
             riga.scroll_into_view_if_needed()
-            if var == "b":
-                riga.locator("button").click()
-            else:
-                riga.locator("input").click()
+            riga.locator("input").click()
             pg.wait_for_timeout(400)
             dopo, barra_dopo = contatore(), barra()
             print(f"  contatore gruppo: {prima!r} -> {dopo!r}; barra: {barra_prima!r} -> {barra_dopo!r}")
@@ -51,21 +53,28 @@ def main() -> int:
 
             pg.reload(wait_until="load")
             pg.wait_for_timeout(1000)
-            fatto = pg.locator(f'[data-variant="{var}"] [data-trofeo="{nome}"]').first.get_attribute("data-fatto")
+            fatto = pg.locator(f'[data-trofeo="{nome}"]').first.get_attribute("data-fatto")
             print(f"  dopo il ricaricamento, {nome} fatto = {fatto}")
             if fatto != "true":
                 errori.append("la spunta non resta dopo il ricaricamento")
 
-            pg.get_by_role("button", name="Da completare").click()
+            pg.evaluate("window.scrollTo(0, document.body.scrollHeight / 2)")
+            pg.wait_for_timeout(600)
+            pg.evaluate("window.scrollBy(0, -200)")
+            pg.wait_for_timeout(600)
+            if var == "b":
+                pg.get_by_role("button", name="Apri i comandi").click()
+            filtro = [x for x in pg.get_by_role("button", name="Da completare").all() if x.is_visible()][0]
+            filtro.click()
             pg.wait_for_timeout(300)
-            if pg.locator(f'[data-variant="{var}"] [data-trofeo="{nome}"]').count():
+            if pg.locator(f'[data-trofeo="{nome}"]').count():
                 errori.append("«Da completare» non nasconde le righe fatte")
-            pg.get_by_role("button", name="Da completare").click()
+            filtro.click()
 
             pg.get_by_text("Azzera le spunte di questa guida").click()
             pg.get_by_role("button", name="Azzera", exact=True).click()
             pg.wait_for_timeout(300)
-            fatto = pg.locator(f'[data-variant="{var}"] [data-trofeo="{nome}"]').first.get_attribute("data-fatto")
+            fatto = pg.locator(f'[data-trofeo="{nome}"]').first.get_attribute("data-fatto")
             if fatto != "false":
                 errori.append("Azzera non toglie le spunte")
             ctx.close()

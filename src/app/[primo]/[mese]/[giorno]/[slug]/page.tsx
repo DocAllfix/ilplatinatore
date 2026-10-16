@@ -11,7 +11,7 @@ import { SpazioPubblicitario } from "@/components/pubblicita";
 import { estraiScheda } from "@/lib/guida/scheda";
 import { collocaGruppi, schedaDaCampi, trofeiDaCampi } from "@/lib/guida/campi";
 import { aggiungiAncore, dividiCorpo, estraiChecklist } from "@/lib/guida/checklist";
-import { BarraProgressione } from "@/components/guida/barra";
+import { BarraProgressione, PillolaProgressione } from "@/components/guida/barra";
 import { ChecklistGruppo, NotaEAzzera } from "@/components/guida/checklist";
 import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
@@ -128,18 +128,27 @@ export default async function PaginaArticolo({ params }: Parametri) {
       )}
 
       {gruppi.length ? (
-        // Prova del piano 02 (docs/brief/02-checklist-barra.md): tre varianti della riga, ?v=a|b|c.
-        <div id="lab" data-v="a" className="pb-24 md:pb-0">
+        // Piano 02, giro 2 (docs/brief/02-checklist-barra.md): riga «Lista» scelta; tre varianti
+        // della barra di progressione, ?v=a|b|c. Spazio in fondo perche' la barra non copra il testo.
+        <div id="lab" data-v="a" className="pb-24">
           <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]),#lab[data-v="c"] [data-variant]:not([data-variant="c"]){display:none}`}</style>
           {corpo}
-          <BarraProgressione articolo={a.id} ids={idsTrofei} indice={indice} />
+          <div data-variant="a">
+            <BarraProgressione articolo={a.id} ids={idsTrofei} indice={indice} />
+          </div>
+          <div data-variant="b">
+            <PillolaProgressione articolo={a.id} ids={idsTrofei} indice={indice} />
+          </div>
+          <div data-variant="c">
+            <BarraProgressione articolo={a.id} ids={idsTrofei} indice={indice} alBisogno />
+          </div>
           <SelettoreVarianti
-            sezione="Checklist"
+            sezione="Barra"
             posizione="alto"
             varianti={[
-              { id: "a", nome: "Lista" },
-              { id: "b", nome: "Schede" },
-              { id: "c", nome: "Tabella" },
+              { id: "a", nome: "In basso" },
+              { id: "b", nome: "Pillola" },
+              { id: "c", nome: "Al bisogno" },
             ]}
           />
         </div>

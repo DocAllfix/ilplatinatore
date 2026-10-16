@@ -123,6 +123,12 @@ body {
   to { transform: scale(1); }
 }
 
+/* il pannello della pillola si apre dal basso: scala e trasparenza, mai le dimensioni */
+@keyframes apri {
+  from { transform: scale(0.96) translateY(6px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
 }
