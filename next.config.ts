@@ -26,7 +26,13 @@ const nextConfig: NextConfig = {
 
   // Processi paralleli del build. Su Vercel il valore predefinito; in locale si abbassa con
   // BUILD_CPUS quando la macchina e' carica (sette processi esauriscono la memoria virtuale).
-  ...(process.env.BUILD_CPUS ? { experimental: { cpus: Number(process.env.BUILD_CPUS) } } : {}),
+  experimental: {
+    ...(process.env.BUILD_CPUS ? { cpus: Number(process.env.BUILD_CPUS) } : {}),
+    // Cache di Turbopack fra un build e l'altro SPENTA: il 16/10/2026 Vercel ha pubblicato il CSS
+    // del build precedente (stesso nome di file, contenuto vecchio) dopo una modifica a
+    // globals.css. Un build piu' lento e' meglio di un sito che pubblica stili vecchi in silenzio.
+    turbopackFileSystemCacheForBuild: false,
+  },
 
   // Tailwind v4 passa dal loader di Turbopack (impostazione del modello di create-next-app 16.4)
   turbopack: {
