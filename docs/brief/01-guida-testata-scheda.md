@@ -43,3 +43,11 @@ Dalla prima tabella della guida (`Requisito | Dettaglio`, 14 voci), letta dall'H
 ## 10. Domande aperte
 - Spazio pubblicitario «prima del contenuto» (Header Banner di HB Agency): oggi sta sopra tutto; nel piano sta **dopo** la scheda. Da confermare con HB Agency.
 - La scheda va tolta dal corpo dell'articolo dove si ripete (oggi è la prima tabella): nella prova la nascondo dal corpo solo se è identica.
+
+## Giro 2 (16/10/2026)
+
+Scelta dell'utente sul giro 1: la **copertina della C** (titolo sull'immagine, blocco Acido inclinato) con la **griglia di 4 dati della A** e «Tutti i dati» che si apre sotto. Tre varianti di questa combinazione, che differiscono per come la griglia si lega alla copertina:
+- **A, «Pannello»**: riquadro separato sotto la copertina;
+- **B, «Sovrapposta»**: il riquadro sale sul fondo dell'immagine (copertina più alta, ombra «Sospeso»);
+- **C, «Fascia»**: fascia piena a tutta larghezza attaccata alla copertina, linee sottili fra i dati.
+In tutte: ore del platino sul blocco Acido, difficoltà con tacche, partite, trofei; mancabile con icona e testo; nota sulle stime.

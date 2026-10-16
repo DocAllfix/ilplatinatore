@@ -81,7 +81,7 @@ export function TestataGuida({ a }: { a: Articolo }) {
 }
 
 /** Variante C: copertina a tutta larghezza, titolo sopra l'immagine scurita. */
-export function TestataCopertina({ a }: { a: Articolo }) {
+export function TestataCopertina({ a, alta = false }: { a: Articolo; alta?: boolean }) {
   if (!a.immagine) {
     return (
       <div className="-mx-4 bg-superficie-alta px-4 pb-5 pt-1">
@@ -94,7 +94,7 @@ export function TestataCopertina({ a }: { a: Articolo }) {
       <div className="px-4">
         <Briciole a={a} />
       </div>
-      <div className="relative isolate flex min-h-[18rem] flex-col justify-end overflow-hidden px-4 pb-5 pt-16">
+      <div className={`relative isolate flex flex-col justify-end overflow-hidden px-4 pt-16 ${alta ? "min-h-[21rem] pb-16" : "min-h-[18rem] pb-5"}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={a.immagine.src}

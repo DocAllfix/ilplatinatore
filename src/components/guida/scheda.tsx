@@ -92,14 +92,31 @@ function Dato({ etichetta, children }: { etichetta: string; children: React.Reac
   );
 }
 
-/** A, «Pannello»: griglia di dati grandi, poi trofei e dettagli. */
-export function SchedaPannello({ s }: { s: Scheda }) {
+/** Il valore principale (ore per il platino) sul blocco Acido inclinato, firma dei post social. */
+function BloccoAcido({ children }: { children: React.ReactNode }) {
   return (
-    <section aria-label="Il platino in breve" className="rounded-xl border border-linea bg-superficie p-4">
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-5">
-        {s.difficolta && (
+    <span className="cifre inline-block -skew-x-6 bg-azione px-2.5 py-1 text-[1.625rem] font-bold leading-none text-su-azione">
+      {children}
+    </span>
+  );
+}
+
+/** La griglia di quattro dati (dalla variante A), comune alle tre varianti della copertina. */
+function Griglia4({ s, linee = false }: { s: Scheda; linee?: boolean }) {
+  const cella = linee ? "border-linea p-3 [&:nth-child(odd)]:border-r [&:nth-child(-n+2)]:border-b" : "";
+  return (
+    <dl className={`grid grid-cols-2 ${linee ? "" : "gap-x-4 gap-y-5"}`}>
+      {s.tempo && (
+        <div className={cella}>
+          <Dato etichetta="Platino in">
+            <BloccoAcido>{s.tempo}</BloccoAcido>
+          </Dato>
+        </div>
+      )}
+      {s.difficolta && (
+        <div className={cella}>
           <Dato etichetta="Difficoltà">
-            <span className="cifre text-[1.75rem] font-bold leading-none">
+            <span className="cifre text-[1.625rem] font-bold leading-none">
               {s.difficolta.voto}
               <span className="text-base font-medium text-tenue">/{s.difficolta.massimo}</span>
             </span>
@@ -107,102 +124,69 @@ export function SchedaPannello({ s }: { s: Scheda }) {
               <Tacche {...s.difficolta} />
             </span>
           </Dato>
-        )}
-        {s.tempo && (
-          <Dato etichetta="Platino in">
-            <span className="cifre text-[1.75rem] font-bold leading-none">{s.tempo.replace(/\s*ore$/, "")}</span>
-            <span className="ml-1 text-base text-tenue">{/ore$/.test(s.tempo) ? "ore" : ""}</span>
-          </Dato>
-        )}
-        {s.partite && (
-          <Dato etichetta="Partite">
-            <span className="cifre text-[1.75rem] font-bold leading-none">{s.partite}</span>
-          </Dato>
-        )}
-        {s.trofei?.totale !== undefined && (
-          <Dato etichetta="Trofei">
-            <span className="cifre text-[1.75rem] font-bold leading-none">{s.trofei.totale}</span>
-          </Dato>
-        )}
-      </dl>
-      <div className="mt-5">
-        <Mancabili s={s} />
-      </div>
-      <TuttiIDati s={s} />
-      <p className="mt-2 text-xs text-tenue">{NOTA}</p>
-    </section>
-  );
-}
-
-/** B, «Striscia»: tre numeri in una riga, il mancabile in evidenza, il resto in un pannello. */
-export function SchedaStriscia({ s }: { s: Scheda }) {
-  const voci = [
-    s.difficolta && { e: "Difficoltà", v: `${s.difficolta.voto}/${s.difficolta.massimo}`, tacche: true },
-    s.tempo && { e: "Platino", v: s.tempo },
-    s.partite && { e: "Partite", v: s.partite },
-  ].filter(Boolean) as Array<{ e: string; v: string; tacche?: boolean }>;
-  return (
-    <section aria-label="Il platino in breve" className="border-y border-linea py-3">
-      <dl className="grid grid-cols-3 divide-x divide-linea">
-        {voci.map((x) => (
-          <div key={x.e} className="px-3 first:pl-0">
-            <dt className="text-xs font-semibold uppercase tracking-[0.04em] text-tenue">{x.e}</dt>
-            <dd className="cifre mt-1 text-lg font-bold leading-tight">{x.v}</dd>
-            {x.tacche && s.difficolta && (
-              <dd className="mt-1.5">
-                <Tacche {...s.difficolta} piccole />
-              </dd>
-            )}
-          </div>
-        ))}
-      </dl>
-      {s.mancabili && (
-        <div className="mt-3 rounded-lg bg-superficie px-3 py-2.5">
-          <Mancabili s={s} />
         </div>
       )}
-      <TuttiIDati s={s} apertoDa="Altri dati del platino" />
-    </section>
+      {s.partite && (
+        <div className={cella}>
+          <Dato etichetta="Partite">
+            <span className="cifre text-[1.625rem] font-bold leading-none">{s.partite}</span>
+          </Dato>
+        </div>
+      )}
+      {s.trofei?.totale !== undefined && (
+        <div className={cella}>
+          <Dato etichetta="Trofei">
+            <span className="cifre text-[1.625rem] font-bold leading-none">{s.trofei.totale}</span>
+          </Dato>
+        </div>
+      )}
+    </dl>
   );
 }
 
-/** C, «Copertina»: la fascia sotto la copertina, con il dato principale su blocco Acido inclinato. */
-export function SchedaCopertina({ s }: { s: Scheda }) {
+function Piede({ s }: { s: Scheda }) {
   return (
-    <section aria-label="Il platino in breve" className="bg-superficie px-4 pb-4 pt-5">
-      <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
-        {s.tempo && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.04em] text-tenue">Platino in</p>
-            <p className="mt-1.5">
-              <span className="cifre inline-block -skew-x-6 bg-azione px-3 py-1 text-[1.75rem] font-bold leading-none text-su-azione">
-                {s.tempo}
-              </span>
-            </p>
-          </div>
-        )}
-        {s.difficolta && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.04em] text-tenue">Difficoltà</p>
-            <p className="cifre mt-1.5 text-xl font-bold leading-none">
-              {s.difficolta.voto}/{s.difficolta.massimo}
-            </p>
-            <span className="mt-1.5 block w-24">
-              <Tacche {...s.difficolta} piccole />
-            </span>
-          </div>
-        )}
-        {s.partite && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.04em] text-tenue">Partite</p>
-            <p className="cifre mt-1.5 text-xl font-bold leading-none">{s.partite}</p>
-          </div>
-        )}
-      </div>
+    <>
       <div className="mt-4">
         <Mancabili s={s} />
       </div>
       <TuttiIDati s={s} />
+      <p className="mt-2 text-xs text-tenue">{NOTA}</p>
+    </>
+  );
+}
+
+/** A, «Pannello»: sotto la copertina, la griglia in un riquadro separato. */
+export function SchedaPannello({ s }: { s: Scheda }) {
+  return (
+    <section aria-label="Il platino in breve" className="mt-4 rounded-xl border border-linea bg-superficie p-4">
+      <Griglia4 s={s} />
+      <Piede s={s} />
+    </section>
+  );
+}
+
+/** B, «Sovrapposta»: il riquadro sale sul fondo della copertina, come una scheda appoggiata. */
+export function SchedaSovrapposta({ s }: { s: Scheda }) {
+  return (
+    <section
+      aria-label="Il platino in breve"
+      className="relative z-10 -mt-12 rounded-xl border border-linea bg-superficie-alta p-4 shadow-[0_8px_24px_oklch(0%_0_0/0.45)]"
+    >
+      <Griglia4 s={s} />
+      <Piede s={s} />
+    </section>
+  );
+}
+
+/** C, «Fascia»: la griglia a tutta larghezza attaccata alla copertina, con linee sottili fra i dati. */
+export function SchedaFascia({ s }: { s: Scheda }) {
+  return (
+    <section aria-label="Il platino in breve" className="-mx-4 border-b border-linea bg-superficie px-4 pb-4 pt-1">
+      <div className="-mx-1">
+        <Griglia4 s={s} linee />
+      </div>
+      <Piede s={s} />
     </section>
   );
 }

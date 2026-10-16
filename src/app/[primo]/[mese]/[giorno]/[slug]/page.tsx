@@ -5,7 +5,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { SchedaCopertina, SchedaPannello, SchedaStriscia } from "@/components/guida/scheda";
+import { SchedaFascia, SchedaPannello, SchedaSovrapposta } from "@/components/guida/scheda";
 import { TestataCopertina, TestataGuida } from "@/components/guida/testata";
 import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
 import { SpazioPubblicitario } from "@/components/pubblicita";
@@ -70,29 +70,23 @@ export default async function PaginaArticolo({ params }: Parametri) {
         <div id="lab" data-v="a">
           <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]),#lab[data-v="c"] [data-variant]:not([data-variant="c"]){display:none}`}</style>
           <div data-variant="a">
-            <TestataGuida a={a} />
-            <div className="mt-5">
-              <SchedaPannello s={scheda} />
-            </div>
+            <TestataCopertina a={a} />
+            <SchedaPannello s={scheda} />
           </div>
           <div data-variant="b">
-            <TestataGuida a={a} />
-            <div className="mt-4">
-              <SchedaStriscia s={scheda} />
-            </div>
+            <TestataCopertina a={a} alta />
+            <SchedaSovrapposta s={scheda} />
           </div>
           <div data-variant="c">
             <TestataCopertina a={a} />
-            <div className="-mx-4">
-              <SchedaCopertina s={scheda} />
-            </div>
+            <SchedaFascia s={scheda} />
           </div>
           <SelettoreVarianti
             sezione="Scheda"
             varianti={[
               { id: "a", nome: "Pannello" },
-              { id: "b", nome: "Striscia" },
-              { id: "c", nome: "Copertina" },
+              { id: "b", nome: "Sovrapposta" },
+              { id: "c", nome: "Fascia" },
             ]}
           />
         </div>
