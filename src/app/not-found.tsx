@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = { title: "Pagina non trovata - 🎮 Il Platinatore" };
 
 export default function NonTrovata() {
   return (
