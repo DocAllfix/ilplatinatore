@@ -46,6 +46,14 @@ fi
 
 chmod +x backup.sh restore-test.sh 2>/dev/null || true
 
+# Solo i segreti, senza avviare Caddy: serve per importare il sito mentre il DNS si propaga.
+# Avviare Caddy prima vorrebbe dire richieste di certificato fallite (Let's Encrypt ne tollera
+# poche all'ora).
+if [ "${SOLO_SEGRETI:-0}" = "1" ]; then
+  echo "[installa] segreti pronti, stack non avviato (SOLO_SEGRETI=1)"
+  exit 0
+fi
+
 # --- 2. avvio --------------------------------------------------------------------------
 docker compose up -d
 echo "[installa] attendo il certificato TLS"
