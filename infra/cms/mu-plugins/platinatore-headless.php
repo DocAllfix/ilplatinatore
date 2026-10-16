@@ -34,13 +34,24 @@ function platinatore_avvisa_il_sito($post)
     if (!defined('PLATINATORE_SITO_PUBBLICO') || !defined('PLATINATORE_REVALIDATE_TOKEN')) {
         return;
     }
+    // una volta sola per articolo e per richiesta: un salvataggio via REST fa scattare sia il cambio
+    // di stato sia rest_after_insert_post
+    static $avvisati = array();
+    if (isset($avvisati[$post->ID])) {
+        return;
+    }
+    $avvisati[$post->ID] = true;
 
     $tag = wp_get_post_terms($post->ID, 'post_tag', array('fields' => 'slugs'));
     $categorie = wp_get_post_terms($post->ID, 'category', array('fields' => 'slugs'));
 
-    wp_remote_post(rtrim(PLATINATORE_SITO_PUBBLICO, '/') . '/api/revalidate/', array(
-        'timeout'  => 8,
-        'blocking' => false, // chi pubblica non aspetta il sito. Da wp-cli quindi NON parte.
+    // BLOCCANTE, con tempo massimo breve. Il riferimento usava `blocking => false`, ma con HTTPS
+    // PHP puo' chiudere la connessione prima che la richiesta parta davvero: collaudato il
+    // 16/10/2026, una modifica via REST non arrivava al sito. Bloccante costa a chi pubblica circa
+    // mezzo secondo e funziona sempre, anche da wp-cli e dal cron degli articoli programmati.
+    $risposta = wp_remote_post(rtrim(PLATINATORE_SITO_PUBBLICO, '/') . '/api/revalidate/', array(
+        'timeout'  => 3,
+        'blocking' => true,
         'headers'  => array(
             'Content-Type' => 'application/json',
             'x-cms-token'  => PLATINATORE_REVALIDATE_TOKEN,
@@ -52,14 +63,44 @@ function platinatore_avvisa_il_sito($post)
             'categorie' => is_wp_error($categorie) ? array() : $categorie,
         )),
     ));
+    // un webhook che fallisce non deve restare muto: finisce nel registro di PHP del contenitore
+    if (is_wp_error($risposta) || wp_remote_retrieve_response_code($risposta) !== 200) {
+        error_log('[platinatore] webhook non riuscito per il post ' . $post->ID . ': ' .
+            (is_wp_error($risposta) ? $risposta->get_error_message() : wp_remote_retrieve_response_code($risposta)));
+    }
 }
 
 // pubblicazione, modifica, ritorno in bozza, cestino: ognuno cambia cio' che il sito mostra
+// Nelle richieste REST (wpvibe, editor a blocchi) il cambio di stato scatta PRIMA che i campi
+// (meta) siano salvati: avvisare qui farebbe rigenerare il sito con i dati vecchi (collaudato il
+// 16/10/2026). Nella REST l'articolo va in coda e l'avviso parte da rest_after_insert_post, che
+// WordPress lancia dopo aver salvato tutto. Fuori dalla REST (dashboard classica, cron, wp-cli)
+// si avvisa subito.
+$GLOBALS['platinatore_coda'] = array();
+
 add_action('transition_post_status', function ($nuovo, $vecchio, $post) {
-    if ($post->post_type === 'post' && ($nuovo === 'publish' || $vecchio === 'publish')) {
-        platinatore_avvisa_il_sito($post);
+    if ($post->post_type !== 'post' || ($nuovo !== 'publish' && $vecchio !== 'publish')) {
+        return;
     }
+    if (defined('REST_REQUEST') && REST_REQUEST) {
+        $GLOBALS['platinatore_coda'][$post->ID] = true;
+        return;
+    }
+    platinatore_avvisa_il_sito($post);
 }, 10, 3);
+
+// Una modifica che tocca SOLO i campi (meta) via REST, come fa wpvibe con la scheda della guida o
+// l'editor a blocchi con i riquadri dei campi, non cambia lo stato dell'articolo: senza questo
+// aggancio il sito non lo saprebbe mai (collaudato il 16/10/2026).
+add_action('rest_after_insert_post', function ($post) {
+    if (!($post instanceof WP_Post) || $post->post_type !== 'post') {
+        return;
+    }
+    // pubblicato (anche se sono cambiati solo i campi) oppure appena uscito dalla pubblicazione
+    if ($post->post_status === 'publish' || isset($GLOBALS['platinatore_coda'][$post->ID])) {
+        platinatore_avvisa_il_sito(get_post($post->ID));
+    }
+});
 
 add_action('trashed_post', function ($id) {
     $post = get_post($id);
