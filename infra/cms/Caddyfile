@@ -1,0 +1,56 @@
+# Caddy davanti al WordPress headless. TLS automatico (Let's Encrypt).
+#
+# IL BLOCCO PIU' IMPORTANTE E' `X-Robots-Tag: noindex`. Senza, Google indicizza il CMS e si
+# ritrova due copie di ogni articolo, la nostra e quella del sottodominio.
+#
+# Eccezione voluta: le IMMAGINI. Il sito pubblico le serve passando per il suo dominio; se
+# l'header noindex arrivasse fin li', sul dominio vero sparirebbero da Google Immagini. Sul CMS
+# nessuno le linka (il frontend riscrive ogni URL sul dominio pubblico), quindi il rischio di
+# lasciarle senza noindex qui e' basso. Il sito di prova su vercel.app mette il suo noindex.
+
+{$DOMINIO_CMS} {
+	@immagini path /wp-content/uploads/*
+
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+	header @immagini Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
+	@non_immagini not path /wp-content/uploads/*
+	header @non_immagini X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
+
+	# La dashboard e il login chiedono una password PRIMA di WordPress: i tentativi automatici
+	# sbattono su Caddy. Non un filtro per IP: le connessioni di casa cambiano indirizzo.
+	# La REST (/wp-json) resta aperta: la leggono il sito al build e wpvibe per pubblicare.
+	@amministrazione path /wp-admin* /wp-login.php
+	basic_auth @amministrazione {
+		{$ADMIN_UTENTE} {$ADMIN_HASH}
+	}
+
+	# XML-RPC non serve a un CMS headless ed e' il bersaglio piu' battuto di WordPress
+	respond /xmlrpc.php 403
+
+	@vietati path /wp-config.php /.env /debug.log /readme.html /license.txt /wp-content/debug.log
+	respond @vietati 403
+
+	# Niente sitemap ne' llms.txt del CMS: elencherebbero gli articoli sul dominio sbagliato.
+	# Il mu-plugin le spegne gia', ma un aggiornamento di Yoast le ha riaccese una volta.
+	@sitemap path /wp-sitemap*.xml /sitemap*.xml /sitemap_index.xml /*-sitemap.xml /*-sitemap*.xml /sitemap.xsl /main-sitemap.xsl /llms.txt
+	respond @sitemap 404
+
+	request_body {
+		max_size 64MB
+	}
+
+	reverse_proxy wp:80
+
+	encode zstd gzip
+	log {
+		output file /data/access.log {
+			roll_size 20MiB
+			roll_keep 5
+		}
+	}
+}

@@ -1,0 +1,105 @@
+# WordPress headless del Platinatore, su Hetzner CAX11 (ARM). Tutte le immagini esistono per arm64.
+# Adattato da infra/blog-cms di EvalisDeck ed Evalis Academy: qui c'e' un sito solo.
+#
+# Differenze dal riferimento, tutte volute:
+# - WordPress 7.1.3, la stessa versione del sito su Aruba: un database gia' aggiornato a 7.x non
+#   va mai aperto con un core piu' vecchio.
+# - prefisso delle tabelle `wpsd_`, quello del database importato: con `wp_` WordPress vedrebbe un
+#   database vuoto e proporrebbe una nuova installazione.
+# - limiti di caricamento alzati (php/caricamenti.ini): chi scrive carica immagini fino a 35 MB.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMINIO_CMS: ${DOMINIO_CMS:?serve DOMINIO_CMS}
+      ADMIN_UTENTE: ${ADMIN_UTENTE:?serve ADMIN_UTENTE}
+      ADMIN_HASH: ${ADMIN_HASH:?serve ADMIN_HASH}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data       # certificati TLS: perderli significa rifare tutti i rilasci
+      - caddy-config:/config
+    depends_on:
+      - wp
+    networks: [rete-cms]
+
+  db:
+    image: mariadb:11.8
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?serve DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: wp_platinatore
+      MARIADB_USER: wpuser
+      MARIADB_PASSWORD: ${DB_PASSWORD:?serve DB_PASSWORD}
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_520_ci"]
+    volumes:
+      - db-data:/var/lib/mysql
+    networks: [rete-cms]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  wp:
+    image: wordpress:7.1.3-php8.3-apache
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment: &wp-env
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wp_platinatore
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_TABLE_PREFIX: wpsd_
+      # Le costanti che il mu-plugin legge. Il sito pubblico e' quello di prova su vercel.app
+      # finche' non si passa il dominio.
+      WORDPRESS_CONFIG_EXTRA: |
+        define('PLATINATORE_SITO_PUBBLICO', '${SITO_PUBBLICO:?serve SITO_PUBBLICO}');
+        define('PLATINATORE_REVALIDATE_TOKEN', '${WEBHOOK_TOKEN:?serve WEBHOOK_TOKEN}');
+        define('PLATINATORE_PREVIEW_TOKEN', '${PREVIEW_TOKEN:?serve PREVIEW_TOKEN}');
+        /* dietro Caddy: senza questo WordPress genera URL in http e i redirect si avvitano */
+        if (isset($$_SERVER['HTTP_X_FORWARDED_PROTO']) && $$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+          $$_SERVER['HTTPS'] = 'on';
+        }
+        define('DISALLOW_FILE_EDIT', true);   /* niente editor di temi e plugin dalla dashboard */
+        define('WP_AUTO_UPDATE_CORE', 'minor');
+        define('WP_MEMORY_LIMIT', '256M');
+    volumes:
+      - wp-data:/var/www/html
+      # i nostri innesti: caricati sempre, non disattivabili per sbaglio dalla dashboard
+      - ./mu-plugins:/var/www/html/wp-content/mu-plugins:ro
+      - ./php/caricamenti.ini:/usr/local/etc/php/conf.d/caricamenti.ini:ro
+    networks: [rete-cms]
+
+  # wp-cli per import e manutenzione. Non gira sempre: `docker compose run --rm cli wp ...`.
+  # Stesse variabili del servizio WordPress, altrimenti non trova il database (trappola del
+  # riferimento). Ricordare che da qui il webhook NON parte.
+  cli:
+    image: wordpress:cli-php8.3
+    profiles: ["strumenti"]
+    user: "33:33"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment: *wp-env
+    volumes:
+      - wp-data:/var/www/html
+      - ./mu-plugins:/var/www/html/wp-content/mu-plugins:ro
+      - ./import:/import:ro
+    networks: [rete-cms]
+
+networks:
+  rete-cms:
+    driver: bridge
+
+volumes:
+  caddy-data:
+  caddy-config:
+  db-data:
+  wp-data:
