@@ -38,7 +38,7 @@ function platinatore_avvisa_il_sito($post)
     $tag = wp_get_post_terms($post->ID, 'post_tag', array('fields' => 'slugs'));
     $categorie = wp_get_post_terms($post->ID, 'category', array('fields' => 'slugs'));
 
-    wp_remote_post(rtrim(PLATINATORE_SITO_PUBBLICO, '/') . '/api/revalidate', array(
+    wp_remote_post(rtrim(PLATINATORE_SITO_PUBBLICO, '/') . '/api/revalidate/', array(
         'timeout'  => 8,
         'blocking' => false, // chi pubblica non aspetta il sito. Da wp-cli quindi NON parte.
         'headers'  => array(
@@ -144,7 +144,7 @@ add_filter('preview_post_link', function ($link, $post) {
     }
     return add_query_arg(
         array('token' => PLATINATORE_PREVIEW_TOKEN, 'id' => $post->ID),
-        rtrim(PLATINATORE_SITO_PUBBLICO, '/') . '/api/preview'
+        rtrim(PLATINATORE_SITO_PUBBLICO, '/') . '/api/preview/'
     );
 }, 10, 2);
 
