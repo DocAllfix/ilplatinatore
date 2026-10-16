@@ -1,8 +1,8 @@
 "use client";
 
 // Tabella dei mancanti (PDF 06, piano 03) in testa agli articoli dei collezionabili. Stesse spunte,
-// stessa memoria e stessa pillola della checklist dei trofei. Tre varianti in prova sull'anteprima:
-// A «Per area», B «Tabella», C «Aree a schede».
+// stessa memoria e stessa pillola della checklist dei trofei. Variante scelta: B «Tabella»
+// (17/10/2026).
 
 import { ArrowDownIcon, CheckIcon, EyeIcon } from "@phosphor-icons/react/ssr";
 import { useState } from "react";
@@ -11,7 +11,6 @@ import { Casella } from "./checklist";
 import { useSpunte } from "./spunte";
 
 type Props = { articolo: number; voci: Collezionabile[] };
-export type Variante = "a" | "b" | "c";
 
 const PULSANTE =
   "inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 text-sm font-semibold transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.97]";
@@ -97,65 +96,11 @@ function ComePrenderlo({ ancora }: { ancora: string | null }) {
   );
 }
 
-function Dati({ v, conArea = false }: { v: Collezionabile; conArea?: boolean }) {
-  const parti = [conArea && v.area, v.tipo, v.prerequisito && `serve: ${v.prerequisito}`].filter(Boolean);
-  return <span className="block text-sm text-tenue">{parti.join(" · ")}</span>;
-}
-
-/** Una riga da spuntare: tutta la riga e' il bersaglio, il link alla soluzione sta sopra. */
-function Riga({ v, articolo, spoiler, conArea, pre }: { v: Collezionabile; articolo: number; spoiler: boolean; conArea?: boolean; pre: string }) {
-  const { fatti, cambia } = useSpunte(articolo);
-  const fatto = fatti.has(v.id);
-  return (
-    <li data-trofeo={v.id} data-fatto={fatto} className="flex items-center gap-2 border-b border-linea scroll-mt-28">
-      <label
-        htmlFor={`${pre}-${v.id}`}
-        className={`-ml-2 flex min-h-11 min-w-0 flex-1 cursor-pointer gap-3 rounded-lg py-3 pl-2 transition-[opacity,background-color] duration-150 [@media(hover:hover)]:hover:bg-superficie ${fatto ? "opacity-55" : ""}`}
-      >
-        <Casella id={`${pre}-${v.id}`} fatto={fatto} onCambia={() => cambia(v.id)} etichetta={v.spoiler && !spoiler ? `Oggetto nascosto, ${v.tipo}` : v.oggetto} />
-        <span className="min-w-0">
-          <Nome v={v} spoiler={spoiler} />
-          <Dati v={v} conArea={conArea} />
-        </span>
-      </label>
-      <ComePrenderlo ancora={v.ancora} />
-    </li>
-  );
-}
-
 function Vuoto({ children }: { children: React.ReactNode }) {
   return <p className="border-b border-linea py-4 text-sm text-tenue">{children}</p>;
 }
 
-/** A: gruppi per area, apribili e chiudibili. */
-function PerArea({ articolo, voci, spoiler, visibile }: Props & { spoiler: boolean; visibile: (v: Collezionabile) => boolean }) {
-  const { fatti } = useSpunte(articolo);
-  return (
-    <div className="flex flex-col gap-2">
-      {distinti(voci, (v) => v.area).map((area) => {
-        const tutte = voci.filter((v) => v.area === area);
-        const righe = tutte.filter(visibile);
-        const k = tutte.filter((v) => fatti.has(v.id)).length;
-        return (
-          <details key={area} open className="group rounded-lg border border-linea bg-superficie px-3">
-            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 font-semibold">
-              <span>{area}</span>
-              <span className={`text-sm ${k === tutte.length ? "text-testo" : "text-tenue"}`}>
-                {k === tutte.length ? <CheckIcon weight="bold" className="mr-1 inline size-3.5 text-riempimento" aria-hidden="true" /> : null}
-                <Conteggio n={k} di={tutte.length} chiave={`${area}-${k}`} />
-              </span>
-            </summary>
-            <ul className="border-t border-linea [&>li:last-child]:border-b-0">
-              {righe.length ? righe.map((v) => <Riga key={v.id} v={v} articolo={articolo} spoiler={spoiler} pre="ka" />) : <Vuoto>Hai preso tutto in quest&apos;area.</Vuoto>}
-            </ul>
-          </details>
-        );
-      })}
-    </div>
-  );
-}
-
-/** B: una tabella vera (Stato, Oggetto, Area, Tipo); da telefono le righe si impilano. */
+/** Una tabella vera (Stato, Oggetto, Area, Tipo); da telefono le righe si impilano. */
 function Tabella({ articolo, voci, spoiler }: Props & { spoiler: boolean }) {
   const { fatti, cambia } = useSpunte(articolo);
   if (!voci.length) return <Vuoto>Nessun oggetto da mostrare con questi filtri.</Vuoto>;
@@ -205,9 +150,8 @@ function Tabella({ articolo, voci, spoiler }: Props & { spoiler: boolean }) {
   );
 }
 
-/** Fila di pulsanti per le aree, scorrevole da telefono. In C e' la struttura stessa. */
-function FiltroAree({ voci, area, scegli, conConteggi, articolo }: Props & { area: string | null; scegli: (a: string | null) => void; conConteggi?: boolean }) {
-  const { fatti } = useSpunte(articolo);
+/** Fila di pulsanti per le aree, scorrevole da telefono. */
+function FiltroAree({ voci, area, scegli }: Pick<Props, "voci"> & { area: string | null; scegli: (a: string | null) => void }) {
   const aree = distinti(voci, (v) => v.area);
   return (
     <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:px-0" role="group" aria-label="Filtra per area">
@@ -215,36 +159,27 @@ function FiltroAree({ voci, area, scegli, conConteggi, articolo }: Props & { are
         <button type="button" onClick={() => scegli(null)} aria-pressed={area === null} className={pulsante(area === null)}>
           Tutte le aree
         </button>
-        {aree.map((a) => {
-          const tutte = voci.filter((v) => v.area === a);
-          const k = tutte.filter((v) => fatti.has(v.id)).length;
-          return (
-            <button key={a} type="button" onClick={() => scegli(a)} aria-pressed={area === a} className={pulsante(area === a)}>
-              {a}
-              {conConteggi && (
-                <span className={`cifre text-xs ${area === a ? "" : "text-tenue"}`}>
-                  {k}/{tutte.length}
-                </span>
-              )}
-            </button>
-          );
-        })}
+        {aree.map((a) => (
+          <button key={a} type="button" onClick={() => scegli(a)} aria-pressed={area === a} className={pulsante(area === a)}>
+            {a}
+          </button>
+        ))}
       </div>
     </div>
   );
 }
 
-export function TabellaCollezionabili({ articolo, voci, variante }: Props & { variante: Variante }) {
+export function TabellaCollezionabili({ articolo, voci }: Props) {
   const { fatti, filtro, impostaFiltro } = useSpunte(articolo);
   const [area, setArea] = useState<string | null>(null);
   const [spoiler, setSpoiler] = useState(false);
   const ciSonoSpoiler = voci.some((v) => v.spoiler);
-  const visibile = (v: Collezionabile) => !(filtro && fatti.has(v.id)) && (variante === "a" || !area || v.area === area);
+  const visibile = (v: Collezionabile) => !(filtro && fatti.has(v.id)) && (!area || v.area === area);
   const righe = voci.filter(visibile);
 
   return (
-    <section id={variante === "a" ? "collezionabili" : `collezionabili-${variante}`} data-collezionabili aria-labelledby={`titolo-collezionabili-${variante}`} className="my-6 scroll-mt-4 rounded-xl border border-linea p-4 md:p-5">
-      <h2 id={`titolo-collezionabili-${variante}`} className="mb-3 text-xs font-semibold uppercase tracking-[0.06em] text-tenue">
+    <section id="collezionabili" data-collezionabili aria-labelledby="titolo-collezionabili" className="my-6 scroll-mt-4 rounded-xl border border-linea p-4 md:p-5">
+      <h2 id="titolo-collezionabili" className="mb-3 text-xs font-semibold uppercase tracking-[0.06em] text-tenue">
         Cosa ti manca in questo capitolo
       </h2>
       <Riepilogo voci={voci} fatti={fatti} />
@@ -260,24 +195,12 @@ export function TabellaCollezionabili({ articolo, voci, variante }: Props & { va
           </button>
         )}
       </div>
-      {variante !== "a" && (
-        <div className="mt-3">
-          <FiltroAree articolo={articolo} voci={voci} area={area} scegli={setArea} conConteggi={variante === "c"} />
-        </div>
-      )}
+      <div className="mt-3">
+        <FiltroAree voci={voci} area={area} scegli={setArea} />
+      </div>
 
       <div className="mt-4">
-        {variante === "a" && <PerArea articolo={articolo} voci={voci} spoiler={spoiler} visibile={visibile} />}
-        {variante === "b" && <Tabella articolo={articolo} voci={righe} spoiler={spoiler} />}
-        {variante === "c" && (
-          <ul className="border-t border-linea">
-            {righe.length ? (
-              righe.map((v) => <Riga key={v.id} v={v} articolo={articolo} spoiler={spoiler} conArea={!area} pre="kc" />)
-            ) : (
-              <Vuoto>{filtro ? "Hai preso tutto in quest'area." : "Nessun oggetto in quest'area."}</Vuoto>
-            )}
-          </ul>
-        )}
+        <Tabella articolo={articolo} voci={righe} spoiler={spoiler} />
       </div>
     </section>
   );

@@ -1,6 +1,6 @@
 # Piano di design 03: tabella dei collezionabili mancanti e correlati contestuali
 
-Skill: impeccable `shape`. Stato: **confermato** (16/10/2026), varianti in prova sull'anteprima. Ancore: `PRODUCT.md`, `DESIGN.md`, PDF sezioni 06, 07 e 10.
+Skill: impeccable `shape`. Stato: **chiuso** (17/10/2026), scelte in fondo. Ancore: `PRODUCT.md`, `DESIGN.md`, PDF sezioni 06, 07 e 10.
 
 ## 1. Che cosa
 - **Tabella dei mancanti (PDF 06)** in testa agli articoli «Collezionabili Capitolo 1, 2, 3» di Valor Mortis: tutti gli oggetti del capitolo, da spuntare, con area, tipo, eventuale prerequisito e il link alla sezione dell'articolo che spiega come prenderli.
@@ -39,3 +39,9 @@ Come la checklist: spunta su tutta la riga, contatori che scattano, memoria nel 
 ## 9. Domande aperte
 - Spoiler: quali oggetti sono spoiler lo decide la redazione (campo sì/no); nel prototipo nessuno.
 - Le misure d'uso (spunte, passaggi verso i correlati) si attivano in Fase 5.
+
+## Scelte (17/10/2026)
+
+- Tabella dei mancanti: **B, «Tabella»** (colonne Stato, Oggetto, Area, Tipo; filtri per area sopra; righe impilate da telefono).
+- Correlati: **C, «Con immagine»** (miniatura della guida di destinazione accanto a titolo e perché).
+- Le frasi del perché restano quelle della bozza, salvo correzioni della redazione nel campo `pl_correlati`.

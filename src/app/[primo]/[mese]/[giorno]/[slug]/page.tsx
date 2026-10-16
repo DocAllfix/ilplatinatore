@@ -15,8 +15,7 @@ import { PillolaProgressione } from "@/components/guida/barra";
 import { TornaSu } from "@/components/torna-su";
 import { ChecklistGruppo, NotaEAzzera } from "@/components/guida/checklist";
 import { TabellaCollezionabili } from "@/components/guida/collezionabili";
-import { CorrelatoConImmagine, CorrelatoRiga, CorrelatoRiquadro } from "@/components/guida/correlato";
-import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
+import { Correlato } from "@/components/guida/correlato";
 import { collezionabiliDaCampi, collocaCorrelati, correlatiDaCampi } from "@/lib/guida/collezionabili";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { jsonLd } from "@/lib/cms/seo";
@@ -105,18 +104,11 @@ export default async function PaginaArticolo({ params }: Parametri) {
       const c = collocati.find((x) => x.id === p.correlato);
       const dest = destinazioni.get(p.correlato);
       if (!c || !dest) return null;
-      // Prova del piano 03 (docs/brief/03-collezionabili-correlati.md): tre varianti, ?v=a|b|c
-      return (
-        <div key={i}>
-          <div data-variant="a"><CorrelatoRiquadro c={c} a={dest} /></div>
-          <div data-variant="b"><CorrelatoRiga c={c} a={dest} /></div>
-          <div data-variant="c"><CorrelatoConImmagine c={c} a={dest} /></div>
-        </div>
-      );
+      // Piano 03 chiuso: variante C «Con immagine»
+      return <Correlato key={i} c={c} a={dest} />;
     }),
   ];
   const idsProgressione = oggetti.length ? oggetti.map((o) => o.id) : idsTrofei;
-  const inProva = oggetti.length > 0 || destinazioni.size > 0;
 
   return (
     <article>
@@ -152,18 +144,11 @@ export default async function PaginaArticolo({ params }: Parametri) {
         />
       )}
 
-      <div id={inProva ? "lab" : undefined} data-v="a" className={idsProgressione.length ? "pb-24" : undefined}>
-        {inProva && (
-          <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]),#lab[data-v="c"] [data-variant]:not([data-variant="c"]){display:none}`}</style>
-        )}
+      <div className={idsProgressione.length ? "pb-24" : undefined}>
         {oggetti.length > 0 && (
-          // PDF 06: la tabella dei mancanti in testa all'articolo
+          // PDF 06: la tabella dei mancanti in testa all'articolo. Piano 03 chiuso: variante B «Tabella»
           <>
-            {(["a", "b", "c"] as const).map((v) => (
-              <div key={v} data-variant={v}>
-                <TabellaCollezionabili articolo={a.id} voci={oggetti} variante={v} />
-              </div>
-            ))}
+            <TabellaCollezionabili articolo={a.id} voci={oggetti} />
             <NotaEAzzera articolo={a.id} ids={oggetti.map((o) => o.id)} />
           </>
         )}
@@ -171,25 +156,6 @@ export default async function PaginaArticolo({ params }: Parametri) {
         {/* Piano 02 chiuso: progressione a «Pillola». Spazio in fondo per non coprire il testo. */}
         {idsProgressione.length > 0 && (
           <PillolaProgressione articolo={a.id} ids={idsProgressione} indice={indice} unita={oggetti.length ? "oggetti" : "trofei"} />
-        )}
-        {inProva && (
-          <SelettoreVarianti
-            sezione={oggetti.length ? "Collezionabili" : "Correlati"}
-            posizione="alto"
-            varianti={
-              oggetti.length
-                ? [
-                    { id: "a", nome: "Per area" },
-                    { id: "b", nome: "Tabella" },
-                    { id: "c", nome: "Aree a schede" },
-                  ]
-                : [
-                    { id: "a", nome: "Riquadro" },
-                    { id: "b", nome: "Riga" },
-                    { id: "c", nome: "Con immagine" },
-                  ]
-            }
-          />
         )}
       </div>
 
