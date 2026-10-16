@@ -46,6 +46,13 @@ fi
 
 chmod +x backup.sh restore-test.sh 2>/dev/null || true
 
+# Cron di WordPress ogni minuto (articoli programmati: la redazione esce ogni 15 minuti). Con una
+# richiesta WEB dentro il contenitore, non con wp-cli: da riga di comando il webhook non parte e il
+# sito non saprebbe che l'articolo e' uscito.
+RIGA_CRON="* * * * * cd $PWD && docker compose exec -T wp curl -s -o /dev/null -m 50 http://localhost/wp-cron.php >/dev/null 2>&1"
+( crontab -l 2>/dev/null | grep -v 'wp-cron.php'; echo "$RIGA_CRON" ) | crontab -
+echo "[installa] cron di WordPress ogni minuto"
+
 # Solo i segreti, senza avviare Caddy: serve per importare il sito mentre il DNS si propaga.
 # Avviare Caddy prima vorrebbe dire richieste di certificato fallite (Let's Encrypt ne tollera
 # poche all'ora).

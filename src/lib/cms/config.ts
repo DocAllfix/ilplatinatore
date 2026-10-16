@@ -25,6 +25,15 @@ export function cmsUrl(): string {
   return senzaBarra(obbligatoria("CMS_URL"));
 }
 
+/**
+ * L'indirizzo del CMS come compare DENTRO i contenuti (link, immagini, schema). Di norma coincide
+ * con CMS_URL. Serve diverso solo per le prove in locale attraverso un tunnel SSH, quando si legge
+ * da http://localhost:xxxx ma i contenuti parlano di https://cms.ilplatinatore.it.
+ */
+export function cmsUrlContenuti(): string {
+  return senzaBarra(process.env.CMS_URL_CONTENUTI || cmsUrl());
+}
+
 export function sitoPubblico(): string {
   return senzaBarra(obbligatoria("SITO_PUBBLICO"));
 }

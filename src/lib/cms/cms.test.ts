@@ -89,3 +89,21 @@ describe("noindex", () => {
     expect(noindex()).toBe(false);
   });
 });
+
+describe("titoli delle pagine d'archivio, come Yoast oggi", async () => {
+  const { titoloPaginato } = await import("./metadati");
+  it("home", () => {
+    expect(titoloPaginato("🎮 Il Platinatore -", 2, 175)).toBe("🎮 Il Platinatore - Pagina 2 di 175 -");
+  });
+  it("tag e categoria", () => {
+    expect(titoloPaginato("Crimson Desert Archivi - 🎮 Il Platinatore", 2, 31)).toBe(
+      "Crimson Desert Archivi - Pagina 2 di 31 - 🎮 Il Platinatore",
+    );
+    expect(titoloPaginato("Guide Archivi - 🎮 Il Platinatore", 3, 158)).toBe("Guide Archivi - Pagina 3 di 158 - 🎮 Il Platinatore");
+  });
+  it("autore", () => {
+    expect(titoloPaginato("ilplatinatore, Autore presso 🎮 Il Platinatore", 2, 175)).toBe(
+      "ilplatinatore, Autore presso 🎮 Il Platinatore - Pagina 2 di 175",
+    );
+  });
+});

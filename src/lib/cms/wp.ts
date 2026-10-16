@@ -6,7 +6,7 @@
 // - Ritentativi per l'inciampo di rete, tre e poi basta.
 // - Cache di Next con l'etichetta "cms": il webhook la invalida a ogni pubblicazione.
 
-import { cmsUrl, credenzialiCms, sitoPubblico, PER_PAGINA } from "./config";
+import { cmsUrl, cmsUrlContenuti, credenzialiCms, sitoPubblico, PER_PAGINA } from "./config";
 import { mappaPost, mappaVoce, decodificaEntita } from "./mappa";
 import { seoDaYoast } from "./seo";
 import type { Articolo, PaginaWP, PostWP, Seo, TermineCompletoWP, VoceArticolo } from "./tipi";
@@ -37,7 +37,9 @@ async function chiamata<T>(percorso: string, opts: { bozza?: boolean } = {}): Pr
           ? { cache: "no-store" as const }
           : { next: { revalidate: RIVALIDA_SECONDI, tags: [ETICHETTA] } }),
       });
-      if (r.status === 404) return null; // risorsa singola inesistente: non e' un guasto
+      // risorsa singola inesistente, oppure non pubblicata (WordPress risponde 401 a chi chiede un
+      // articolo programmato o in bozza senza credenziali): per il visitatore e' un 404, non un guasto
+      if (r.status === 404 || (!opts.bozza && (r.status === 401 || r.status === 403))) return null;
       if (r.status === 400) {
         // WordPress risponde 400 a una pagina oltre l'ultima (rest_post_invalid_page_number)
         const corpo = (await r.json().catch(() => ({}))) as { code?: string };
@@ -58,7 +60,7 @@ async function chiamata<T>(percorso: string, opts: { bozza?: boolean } = {}): Pr
   throw new Error(`CMS irraggiungibile su ${percorso} dopo ${TENTATIVI} tentativi: ${String(ultimo)}`);
 }
 
-const ctx = () => ({ cms: cmsUrl(), pubblico: sitoPubblico() });
+const ctx = () => ({ cms: cmsUrlContenuti(), pubblico: sitoPubblico() });
 const EMBED = "_embed=author,wp:featuredmedia,wp:term";
 
 // --- articoli -------------------------------------------------------------------------------
@@ -168,13 +170,23 @@ export async function tutteLePagine(): Promise<PaginaWP[]> {
 }
 
 /**
- * I metadati che Yoast calcolerebbe per un indirizzo qualsiasi (home, archivi, paginazione).
- * Rotta `yoast/v1/get_head`: da' titoli come «Crimson Desert Archivi - Pagina 2 di 31 - …»
- * identici a quelli di oggi.
+ * Metadati della home: la rotta `yoast/v1/get_head` di Yoast li calcola come sul sito di oggi.
+ * (Per gli archivi quella rotta risponde «pagina non trovata»: li prendiamo dai termini.)
  */
-export async function seoPerIndirizzo(percorso: string): Promise<Seo> {
+export async function seoHome(): Promise<Seo> {
   const r = await chiamata<{ json?: Record<string, unknown> }>(
-    `/yoast/v1/get_head?url=${encodeURIComponent(`${cmsUrl()}${percorso}`)}`,
+    `/yoast/v1/get_head?url=${encodeURIComponent(`${cmsUrlContenuti()}/`)}`,
   );
-  return seoDaYoast(r?.dati?.json, { percorso, ...ctx() });
+  return seoDaYoast(r?.dati?.json, { percorso: "/", ...ctx() });
+}
+
+/** Metadati di un archivio di categoria, tag o autore: Yoast li allega gia' alla REST. */
+export async function seoTermine(tipo: "category" | "tag" | "author", slug: string): Promise<Seo | null> {
+  const risorsa = tipo === "category" ? "categories" : tipo === "tag" ? "tags" : "users";
+  const r = await chiamata<Array<{ yoast_head_json?: Record<string, unknown> }>>(
+    `/wp/v2/${risorsa}?slug=${encodeURIComponent(slug)}`,
+  );
+  const t = r?.dati?.[0];
+  if (!t) return null;
+  return seoDaYoast(t.yoast_head_json, { percorso: `/${tipo}/${slug}/`, ...ctx() });
 }

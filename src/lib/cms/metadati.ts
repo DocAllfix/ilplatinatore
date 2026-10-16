@@ -21,6 +21,31 @@ export function robots(indicizzabile = true): Metadata["robots"] {
   return indicizzabile ? ROBOTS_OGGI : { index: false, follow: true };
 }
 
+/**
+ * Il titolo di una pagina d'archivio successiva alla prima, con la regola di Yoast di oggi:
+ * « - Pagina N di M» prima dell'ultimo « -», oppure in fondo se non c'e'.
+ *   «🎮 Il Platinatore -»                       → «🎮 Il Platinatore - Pagina 2 di 175 -»
+ *   «Crimson Desert Archivi - 🎮 Il Platinatore» → «Crimson Desert Archivi - Pagina 2 di 31 - 🎮 Il Platinatore»
+ *   «ilplatinatore, Autore presso 🎮 Il Platinatore» → «… 🎮 Il Platinatore - Pagina 2 di 175»
+ */
+export function titoloPaginato(titolo: string, n: number, totale: number): string {
+  const inserto = ` - Pagina ${n} di ${totale}`;
+  const i = titolo.lastIndexOf(" -");
+  return i === -1 ? `${titolo}${inserto}` : `${titolo.slice(0, i)}${inserto}${titolo.slice(i)}`;
+}
+
+/** La stessa Seo per la pagina N di un archivio: titolo e canonical della pagina stessa. */
+export function seoPaginata(seo: Seo, n: number, totale: number): Seo {
+  if (n <= 1) return seo;
+  const titolo = seo.title ? titoloPaginato(seo.title, n, totale) : undefined;
+  return {
+    ...seo,
+    title: titolo,
+    ogTitle: seo.ogTitle ? titoloPaginato(seo.ogTitle, n, totale) : titolo,
+    canonical: `${seo.canonical}page/${n}/`,
+  };
+}
+
 export function metadatiDaSeo(seo: Seo, opts: { titoloRiserva?: string; indicizzabile?: boolean } = {}): Metadata {
   return {
     title: { absolute: seo.title ?? opts.titoloRiserva ?? "" },

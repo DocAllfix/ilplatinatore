@@ -70,6 +70,10 @@ services:
         define('DISALLOW_FILE_EDIT', true);   /* niente editor di temi e plugin dalla dashboard */
         define('WP_AUTO_UPDATE_CORE', 'minor');
         define('WP_MEMORY_LIMIT', '256M');
+        /* Un CMS headless non ha visitatori: il cron interno di WordPress, che parte con le visite,
+           lascerebbe gli articoli programmati fermi. Lo fa girare il cron del server ogni minuto,
+           con una richiesta WEB (vedi installa.sh): da wp-cli il webhook verso il sito non parte. */
+        define('DISABLE_WP_CRON', true);
     volumes:
       - wp-data:/var/www/html
       # i nostri innesti: caricati sempre, non disattivabili per sbaglio dalla dashboard

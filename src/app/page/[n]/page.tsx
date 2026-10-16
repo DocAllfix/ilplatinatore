@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { PaginaArchivio } from "@/components/archivio";
-import { metadatiDaSeo } from "@/lib/cms/metadati";
+import { metadatiDaSeo, seoPaginata } from "@/lib/cms/metadati";
 import { numeroPagina } from "@/lib/cms/pagina";
-import { paginaArticoli, seoPerIndirizzo } from "@/lib/cms/wp";
+import { paginaArticoli, seoHome } from "@/lib/cms/wp";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -14,8 +14,9 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps<"/page/[n]">): Promise<Metadata> {
-  const { n } = await params;
-  return metadatiDaSeo(await seoPerIndirizzo(`/page/${n}/`));
+  const pagina = numeroPagina((await params).n) ?? 1;
+  const r = await paginaArticoli({ pagina });
+  return metadatiDaSeo(seoPaginata(await seoHome(), pagina, r?.pagine ?? 1));
 }
 
 export default async function PaginaHome({ params }: PageProps<"/page/[n]">) {

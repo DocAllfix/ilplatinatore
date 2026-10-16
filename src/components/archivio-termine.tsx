@@ -4,9 +4,9 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { PaginaArchivio } from "./archivio";
-import { metadatiDaSeo } from "@/lib/cms/metadati";
+import { metadatiDaSeo, seoPaginata } from "@/lib/cms/metadati";
 import { numeroPagina } from "@/lib/cms/pagina";
-import { paginaArticoli, seoPerIndirizzo, terminePerSlug, tuttiGliAutori } from "@/lib/cms/wp";
+import { paginaArticoli, seoTermine, terminePerSlug, tuttiGliAutori } from "@/lib/cms/wp";
 
 export type Tipo = "category" | "tag" | "author";
 
@@ -24,8 +24,14 @@ function base(tipo: Tipo, slug: string) {
 }
 
 export async function metadatiTermine(tipo: Tipo, slug: string, n?: string): Promise<Metadata> {
-  const percorso = n ? `${base(tipo, slug)}page/${n}/` : base(tipo, slug);
-  return metadatiDaSeo(await seoPerIndirizzo(percorso));
+  const seo = await seoTermine(tipo, slug);
+  if (!seo) return {};
+  const pagina = n === undefined ? 1 : (numeroPagina(n) ?? 1);
+  if (pagina === 1) return metadatiDaSeo(seo);
+  const t = await termine(tipo, slug);
+  const filtro = tipo === "category" ? { categoria: t?.id } : tipo === "tag" ? { tag: t?.id } : { autore: t?.id };
+  const r = await paginaArticoli({ pagina, ...filtro });
+  return metadatiDaSeo(seoPaginata(seo, pagina, r?.pagine ?? 1));
 }
 
 export async function ArchivioTermine({ tipo, slug, n }: { tipo: Tipo; slug: string; n?: string }) {

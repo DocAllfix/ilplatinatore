@@ -8,7 +8,7 @@ import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { decodificaEntita } from "@/lib/cms/mappa";
 import { riportaSuPubblico } from "@/lib/cms/seo";
 import { sanificaHtml } from "@/lib/cms/sanitize";
-import { cmsUrl, sitoPubblico } from "@/lib/cms/config";
+import { cmsUrlContenuti, sitoPubblico } from "@/lib/cms/config";
 import { articoloPerSlug, paginaPerSlug, tutteLePagine } from "@/lib/cms/wp";
 
 export const revalidate = 3600;
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: PageProps<"/[primo]">): Promi
 
 export default async function PaginaStatica({ params }: PageProps<"/[primo]">) {
   const { pagina } = await risolvi((await params).primo);
-  const html = sanificaHtml(riportaSuPubblico(pagina.content?.rendered ?? "", cmsUrl(), sitoPubblico()));
+  const html = sanificaHtml(riportaSuPubblico(pagina.content?.rendered ?? "", cmsUrlContenuti(), sitoPubblico()));
   return (
     <article>
       <h1 className="text-3xl font-bold">{decodificaEntita(pagina.title?.rendered)}</h1>
