@@ -95,7 +95,7 @@ function Dato({ etichetta, children }: { etichetta: string; children: React.Reac
 /** Il valore principale (ore per il platino) sul blocco Acido inclinato, firma dei post social. */
 function BloccoAcido({ children }: { children: React.ReactNode }) {
   return (
-    <span className="cifre inline-block -skew-x-6 bg-azione px-2.5 py-1 text-[1.625rem] font-bold leading-none text-su-azione">
+    <span className="cifre inline-block -skew-x-6 whitespace-nowrap bg-azione px-2.5 py-1 text-[1.375rem] font-bold leading-none text-su-azione min-[400px]:text-[1.625rem]">
       {children}
     </span>
   );
