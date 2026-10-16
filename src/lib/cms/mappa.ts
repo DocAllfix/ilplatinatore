@@ -94,5 +94,6 @@ export function mappaPost(post: PostWP, opts: { cms: string; pubblico: string })
     immagine: immagine(post, opts.cms, opts.pubblico),
     // la sanificazione va per ULTIMA, sull'HTML gia' riscritto: cosi' nulla le sfugge
     contenuto: sanificaHtml(riportaSuPubblico(post.content?.rendered ?? "", opts.cms, opts.pubblico)),
+    meta: post.meta,
   };
 }

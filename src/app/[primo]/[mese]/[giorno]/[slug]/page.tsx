@@ -9,6 +9,7 @@ import { SchedaSovrapposta } from "@/components/guida/scheda";
 import { TestataCopertina, TestataGuida } from "@/components/guida/testata";
 import { SpazioPubblicitario } from "@/components/pubblicita";
 import { estraiScheda } from "@/lib/guida/scheda";
+import { collocaGruppi, schedaDaCampi, trofeiDaCampi } from "@/lib/guida/campi";
 import { aggiungiAncore, dividiCorpo, estraiChecklist } from "@/lib/guida/checklist";
 import { BarraProgressione } from "@/components/guida/barra";
 import { ChecklistGruppo, NotaEAzzera } from "@/components/guida/checklist";
@@ -60,23 +61,39 @@ export async function generateMetadata({ params }: Parametri): Promise<Metadata>
 
 export default async function PaginaArticolo({ params }: Parametri) {
   const { articolo: a, seo } = await risolvi(params);
-  const { scheda, corpo: senzaScheda } = estraiScheda(a.contenuto);
-  const { gruppi, corpo: senzaTabelle } = estraiChecklist(senzaScheda);
+  // Prima i campi strutturati del CMS (scritti dalla redazione o da wpvibe), poi le tabelle del
+  // testo come ripiego. Le tabelle si tolgono comunque dal corpo, per non mostrare i dati due volte.
+  const { scheda: schedaTabella, corpo: senzaScheda } = estraiScheda(a.contenuto);
+  const scheda = schedaDaCampi(a.meta) ?? schedaTabella;
+  const { gruppi: gruppiTabelle, corpo: senzaTabelle } = estraiChecklist(senzaScheda);
+  const gruppiCampi = trofeiDaCampi(a.meta);
+  const gruppi = gruppiCampi.length ? gruppiCampi : gruppiTabelle;
+  const posti = gruppiCampi.length
+    ? collocaGruppi(gruppiTabelle.map((g) => g.id), gruppiCampi)
+    : new Map(gruppiTabelle.map((g) => [g.id, [g]]));
+  const senzaPosto = gruppiCampi.length && !gruppiTabelle.length ? gruppiCampi : [];
   const { html, indice } = aggiungiAncore(senzaTabelle);
   const pezzi = dividiCorpo(html);
   const idsTrofei = gruppi.flatMap((g) => g.voci.map((v) => v.id));
   const ultimoGruppo = gruppi.at(-1)?.id;
 
-  const corpo = pezzi.map((p, i) => {
-    if ("html" in p) return <div key={i} className="contenuto" dangerouslySetInnerHTML={{ __html: p.html }} />;
-    const g = gruppi.find((x) => x.id === p.gruppo)!;
-    return (
-      <div key={i}>
-        <ChecklistGruppo articolo={a.id} gruppo={g} />
-        {g.id === ultimoGruppo && <NotaEAzzera articolo={a.id} ids={idsTrofei} />}
-      </div>
-    );
-  });
+  const gruppoConNota = (g: (typeof gruppi)[number]) => (
+    <div key={g.id}>
+      <ChecklistGruppo articolo={a.id} gruppo={g} />
+      {g.id === ultimoGruppo && <NotaEAzzera articolo={a.id} ids={idsTrofei} />}
+    </div>
+  );
+  const corpo = [
+    // trofei nei campi ma nessuna tabella nel testo: la checklist va in testa al corpo
+    ...senzaPosto.map(gruppoConNota),
+    ...pezzi.map((p, i) =>
+      "html" in p ? (
+        <div key={i} className="contenuto" dangerouslySetInnerHTML={{ __html: p.html }} />
+      ) : (
+        <div key={i}>{(posti.get(p.gruppo) ?? []).map(gruppoConNota)}</div>
+      ),
+    ),
+  ];
 
   return (
     <article>

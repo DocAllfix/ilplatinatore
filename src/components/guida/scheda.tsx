@@ -140,7 +140,7 @@ function Piede({ s }: { s: Scheda }) {
         <Mancabili s={s} />
       </div>
       <TuttiIDati s={s} />
-      <p className="mt-2 text-xs text-tenue">{NOTA}</p>
+      <p className="mt-2 text-xs text-tenue">{s.nota || NOTA}</p>
     </>
   );
 }

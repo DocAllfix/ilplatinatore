@@ -18,6 +18,8 @@ export type Scheda = {
   trofei?: { totale?: number; platino?: number; oro?: number; argento?: number; bronzo?: number };
   /** Le voci che non hanno un posto fisso, nell'ordine della redazione. */
   altre: VoceScheda[];
+  /** Condizioni delle stime scritte dalla redazione (campo pl_nota_stime) */
+  nota?: string;
 };
 
 // Niente trattini lunghi (regola dei testi e della skill anti-slop): «15–25 ore» diventa «15-25 ore».

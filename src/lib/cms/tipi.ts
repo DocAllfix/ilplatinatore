@@ -21,6 +21,8 @@ export type Articolo = {
   modificato?: string;
   immagine?: Immagine;
   contenuto: string;
+  /** campi strutturati del CMS (pl_*), cosi' come arrivano dalla REST */
+  meta?: Record<string, unknown>;
 };
 
 export type Immagine = { src: string; srcset?: string; larghezza?: number; altezza?: number; alt: string };
@@ -77,6 +79,8 @@ export type PostWP = {
   excerpt?: { rendered?: string };
   content?: { rendered?: string };
   yoast_head_json?: Record<string, unknown>;
+  /** campi registrati dal mu-plugin (pl_*): scheda della guida e trofei */
+  meta?: Record<string, unknown>;
   _embedded?: {
     author?: Array<{ slug?: string; name?: string; description?: string }>;
     "wp:featuredmedia"?: MediaWP[];

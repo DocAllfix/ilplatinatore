@@ -166,5 +166,91 @@ add_filter('wpseo_enable_xml_sitemap', '__return_false');   // Yoast
 add_filter('wp_sitemaps_enabled', '__return_false');        // sitemap di WordPress
 add_filter('xmlrpc_enabled', '__return_false');             // Caddy lo blocca gia'
 
+/* ---------------------------------------------------------------------------------------
+ * 5. CAMPI DELLA GUIDA: SCHEDA RIASSUNTIVA E TROFEI (PDF 03, 05, 06; decisione D9)
+ *
+ * Dati strutturati invece di tabelle nel testo: il sito li legge per primi e ripiega sulle
+ * tabelle solo se mancano. Leggibili e SCRIVIBILI dalla REST (`meta` del post), perche' si
+ * pubblica anche con wpvibe.
+ *
+ * Con wpvibe attivo si registrano con il suo sistema di campi: riquadro «Scheda della guida»
+ * nell'editor e campi noti all'AI. Senza wpvibe (disattivato, rimosso, CMS di lavoro) si
+ * registrano qui, nativi e con lo STESSO formato: i dati sono post meta normali e non si perdono
+ * in nessun caso. Il sito pubblico non deve mai dipendere da un plugin per leggerli.
+ * ------------------------------------------------------------------------------------- */
+
+function platinatore_campi_guida()
+{
+    $g = 'platinatore_scheda';
+    return array(
+        'pl_difficolta'      => array('type' => 'number', 'group' => $g, 'label' => 'Difficoltà (1-10)', 'description' => 'Stima della redazione. 0 = non indicata.'),
+        'pl_ore_platino'     => array('type' => 'text', 'group' => $g, 'label' => 'Tempo per il platino', 'description' => 'Es. «15-25 ore». Trattino normale, non lungo.'),
+        'pl_partite'         => array('type' => 'text', 'group' => $g, 'label' => 'Partite minime', 'description' => 'Es. «1».'),
+        'pl_mancabili'       => array('type' => 'text', 'group' => $g, 'label' => 'Trofei mancabili', 'description' => 'Numero e nomi: «1, Sfratto Abissale». «0» se nessuno.'),
+        'pl_online'          => array('type' => 'text', 'group' => $g, 'label' => 'Trofei online', 'description' => 'Es. «0» oppure «2, Co-op».'),
+        'pl_trofei_totali'   => array('type' => 'number', 'group' => $g, 'label' => 'Trofei totali', 'description' => 'Platino compreso.'),
+        'pl_nota_stime'      => array('type' => 'text', 'group' => $g, 'label' => 'Condizioni delle stime', 'description' => 'Facoltativo: da cosa dipendono tempo e difficoltà, differenze fra versioni.'),
+        'pl_altri_dati'      => array('type' => 'textarea', 'group' => $g, 'label' => 'Altri dati', 'description' => 'Una voce per riga, «Etichetta: valore». Es. «Salvataggi manuali: No».'),
+        'pl_trofei'          => array(
+            'type'        => 'repeater',
+            'group'       => $g,
+            'label'       => 'Trofei da spuntare',
+            'description' => 'Un trofeo per riga. «Gruppo» raggruppa la checklist (es. «Boss e storia»).',
+            'sub_fields'  => array(
+                'gruppo' => array('type' => 'text', 'label' => 'Gruppo'),
+                'nome'   => array('type' => 'text', 'label' => 'Trofeo'),
+                'come'   => array('type' => 'textarea', 'label' => 'Come ottenerlo'),
+            ),
+        ),
+    );
+}
+
+add_action('plugins_loaded', function () {
+    if (!function_exists('wpvibe_field_register')) {
+        return;
+    }
+    if (function_exists('wpvibe_field_group_register')) {
+        wpvibe_field_group_register('post', 'platinatore_scheda', array('title' => 'Scheda della guida', 'context' => 'normal', 'priority' => 'high'));
+    }
+    foreach (platinatore_campi_guida() as $chiave => $config) {
+        wpvibe_field_register('post', $chiave, $config);
+    }
+});
+
+// Senza wpvibe: stessi campi, nativi. Stesso schema REST del ripetitore di wpvibe.
+add_action('init', function () {
+    if (function_exists('wpvibe_field_register')) {
+        return;
+    }
+    foreach (platinatore_campi_guida() as $chiave => $config) {
+        $schema = true;
+        $tipo = 'string';
+        $vuoto = '';
+        if ($config['type'] === 'number') {
+            $tipo = 'number';
+            $vuoto = 0;
+        } elseif ($config['type'] === 'repeater') {
+            $tipo = 'array';
+            $vuoto = array();
+            $proprieta = array();
+            foreach ($config['sub_fields'] as $sotto => $c) {
+                $proprieta[$sotto] = array('type' => 'string');
+            }
+            $schema = array('schema' => array('type' => 'array', 'items' => array(
+                'type' => 'object', 'properties' => $proprieta, 'additionalProperties' => false,
+            )));
+        }
+        register_post_meta('post', $chiave, array(
+            'type'          => $tipo,
+            'single'        => true,
+            'default'       => $vuoto,
+            'show_in_rest'  => $schema,
+            'auth_callback' => function () {
+                return current_user_can('edit_posts');
+            },
+        ));
+    }
+}, 11);
+
 // NB dal riferimento: l'elenco delle rotte REST NON va filtrato a mano (`rest_endpoints`): un
 // filtro cosi' ha mandato in errore fatale tutta la REST API.
