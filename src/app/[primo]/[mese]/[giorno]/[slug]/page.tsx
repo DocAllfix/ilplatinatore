@@ -5,9 +5,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { SchedaFascia, SchedaPannello, SchedaSovrapposta } from "@/components/guida/scheda";
+import { SchedaSovrapposta } from "@/components/guida/scheda";
 import { TestataCopertina, TestataGuida } from "@/components/guida/testata";
-import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
 import { SpazioPubblicitario } from "@/components/pubblicita";
 import { estraiScheda } from "@/lib/guida/scheda";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
@@ -65,31 +64,11 @@ export default async function PaginaArticolo({ params }: Parametri) {
       ) : null}
 
       {scheda ? (
-        // Prova del piano 01 (docs/brief/01-guida-testata-scheda.md): tre varianti nella pagina,
-        // scelte con ?v=a|b|c. Dopo la scelta resta solo quella approvata.
-        <div id="lab" data-v="a">
-          <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]),#lab[data-v="c"] [data-variant]:not([data-variant="c"]){display:none}`}</style>
-          <div data-variant="a">
-            <TestataCopertina a={a} />
-            <SchedaPannello s={scheda} />
-          </div>
-          <div data-variant="b">
-            <TestataCopertina a={a} alta />
-            <SchedaSovrapposta s={scheda} />
-          </div>
-          <div data-variant="c">
-            <TestataCopertina a={a} />
-            <SchedaFascia s={scheda} />
-          </div>
-          <SelettoreVarianti
-            sezione="Scheda"
-            varianti={[
-              { id: "a", nome: "Pannello" },
-              { id: "b", nome: "Sovrapposta" },
-              { id: "c", nome: "Fascia" },
-            ]}
-          />
-        </div>
+        // Scelta del piano 01, giro 2: variante B «Sovrapposta» (docs/brief/01-guida-testata-scheda.md)
+        <>
+          <TestataCopertina a={a} alta />
+          <SchedaSovrapposta s={scheda} />
+        </>
       ) : (
         <TestataGuida a={a} />
       )}

@@ -145,17 +145,7 @@ function Piede({ s }: { s: Scheda }) {
   );
 }
 
-/** A, «Pannello»: sotto la copertina, la griglia in un riquadro separato. */
-export function SchedaPannello({ s }: { s: Scheda }) {
-  return (
-    <section aria-label="Il platino in breve" className="mt-4 rounded-xl border border-linea bg-superficie p-4">
-      <Griglia4 s={s} />
-      <Piede s={s} />
-    </section>
-  );
-}
-
-/** B, «Sovrapposta»: il riquadro sale sul fondo della copertina, come una scheda appoggiata. */
+/** Scheda riassuntiva (scelta: «Sovrapposta»): il riquadro sale sul fondo della copertina. */
 export function SchedaSovrapposta({ s }: { s: Scheda }) {
   return (
     <section
@@ -168,14 +158,3 @@ export function SchedaSovrapposta({ s }: { s: Scheda }) {
   );
 }
 
-/** C, «Fascia»: la griglia a tutta larghezza attaccata alla copertina, con linee sottili fra i dati. */
-export function SchedaFascia({ s }: { s: Scheda }) {
-  return (
-    <section aria-label="Il platino in breve" className="-mx-4 border-b border-linea bg-superficie px-4 pb-4 pt-1">
-      <div className="-mx-1">
-        <Griglia4 s={s} linee />
-      </div>
-      <Piede s={s} />
-    </section>
-  );
-}

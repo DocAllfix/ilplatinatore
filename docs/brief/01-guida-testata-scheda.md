@@ -51,3 +51,7 @@ Scelta dell'utente sul giro 1: la **copertina della C** (titolo sull'immagine, b
 - **B, «Sovrapposta»**: il riquadro sale sul fondo dell'immagine (copertina più alta, ombra «Sospeso»);
 - **C, «Fascia»**: fascia piena a tutta larghezza attaccata alla copertina, linee sottili fra i dati.
 In tutte: ore del platino sul blocco Acido, difficoltà con tacche, partite, trofei; mancabile con icona e testo; nota sulle stime.
+
+## Scelta (16/10/2026)
+
+**B, «Sovrapposta»**, confermata dall'utente. Varianti A e C e selettore tolti dal codice.
