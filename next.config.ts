@@ -24,6 +24,10 @@ const nextConfig: NextConfig = {
 
   poweredByHeader: false,
 
+  // Processi paralleli del build. Su Vercel il valore predefinito; in locale si abbassa con
+  // BUILD_CPUS quando la macchina e' carica (sette processi esauriscono la memoria virtuale).
+  ...(process.env.BUILD_CPUS ? { experimental: { cpus: Number(process.env.BUILD_CPUS) } } : {}),
+
   // Tailwind v4 passa dal loader di Turbopack (impostazione del modello di create-next-app 16.4)
   turbopack: {
     rules: {

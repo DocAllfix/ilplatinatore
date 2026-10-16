@@ -18,7 +18,10 @@ type Parametri = PageProps<"/[primo]/[mese]/[giorno]/[slug]">;
 
 export async function generateStaticParams() {
   const tutti = await tuttiGliArticoli();
-  return tutti.map((a) => {
+  // Solo per le prove in locale su una macchina carica: genera al build i primi N, gli altri alla
+  // prima visita. Su Vercel la variabile non c'e' e si generano tutti.
+  const limite = Number(process.env.BUILD_LIMITE_ARTICOLI) || tutti.length;
+  return tutti.slice(0, limite).map((a) => {
     const [, primo, mese, giorno, slug] = a.percorso.split("/");
     return { primo, mese, giorno, slug };
   });
