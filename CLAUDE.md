@@ -76,4 +76,40 @@ Repository di riferimento, **in sola lettura**: `C:\Users\user\evalisdeck`. Cont
 
 Poi il commit «Fase N completata».
 
-_(nessuna fase ancora completata)_
+#### Fase 0, Analisi (completata)
+- **Fatto**: analisi in `docs/analisi/fase0-analisi.md` (decisioni nella sezione 6), inventario di 2.495 URL in `docs/analisi/inventario-url.csv`, analisi della copia `.wpress` (convertita in SQLite), pubblicità e banner dei cookie di HB Agency osservati dal sito vivo. Gioco del prototipo: **Valor Mortis** (scelta dell'utente al posto di Crimson Desert). Font del sito vivo: **Jost**.
+- **Cancello**: conteggi dell'inventario uguali a quelli della REST di Aruba; decisioni D1-D9 chiuse con l'utente.
+- **Debito**: la risposta di HB Agency (rinnovo degli annunci al cambio pagina, formati indispensabili) non c'è ancora: è il blocco dichiarato della Fase 5.
+
+#### Fase 1, Fondamenta (completata, con debiti)
+- **Fatto**:
+  - CMS su Hetzner CAX11 (49.13.164.162, `/opt/platinatore-cms`, fotografia in `infra/cms/`): Docker con Caddy, MariaDB 11.8, WordPress 7.1.3, noindex su tre strati, password di Caddy su wp-admin, xmlrpc 403, sitemap 404, cron di WordPress mosso dal cron di sistema.
+  - Backup notturni cifrati sulla Storage Box `u635762-sub6`, prova di ripristino settimanale.
+  - mu-plugin `platinatore-headless.php`: webhook bloccante, indirizzi vecchi, `post_link`, campi strutturati `pl_*` (wpvibe o nativi, scrivibili via REST).
+  - Frontend Next.js 16 su Vercel, progetto `ilplatinatore`: rotte identiche a oggi, sitemap come Yoast, feed, robots, redirect di slug e date, SEO da Yoast con gli URL riportati sul dominio pubblico, noindex finché `SITO_NOINDEX` non vale `0`.
+  - `PRODUCT.md` e `DESIGN.md` (palette del proprietario, Jost, scuro predefinito più chiaro).
+- **Cancello**: HTTPS e noindex sul CMS verificati; ripristino del backup provato verde e rosso; scrittura REST dei campi come wpvibe; catena webhook provata da capo a fondo (5-40 s senza deploy); parità SEO sulle pagine campione; controlli automatici (`scripts/qa/controlli.py`) a 0 problemi sul sito deployato; sito su Aruba invariato.
+- **Regole nate**:
+  - Il nome utente delle application password è il login (`ilplatinatore`), non il nome della password.
+  - Next carica `.env.local`: i segreti stanno in `.env.segreti`.
+  - Col CMS headless `DISABLE_WP_CRON` più un cron di sistema, o gli articoli programmati restano fermi.
+  - Nelle richieste REST l'avviso al sito parte da `rest_after_insert_post`, dopo il salvataggio dei meta, non da `transition_post_status`.
+  - La cache del build di Turbopack ha pubblicato CSS vecchio: resta spenta.
+  - `?p=` di un articolo non pubblicato dava 500: 401 e 403 della REST valgono «non trovato».
+  - Il build si fa su Vercel, non in locale (memoria e percorsi di Windows).
+  - Commit prima di qualsiasi prova che rompe apposta qualcosa.
+- **Debiti aperti**:
+  - allarme «uomo morto» dei backup predisposto ma senza `HEALTHCHECK_URL` (serve un account healthchecks.io dall'utente);
+  - DNS di `cms.ilplatinatore.it` non ancora propagato: si usa l'host provvisorio `49-13-164-162.sslip.io` (da togliere);
+  - mancano archivi per data, `ads.txt`, `llms.txt`, rotta di anteprima, elenco dei 410; immagini nella sitemap; redirect 308 invece di 301;
+  - wpvibe spento sul CMS di lavoro, da provare al passaggio; password di prova `collaudo-rest` da revocare;
+  - importazione incrementale da Aruba ancora da fare (Fase 6).
+
+#### Fase 2, Prototipo (in corso)
+- **Fatto, con le scelte dell'utente e del proprietario**:
+  - piano 01, testata e scheda: B «Sovrapposta»;
+  - piano 02, checklist «Lista» e progressione a «Pillola», più il pulsante «Torna all'inizio» su tutti gli articoli;
+  - piano 03, collezionabili B «Tabella» e correlati C «Con immagine».
+  - Brief e scelte in `docs/brief/`; formato dei campi per redazione e wpvibe in `docs/guida-campi-wpvibe.md`.
+- **Regole nate**: ogni dato del prototipo sta in un campo `pl_*` del CMS, mai nel codice; la tabella del testo resta solo come ripiego. Prima di ogni consegna, passata con impeccable polish e design-taste-frontend.
+- **Da fare**: hub del gioco, mini-gioco, home a tre moduli.
