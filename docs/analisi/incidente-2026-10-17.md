@@ -39,6 +39,16 @@ Prova finale con **WordPress spento** e un webhook di modifica:
 
 Controlli: `controlli.py` 0 problemi, `criteri.py` 0 esiti diversi dall'atteso, 79 test.
 
+## Prima apertura lenta da telefono (segnalata durante l'incidente)
+
+Telefono simulato, rete mobile lenta, processore rallentato 4 volte:
+- **prima**: pagina caricata in 10,3 s, 1.268 KB di immagini all'apertura, LCP 3,8 s;
+- **dopo**: pagina caricata in 2,6 s, 59 KB di immagini, LCP 2,5-2,8 s.
+
+Cause:
+- Next precaricava ogni articolo linkato visibile, circa 550 KB in più, e per gli articoli non ancora pronti faceva lavorare il CMS. Ora `prefetch={false}` su tutti i link di contenuto; restano precaricati solo i tre link del menu.
+- Chrome, su rete lenta, scarica in anticipo le immagini entro circa 2.500 px, cioè 4-5 file della home. Ora ogni fila fa partire le sue prime immagini solo quando sta per entrare nello schermo, e le altre quando si tocca la fila.
+
 ## Due errori di procedura, con la loro regola
 
 - Sostituendo il `Caddyfile` con `mv`, il contenitore continuava a leggere il file vecchio, perché è collegato come file singolo. Due ricaricamenti non hanno avuto effetto. **Regola: il file collegato si sovrascrive con `cat nuovo > Caddyfile`, oppure si ricrea il contenitore (`up -d --force-recreate caddy`), e poi si verifica la risposta reale, non solo che il ricaricamento sia andato.**
