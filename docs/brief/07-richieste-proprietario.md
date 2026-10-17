@@ -30,4 +30,4 @@ Stato: **in prova sull'anteprima** (18/10/2026). Piano approvato dall'utente; de
 - Tabella «Oggetto | Tipo | Dove | Sblocco» negli articoli-elenco. Esempio: Warzone Stagione 6, compilato nel campo.
 
 ## Verifica
-`controlli.py` 0 problemi; `criteri.py` 15 criteri verdi e rossi con i guasti (nuovi: 13 testata da tastiera, 14 tema senza lampo, 15 scheda del gioco senza righe grezze); 92 test; WordPress spento: tutto online; LCP della home con l'hero 2,4-2,6 s su telefono e rete lenta simulati.
+`controlli.py` 0 problemi; `criteri.py` 15 criteri verdi e rossi con i guasti (nuovi: 13 testata da tastiera, 14 tema senza lampo, 15 scheda del gioco senza righe grezze); 87 test; WordPress spento: tutto online; LCP della home con l'hero 2,4-2,6 s su telefono e rete lenta simulati.
