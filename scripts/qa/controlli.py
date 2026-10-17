@@ -28,10 +28,7 @@ AXE = os.path.join(RADICE, "node_modules", "axe-core", "axe.min.js")
 OUT = os.path.join(QUI, "out")
 
 PAGINE = [
-    # piano 06 in prova: la home a sezioni in tre varianti
-    "/?v=a",
-    "/?v=b",
-    "/?v=c",
+    "/",
     "/2026/10/13/valor-mortis-guida-platino-tutti-trofei/",
     "/2026/10/15/valor-mortis-collezionabili-capitolo-2/",
     "/tag/valor-mortis/",

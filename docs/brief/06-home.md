@@ -1,6 +1,6 @@
 # Piano di design 06: home a sezioni
 
-Skill: impeccable `shape`. Stato: **confermato** (17/10/2026), varianti in prova sull'anteprima. Ancore: `PRODUCT.md`, `DESIGN.md`, PDF sezioni 01, 02, 09 e 10; `00-raccordo.md` punto 7.
+Skill: impeccable `shape`. Stato: **chiuso** (17/10/2026), scelte in fondo. Ancore: `PRODUCT.md`, `DESIGN.md`, PDF sezioni 01, 02, 09 e 10; `00-raccordo.md` punto 7.
 
 ## 1. Che cosa
 Prima proposta: tre moduli (PDF 10). **Cambiata dal proprietario** (17/10/2026), che è anche l'autore del PDF: modello games.gg, «una decina di sezioni diverse, simil modello Netflix». Ogni sezione è una macroarea che **si riempie da sola** con news e guide, ordinate per ultima modifica: nessuno sceglie gli articoli.
@@ -35,3 +35,8 @@ La home oggi elenca gli ultimi articoli con `/page/N/`: Google scopre da lì gli
 
 ## 6. Stati
 Sezione senza articoli (non compare); Search Console non collegata (ripiego dichiarato); sfida già giocata (esito e «nuova sfida domani»); nessuna sezione nel CMS (resta l'elenco degli ultimi articoli di oggi).
+
+## Scelte (17/10/2026)
+
+- Il proprietario: «mi piace la C perché ha una scheda più grande delle altre, e la B per il modo in cui dispone le schede simil-card». Risultato: **file di locandine verticali (B)**, e **una sezione sì e una no apre con una locandina larga il doppio** e alta come le altre (l'impatto della C).
+- Nessun articolo si ripete fra le sezioni (resta in quella più in alto), salvo che una fila resti con meno di 4 schede.

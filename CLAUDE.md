@@ -116,4 +116,5 @@ Poi il commit «Fase N completata».
   - piano 05, la sfida del giorno su `/sfida/`: tre formati a rotazione, generati dai dati del sito (spunta «Usabile nella sfida» sul tag, trofei dei campi, classici in Strumenti > Classici della sfida); una scelta per formato (vedi `docs/brief/05-mini-gioco.md`).
   - Brief e scelte in `docs/brief/`; formato dei campi per redazione e wpvibe in `docs/guida-campi-wpvibe.md`.
 - **Regole nate**: ogni dato del prototipo sta in un campo `pl_*` del CMS, mai nel codice; la tabella del testo resta solo come ripiego. Prima di ogni consegna, passata con impeccable polish e design-taste-frontend.
-- **Da fare**: home a tre moduli. Breaking, Hot take e flusso delle notizie vanno nella home completa (Fase 4).
+  - piano 06, home a sezioni sul modello games.gg (cambiata dal proprietario rispetto ai tre moduli del PDF 10): dieci file che si riempiono da sole per regola (Strumenti > Sezioni della home), locandine con una scheda grande ogni due sezioni; «Più letti» da Search Console (accesso da ricevere, ripiego dichiarato in pagina).
+- **Da fare**: collegare Search Console; verifica del prototipo con i criteri del PDF (Fase 3). Breaking, Hot take ed «Esplora per gioco» vanno nella home completa (Fase 4).
