@@ -7,6 +7,7 @@
 import { CaretUpIcon, FunnelSimpleIcon, ListBulletsIcon, PlayIcon, XIcon } from "@phosphor-icons/react/ssr";
 import { useEffect, useState } from "react";
 import type { VoceIndice } from "@/lib/guida/checklist";
+import { misura } from "@/lib/misure";
 import { useSpunte } from "./spunte";
 
 type Props = { articolo: number; ids: string[]; indice: VoceIndice[]; unita?: string };
@@ -30,6 +31,7 @@ function useComandi({ articolo, ids }: Props) {
   function riprendi() {
     const primo = ids.find((i) => !fatti.has(i));
     if (!primo) return;
+    misura("riprendi", { articolo });
     // la riga puo' essere nascosta da un filtro per area: allora si va in testa all'elenco
     const visibile = (sel: string) => [...document.querySelectorAll<HTMLElement>(sel)].find((x) => x.getClientRects().length);
     const el = visibile(`[data-trofeo="${primo}"]`) ?? visibile("[data-collezionabili]");

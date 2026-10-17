@@ -88,6 +88,7 @@ function ComePrenderlo({ ancora }: { ancora: string | null }) {
   return (
     <a
       href={`#${ancora}`}
+      data-misura="come_prenderlo"
       className="relative z-20 inline-flex min-h-11 shrink-0 items-center gap-1 text-sm font-semibold whitespace-nowrap text-link [@media(hover:hover)]:hover:underline"
     >
       Come prenderlo

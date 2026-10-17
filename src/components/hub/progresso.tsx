@@ -41,6 +41,7 @@ export function Riprendi({ tracciabili, compatto = false }: { tracciabili: Tracc
             <li key={t.id}>
               <Link
                 href={t.percorso}
+                data-misura="hub_riprendi"
                 className="group flex items-center gap-3 rounded-xl border border-linea bg-superficie p-3 transition-[border-color,transform] duration-150 active:scale-[0.99] [@media(hover:hover)]:hover:border-link"
               >
                 <span className="min-w-0 flex-1">

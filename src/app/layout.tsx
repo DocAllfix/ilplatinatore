@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { MisureClic } from "@/components/misure-clic";
 import { Jost } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </header>
         <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-5">{children}</main>
+        <MisureClic />
         <footer className="border-t border-linea">
           <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-sm text-tenue">
             <span>© Il Platinatore</span>

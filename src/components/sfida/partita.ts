@@ -4,6 +4,7 @@
 // partita per giorno e formato. Senza memoria disponibile si gioca lo stesso, per la visita.
 
 import { useSyncExternalStore } from "react";
+import { misura } from "@/lib/misure";
 
 export type Partita = { tentativi: string[]; finita: boolean; vinta: boolean };
 const VUOTA: Partita = { tentativi: [], finita: false, vinta: false };
@@ -52,7 +53,10 @@ export function usePartita(chiave: string, giusta: (t: string) => boolean, massi
     if (ora.finita || ora.tentativi.includes(t)) return;
     const tentativi = [...ora.tentativi, t];
     const vinta = giusta(t);
-    a.scrivi({ tentativi, vinta, finita: vinta || tentativi.length >= massimo });
+    const finita = vinta || tentativi.length >= massimo;
+    a.scrivi({ tentativi, vinta, finita });
+    if (tentativi.length === 1) misura("sfida_inizio", { chiave });
+    if (finita) misura("sfida_fine", { chiave, vinta, tentativi: tentativi.length });
   }
   return { ...p, prova, errori: p.tentativi.filter((t) => !giusta(t)).length };
 }

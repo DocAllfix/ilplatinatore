@@ -31,10 +31,12 @@ function Img({ a, classe, sizes, prima }: { a: Articolo; classe: string; sizes: 
   );
 }
 
-function CartaLocandina({ a, prima, grande = false }: { a: Articolo; prima?: boolean; grande?: boolean }) {
+function CartaLocandina({ a, prima, grande = false, sezione }: { a: Articolo; prima?: boolean; grande?: boolean; sezione: string }) {
   return (
     <Link
       href={a.percorso}
+      data-misura="home_sezione"
+      data-misura-dettaglio={sezione}
       className={`group relative isolate flex flex-col justify-end overflow-hidden rounded-xl border border-linea transition-[border-color,transform] duration-150 active:scale-[0.99] [@media(hover:hover)]:hover:border-link ${
         grande ? "h-full p-4" : "aspect-[3/4] p-3"
       }`}
@@ -51,14 +53,14 @@ function CartaLocandina({ a, prima, grande = false }: { a: Articolo; prima?: boo
 }
 
 /** Una fila di locandine; con `apertura` la prima e' larga il doppio, alta come le altre. */
-function Fila({ voci, prima, apertura }: { voci: Articolo[]; prima: boolean; apertura: boolean }) {
+function Fila({ voci, prima, apertura, sezione }: { voci: Articolo[]; prima: boolean; apertura: boolean; sezione: string }) {
   return (
     <ul className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:thin]">
       {voci.map((a, i) => {
         const grande = apertura && i === 0;
         return (
           <li key={a.id} className={`shrink-0 snap-start ${grande ? "w-[min(22rem,84vw)]" : "w-[min(11rem,46vw)]"}`}>
-            <CartaLocandina a={a} prima={prima && i < 2} grande={grande} />
+            <CartaLocandina a={a} prima={prima && i < 2} grande={grande} sezione={sezione} />
           </li>
         );
       })}
@@ -86,7 +88,7 @@ export function Sezioni({ sezioni }: { sezioni: SezioneDati[] }) {
             <CartaSfida s={s.sfida} />
           ) : (
             // una sezione si' e una no apre con la scheda grande
-            <Fila voci={s.voci} prima={i === 0} apertura={i % 2 === 0} />
+            <Fila voci={s.voci} prima={i === 0} apertura={i % 2 === 0} sezione={s.titolo} />
           )}
         </section>
       ))}

@@ -29,6 +29,8 @@ export function Correlato({ c, a }: Props) {
     <aside aria-label={c.tipo} className="my-6">
       <Link
         href={a.percorso}
+        data-misura="correlato"
+        data-misura-dettaglio={c.tipo}
         className="group grid grid-cols-[6rem_1fr] gap-3 overflow-hidden rounded-xl border border-linea bg-superficie transition-[border-color,transform] duration-150 active:scale-[0.99] md:grid-cols-[10rem_1fr] [@media(hover:hover)]:hover:border-link"
       >
         {a.immagine ? (

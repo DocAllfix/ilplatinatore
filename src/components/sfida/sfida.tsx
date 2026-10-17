@@ -109,7 +109,7 @@ function Fine({
       {dettaglio}
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         {rimando && (
-          <Link href={rimando.href} className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-xl bg-azione px-4 font-semibold text-su-azione active:scale-[0.98]">
+          <Link href={rimando.href} data-misura="sfida_rimando" className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-xl bg-azione px-4 font-semibold text-su-azione active:scale-[0.98]">
             {rimando.testo}
             <ArrowRightIcon weight="bold" className="size-4" aria-hidden="true" />
           </Link>

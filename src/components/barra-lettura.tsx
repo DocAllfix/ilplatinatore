@@ -6,6 +6,7 @@
 
 import { TrophyIcon } from "@phosphor-icons/react/ssr";
 import { useEffect, useRef, useState } from "react";
+import { misura } from "@/lib/misure";
 
 /** Da 0 a 1: dall'inizio dell'articolo a quando la sua fine arriva in fondo allo schermo. */
 function avanzamento(inizio: HTMLElement, fine: HTMLElement) {
@@ -48,12 +49,21 @@ export function BarraLettura() {
   const barra = useRef<HTMLSpanElement>(null);
   const punta = useRef<HTMLSpanElement>(null);
   const [finito, setFinito] = useState(false);
+  const letto = useRef(false);
   useScorrimento((p) => {
     if (barra.current) barra.current.style.transform = `scaleX(${p})`;
     // larghezza vera della barra (100vw comprende la barra di scorrimento da computer)
     const largo = punta.current?.parentElement?.clientWidth ?? 0;
     if (punta.current) punta.current.style.transform = `translateX(${p * Math.max(0, largo - 24)}px)`;
-    setFinito((x) => (x !== p > 0.995 ? p > 0.995 : x));
+    setFinito((x) => {
+      const ora = p > 0.995;
+      // una volta per visita: arrivati in fondo all'articolo
+      if (ora && !x && !letto.current) {
+        letto.current = true;
+        misura("lettura_completa", { percorso: window.location.pathname });
+      }
+      return ora;
+    });
   });
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-40 h-1 bg-linea/40" aria-hidden="true">

@@ -17,6 +17,8 @@ export function CartaSfida({ s, grande = false }: { s: SfidaInBreve; grande?: bo
   return (
     <Link
       href="/sfida/"
+      data-misura="home_sezione"
+      data-misura-dettaglio="La sfida del giorno"
       className={`group grid overflow-hidden rounded-xl border-2 border-viola/70 bg-superficie transition-[border-color,transform] duration-150 active:scale-[0.99] [@media(hover:hover)]:hover:border-link ${
         grande ? "md:grid-cols-[1.2fr_1fr]" : "sm:grid-cols-[14rem_1fr]"
       }`}

@@ -6,6 +6,7 @@
 // spunte funzionano lo stesso per la visita e `persistente` lo dice.
 
 import { useSyncExternalStore } from "react";
+import { misura } from "@/lib/misure";
 
 type Stato = { fatti: ReadonlySet<string>; soloMancanti: boolean; persistente: boolean };
 
@@ -67,15 +68,18 @@ function crea(chiave: string) {
       if (fatti.has(id)) fatti.delete(id);
       else fatti.add(id);
       emetti({ ...stato, fatti, persistente: salva(fatti) });
+      misura("spunta", { chiave, fatto: fatti.has(id) });
     },
     soloMancanti(v: boolean) {
       emetti({ ...stato, soloMancanti: v });
+      misura("filtro_mancanti", { attivo: v });
     },
     azzera(ids: string[]) {
       carica();
       const fatti = new Set(stato.fatti);
       ids.forEach((i) => fatti.delete(i));
       emetti({ ...stato, fatti, persistente: salva(fatti) });
+      misura("azzera", { chiave });
     },
   };
 }
