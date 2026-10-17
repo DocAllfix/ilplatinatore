@@ -48,7 +48,8 @@ export async function ArchivioTermine({ tipo, slug, n }: { tipo: Tipo; slug: str
   return (
     <PaginaArchivio
       titolo={t.nome}
-      descrizione={t.descrizione}
+      // la descrizione dei tag diventa la scheda del gioco (piano 07): mai mostrata cosi' com'e'
+      descrizione={tipo === "category" ? t.descrizione : undefined}
       articoli={r?.articoli ?? []}
       base={base(tipo, slug)}
       pagina={pagina}

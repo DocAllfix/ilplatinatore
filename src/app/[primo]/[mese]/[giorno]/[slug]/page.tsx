@@ -14,6 +14,7 @@ import { aggiungiAncore, dividiCorpo, estraiChecklist } from "@/lib/guida/checkl
 import { PillolaProgressione } from "@/components/guida/barra";
 import { BarraLettura } from "@/components/barra-lettura";
 import { TornaSu } from "@/components/torna-su";
+import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
 import { ChecklistGruppo, NotaEAzzera } from "@/components/guida/checklist";
 import { TabellaCollezionabili } from "@/components/guida/collezionabili";
 import { Correlato } from "@/components/guida/correlato";
@@ -112,7 +113,16 @@ export default async function PaginaArticolo({ params }: Parametri) {
   const idsProgressione = oggetti.length ? oggetti.map((o) => o.id) : idsTrofei;
 
   return (
-    <article>
+    // Prova del piano 07: titoli h2 A in viola / B con la linea viola, ?v=a|b (regole in globals.css)
+    <article id="lab" data-v="a">
+      <SelettoreVarianti
+        sezione="Titoli"
+        posizione="alto"
+        varianti={[
+          { id: "a", nome: "Viola" },
+          { id: "b", nome: "Linea" },
+        ]}
+      />
       <div id="inizio-articolo" />
       {/* Piano 04 chiuso: barra di lettura A «Linea»; «Torna all'inizio» resta su tutti gli articoli */}
       <BarraLettura />

@@ -39,8 +39,10 @@
   color-scheme: dark;
 }
 
+/* Il tema chiaro: lo chiede il telefono (se il lettore non ha scelto altro) oppure il tasto in
+   testata, che scrive data-theme su <html> prima del primo disegno (script in layout.tsx). */
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme="dark"]) {
     --sfondo: #f4f6fa;
     --superficie: #ffffff;
     --superficie-alta: #eef1f6;
@@ -54,6 +56,20 @@
     --errore: #c62828;
     color-scheme: light;
   }
+}
+:root[data-theme="light"] {
+  --sfondo: #f4f6fa;
+  --superficie: #ffffff;
+  --superficie-alta: #eef1f6;
+  --linea: #d5dae5;
+  --testo: #0b0d12;
+  --tenue: #4b5468;
+  --link: #5b2fe0;
+  --riempimento: #5b2fe0;
+  --viola-testo: #5b2fe0;
+  --avviso: #b34700;
+  --errore: #c62828;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -71,6 +87,8 @@
   --color-viola-testo: var(--viola-testo);
   --color-su-viola: var(--su-viola);
   --color-avviso: var(--avviso);
+  --color-errore: var(--errore);
+  --color-ciano: var(--ciano);
   --color-notte: var(--notte);
   --color-platino: var(--platino);
   --font-sans: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
@@ -106,6 +124,12 @@ body {
 .contenuto > * + * { margin-top: 1rem; }
 .contenuto h2 { font-size: 1.5rem; font-weight: 700; line-height: 1.25; margin-top: 2.25rem; scroll-margin-top: 1rem; }
 .contenuto h3 { font-size: 1.1875rem; font-weight: 600; line-height: 1.3; margin-top: 1.5rem; scroll-margin-top: 1rem; }
+/* Prova del piano 07 (#lab sull'articolo): A titolo in Viola testo, B linea viola a sinistra */
+#lab[data-v="a"] .contenuto h2 { color: var(--viola-testo); }
+#lab[data-v="b"] .contenuto h2 { border-left: 4px solid var(--viola); padding-left: 0.75rem; }
+/* Prova del piano 07 (#lab sull'articolo): A titolo in Viola testo, B linea viola a sinistra */
+#lab[data-v="a"] .contenuto h2 { color: var(--viola-testo); }
+#lab[data-v="b"] .contenuto h2 { border-left: 4px solid var(--viola); padding-left: 0.75rem; }
 .contenuto h4 { font-weight: 600; margin-top: 1.25rem; }
 .contenuto a { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
 .contenuto strong { font-weight: 600; }
@@ -123,6 +147,10 @@ body {
 .contenuto tbody tr:nth-child(odd) { background: var(--superficie); }
 .contenuto iframe { width: 100%; aspect-ratio: 16 / 9; height: auto; border: 0; border-radius: 8px; }
 .contenuto code { font-size: 0.9em; background: var(--superficie); padding: 0.1em 0.3em; border-radius: 4px; }
+
+/* file orizzontali senza la barra grigia del sistema: c'e' l'indicatore nei colori della palette */
+.senza-barra { scrollbar-width: none; }
+.senza-barra::-webkit-scrollbar { display: none; }
 
 /* il contatore che «scatta» quando cambia (piano 02): solo transform, ease-out */
 @keyframes scatto {

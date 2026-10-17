@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { MisureClic } from "@/components/misure-clic";
+import { Testata } from "@/components/testata/testata";
 import { Jost } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
@@ -23,35 +24,18 @@ export const viewport: Viewport = {
   ],
 };
 
-const VOCI = [
-  { href: "/category/guide/", testo: "Guide" },
-  { href: "/category/news/", testo: "News" },
-  { href: "/category/approfondimenti/", testo: "Approfondimenti" },
-];
+// Il tema scelto col tasto in testata si applica PRIMA del primo disegno: niente lampo di tema
+// sbagliato. Senza scelta salvata vale quello del telefono. try/catch: senza memoria si va avanti.
+const TEMA = `try{var t=localStorage.getItem("platinatore:tema");if(t==="light"||t==="dark"){document.documentElement.dataset.theme=t}}catch(e){}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="it-IT" className={`${jost.variable} antialiased`}>
+    <html lang="it-IT" className={`${jost.variable} antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: TEMA }} />
+      </head>
       <body className="flex min-h-screen flex-col">
-        <header className="border-b border-linea">
-          <div className="striscia" aria-hidden="true" />
-          <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4">
-            <Link href="/" className="flex min-h-11 items-center text-lg font-bold">
-              Il Platinatore
-            </Link>
-            <nav aria-label="Sezioni">
-              <ul className="flex">
-                {VOCI.map((v) => (
-                  <li key={v.href}>
-                    <Link href={v.href} className="flex min-h-11 items-center px-2 text-sm font-medium text-tenue hover:text-testo">
-                      {v.testo}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-        </header>
+        <Testata />
         <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-5">{children}</main>
         <MisureClic />
         <footer className="border-t border-linea">

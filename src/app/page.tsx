@@ -4,9 +4,10 @@
 // cambia: dalla home si continua ad arrivare a tutti gli articoli.
 
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PaginaArchivio } from "@/components/archivio";
+import { BottoneAcido } from "@/components/bottone-acido";
+import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
 import { Sezioni } from "@/components/home/sezioni";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { paginaArticoli, seoHome } from "@/lib/cms/wp";
@@ -26,15 +27,22 @@ export default async function Home() {
     return <PaginaArchivio titolo="Ultimi articoli" articoli={r.articoli} base="/" pagina={1} pagine={r.pagine} />;
   }
   return (
-    // Piano 06 chiuso: locandine della B con una scheda grande ogni due sezioni (scelta del proprietario)
-    <>
+    // Piano 06 chiuso: locandine della B con una scheda grande ogni due sezioni (scelta del proprietario).
+    // Prova del piano 07: indicatore delle file A sfumato / B a tacche, ?v=a|b
+    <div id="lab" data-v="a">
+      <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]){display:none}`}</style>
       <h1 className="sr-only">Il Platinatore: guide ai trofei, collezionabili e news sui videogiochi</h1>
       <Sezioni sezioni={sezioni} />
-      <p className="mt-10 border-t border-linea pt-4">
-        <Link prefetch={false} href="/page/2/" className="inline-flex min-h-11 items-center font-semibold text-link underline underline-offset-4">
-          Tutti gli articoli, dal più recente
-        </Link>
+      <p className="mt-10 flex justify-center border-t border-linea pt-6">
+        <BottoneAcido href="/page/2/">Tutti gli articoli, dal più recente</BottoneAcido>
       </p>
-    </>
+      <SelettoreVarianti
+        sezione="Barra"
+        varianti={[
+          { id: "a", nome: "Sfumata" },
+          { id: "b", nome: "Tacche" },
+        ]}
+      />
+    </div>
   );
 }

@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { BottoneAcido } from "@/components/bottone-acido";
+import { CartaArticolo } from "@/components/carta-articolo";
 import type { Articolo } from "@/lib/cms/tipi";
 
 export function dataLeggibile(iso: string): string {
@@ -8,48 +9,37 @@ export function dataLeggibile(iso: string): string {
   );
 }
 
-export function SchedaArticolo({ a, prima = false }: { a: Articolo; prima?: boolean }) {
-  return (
-    <article className="flex gap-4 border-b border-bordo py-4">
-      {a.immagine && (
-        // le misure le genera WordPress: niente ottimizzazione di Vercel
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={a.immagine.src}
-          srcSet={a.immagine.srcset}
-          sizes="(min-width: 640px) 160px, 112px"
-          alt={a.immagine.alt}
-          width={160}
-          height={90}
-          loading={prima ? "eager" : "lazy"}
-          decoding="async"
-          className="aspect-video h-auto w-28 shrink-0 rounded object-cover sm:w-40"
-        />
-      )}
-      <div className="min-w-0">
-        {a.categoria && <p className="text-xs uppercase tracking-wide text-tenue">{a.categoria.nome}</p>}
-        <h2 className="mt-1 font-semibold leading-snug">
-          <Link prefetch={false} href={a.percorso} className="hover:text-accento">
-            {a.titolo}
-          </Link>
-        </h2>
-        <p className="mt-1 text-sm text-tenue">{dataLeggibile(a.data)}</p>
-      </div>
-    </article>
-  );
-}
-
+/** «Piu' recenti» e «Meno recenti» come bottoni Acido (piano 07); indirizzi /page/N/ come oggi. */
 export function Paginazione({ base, pagina, pagine }: { base: string; pagina: number; pagine: number }) {
   if (pagine <= 1) return null;
   const href = (n: number) => (n === 1 ? base : `${base}page/${n}/`);
   return (
-    <nav aria-label="Pagine" className="mt-6 flex items-center justify-between text-sm">
-      {pagina > 1 ? <Link prefetch={false} href={href(pagina - 1)} className="inline-flex min-h-11 items-center">← Più recenti</Link> : <span />}
-      <span className="text-tenue">
+    <nav aria-label="Pagine" className="mt-8 flex flex-wrap items-center justify-between gap-3 text-sm">
+      {pagina > 1 ? (
+        <BottoneAcido href={href(pagina - 1)} verso="indietro">
+          Più recenti
+        </BottoneAcido>
+      ) : (
+        <span />
+      )}
+      <span className="cifre text-tenue">
         Pagina {pagina} di {pagine}
       </span>
-      {pagina < pagine ? <Link prefetch={false} href={href(pagina + 1)} className="inline-flex min-h-11 items-center">Meno recenti →</Link> : <span />}
+      {pagina < pagine ? <BottoneAcido href={href(pagina + 1)}>Meno recenti</BottoneAcido> : <span />}
     </nav>
+  );
+}
+
+/** Gli articoli come schede piccole e discrete, sulla falsa riga della home (piano 07). */
+export function GrigliaArticoli({ articoli }: { articoli: Articolo[] }) {
+  return (
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {articoli.map((a, i) => (
+        <li key={a.id}>
+          <CartaArticolo a={a} carico={i === 0 ? "subito" : "pigro"} piccola conData />
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -65,10 +55,8 @@ export function PaginaArchivio(props: {
     <>
       <h1 className="text-2xl font-bold">{props.titolo}</h1>
       {props.descrizione && <p className="mt-2 text-tenue">{props.descrizione}</p>}
-      <div className="mt-4">
-        {props.articoli.map((a, i) => (
-          <SchedaArticolo key={a.id} a={a} prima={i === 0} />
-        ))}
+      <div className="mt-5">
+        <GrigliaArticoli articoli={props.articoli} />
       </div>
       <Paginazione base={props.base} pagina={props.pagina} pagine={props.pagine} />
     </>
