@@ -67,7 +67,7 @@ describe("immagine e condivisione", () => {
   });
   it("la riga da condividere non contiene la soluzione", () => {
     expect(rigaDaCondividere(3, "gioco", [false, true], true)).toBe("Il Platinatore, sfida n. 3 (Riconosci il gioco): 🟥🟩 2/5");
-    expect(rigaDaCondividere(3, "classico", [false, false, false, false, false], false)).toContain("X/5");
+    expect(rigaDaCondividere(3, "classico", Array(10).fill(false), false)).toContain("X/10");
   });
 });
 

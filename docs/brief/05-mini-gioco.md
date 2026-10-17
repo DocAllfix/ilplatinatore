@@ -1,6 +1,6 @@
 # Piano di design 05: mini-gioco «La sfida»
 
-Skill: impeccable `shape`. Stato: **confermato** (17/10/2026), varianti in prova sull'anteprima. Ancore: `PRODUCT.md`, `DESIGN.md`, PDF sezioni 08, 09 e 10; riferimenti Gamedle Classic e Guess.
+Skill: impeccable `shape`. Stato: **chiuso** (17/10/2026), scelte in fondo. Ancore: `PRODUCT.md`, `DESIGN.md`, PDF sezioni 08, 09 e 10; riferimenti Gamedle Classic e Guess.
 
 ## 1. Che cosa
 Una sfida giocabile da telefono, con tre formati a rotazione (scelta dell'utente in Fase 0): **Riconosci il gioco** (immagine che si schiarisce a ogni tentativo), **Indovina il trofeo** (indizi progressivi su un trofeo, si indovina il gioco o il trofeo), **Riconosci il classico** (come il primo, su giochi storici). Alla fine: risultato, soluzione sempre visibile e un rimando pertinente (hub del gioco, guida al Platino o approfondimento). PDF 08: «mostrare sempre la soluzione senza imporre un clic su un articolo».
@@ -32,3 +32,11 @@ Pagina nuova `/sfida/` (indirizzo nuovo, nessun conflitto con quelli di oggi), c
 
 ## 8. Misure
 Partite iniziate, completate, vinte; passaggi verso il rimando finale (PDF 10). Si attivano col contatore aggregato in Fase 5.
+
+## Scelte (17/10/2026)
+
+Una scelta per formato, non una variante per tutti (regole in `src/lib/sfida.ts`, `REGOLE`):
+- **Riconosci il gioco**: A, risposta a scelta (6 opzioni) e aspetto «Scheda»; 5 tentativi.
+- **Indovina il trofeo**: risposta a scelta (A) con aspetto «Rivelazione» (C): niente carta, tentativi in una fila di caselle; 5 tentativi.
+- **Riconosci il classico**: C, risposta scritta con suggerimenti e aspetto «Rivelazione»; **10 tentativi**, e dopo il quinto errore un aiuto con iniziale, genere e studio.
+- `?f=gioco|trofeo|classico` mostra un formato diverso da quello del giorno: serve alle prove e ai controlli automatici.

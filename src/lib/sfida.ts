@@ -10,6 +10,19 @@ export const NOMI_FORMATO: Record<Formato, string> = {
 };
 export const TENTATIVI = 5;
 
+/**
+ * Come si gioca ogni formato (scelte dell'utente, 17/10/2026, piano 05 chiuso):
+ * - gioco: risposta a scelta, aspetto «Scheda», 5 tentativi;
+ * - trofeo: risposta a scelta, aspetto «Rivelazione», 5 tentativi;
+ * - classico: risposta scritta, aspetto «Rivelazione», 10 tentativi e un aiuto dopo il quinto errore
+ *   (iniziale, genere e studio).
+ */
+export const REGOLE: Record<Formato, { risposta: "scelta" | "ricerca"; stile: "scheda" | "rivelazione"; tentativi: number; aiutoDopo?: number }> = {
+  gioco: { risposta: "scelta", stile: "scheda", tentativi: 5 },
+  trofeo: { risposta: "scelta", stile: "rivelazione", tentativi: 5 },
+  classico: { risposta: "ricerca", stile: "rivelazione", tentativi: 10, aiutoDopo: 5 },
+};
+
 /** Giorno di partenza della sfida: il numero 1. */
 const PRIMO_GIORNO = Date.UTC(2026, 9, 17) / 86_400_000;
 
@@ -132,7 +145,8 @@ export function quadretti(errori: number, finita: boolean): number {
 /** La riga da condividere, senza spoiler: un quadratino per tentativo. */
 export function rigaDaCondividere(numero: number, formato: Formato, esiti: boolean[], vinta: boolean): string {
   const quadri = esiti.map((ok) => (ok ? "🟩" : "🟥")).join("");
-  return `Il Platinatore, sfida n. ${numero} (${NOMI_FORMATO[formato]}): ${quadri} ${vinta ? `${esiti.length}/${TENTATIVI}` : `X/${TENTATIVI}`}`;
+  const max = REGOLE[formato].tentativi;
+  return `Il Platinatore, sfida n. ${numero} (${NOMI_FORMATO[formato]}): ${quadri} ${vinta ? `${esiti.length}/${max}` : `X/${max}`}`;
 }
 
 /** Le opzioni a scelta: la soluzione e altre `quante - 1` prese a caso (con seme), in ordine misto. */

@@ -113,6 +113,7 @@ Poi il commit «Fase N completata».
   - piano 02, checklist «Lista» e progressione a «Pillola», più il pulsante «Torna all'inizio» su tutti gli articoli;
   - piano 03, collezionabili B «Tabella» e correlati C «Con immagine».
   - piano 04, hub del gioco A «Percorso» su `/tag/<gioco>/` (campi del tag, tipo di guida dal titolo) e barra di lettura A «Linea» su tutti gli articoli.
+  - piano 05, la sfida del giorno su `/sfida/`: tre formati a rotazione, generati dai dati del sito (spunta «Usabile nella sfida» sul tag, trofei dei campi, classici in Strumenti > Classici della sfida); una scelta per formato (vedi `docs/brief/05-mini-gioco.md`).
   - Brief e scelte in `docs/brief/`; formato dei campi per redazione e wpvibe in `docs/guida-campi-wpvibe.md`.
 - **Regole nate**: ogni dato del prototipo sta in un campo `pl_*` del CMS, mai nel codice; la tabella del testo resta solo come ripiego. Prima di ogni consegna, passata con impeccable polish e design-taste-frontend.
-- **Da fare**: mini-gioco, home a tre moduli. Breaking, Hot take e flusso delle notizie vanno nella home completa (Fase 4).
+- **Da fare**: home a tre moduli. Breaking, Hot take e flusso delle notizie vanno nella home completa (Fase 4).

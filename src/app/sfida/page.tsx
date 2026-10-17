@@ -2,12 +2,10 @@
 // di oggi. Si rigenera spesso perche' a mezzanotte cambia la sfida.
 
 import type { Metadata } from "next";
-import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
-import { FormatiDiProva } from "@/components/sfida/formati-di-prova";
 import { LaSfida } from "@/components/sfida/sfida";
 import { sitoPubblico } from "@/lib/cms/config";
 import { robots } from "@/lib/cms/metadati";
-import { giornoRoma, type Formato } from "@/lib/sfida";
+import { giornoRoma } from "@/lib/sfida";
 import { datiSfida } from "@/lib/sfida-dati";
 
 export const revalidate = 300;
@@ -21,27 +19,11 @@ export const metadata: Metadata = {
 
 export default async function PaginaSfida() {
   const dati = await datiSfida(giornoRoma(new Date()));
-  const presenti = (Object.keys(dati.sfide) as Formato[]).filter((f) => dati.sfide[f]);
   return (
-    // Prova del piano 05 (docs/brief/05-mini-gioco.md): tre varianti, ?v=a|b|c; formati con ?f=
-    <div id="lab" data-v="a">
-      <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]),#lab[data-v="c"] [data-variant]:not([data-variant="c"]){display:none}`}</style>
+    // Piano 05 chiuso: regole per formato in lib/sfida.ts (REGOLE)
+    <>
       <h1 className="sr-only">La sfida del giorno</h1>
-      <FormatiDiProva presenti={presenti} />
-      {(["a", "b", "c"] as const).map((v) => (
-        <div key={v} data-variant={v}>
-          <LaSfida dati={dati} variante={v} />
-        </div>
-      ))}
-      <SelettoreVarianti
-        sezione="Sfida"
-        posizione="alto"
-        varianti={[
-          { id: "a", nome: "Scheda" },
-          { id: "b", nome: "Ricerca" },
-          { id: "c", nome: "Rivelazione" },
-        ]}
-      />
-    </div>
+      <LaSfida dati={dati} />
+    </>
   );
 }

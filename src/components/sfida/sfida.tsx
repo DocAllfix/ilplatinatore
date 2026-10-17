@@ -1,8 +1,8 @@
 "use client";
 
-// La sfida del giorno (PDF 08, piano 05). Tre formati a rotazione e tre varianti in prova:
-// A «Scheda» (risposta a scelta), B «Ricerca» (risposta scritta con suggerimenti),
-// C «Rivelazione» (immagine e indizi a tutta larghezza, tentativi in una fila di caselle).
+// La sfida del giorno (PDF 08, piano 05 chiuso). Tre formati a rotazione, ognuno con le sue regole
+// (lib/sfida.ts, REGOLE): risposta a scelta o scritta, aspetto «Scheda» (tutto in una carta) o
+// «Rivelazione» (senza carta, tentativi in una fila di caselle), numero di tentativi.
 // La soluzione si vede sempre a fine partita, senza obbligo di aprire un articolo.
 
 import { ArrowDownIcon, ArrowRightIcon, ArrowUpIcon, CheckIcon, ShareNetworkIcon, XIcon } from "@phosphor-icons/react/ssr";
@@ -18,7 +18,7 @@ import {
   opzioniDelGiorno,
   quadretti,
   rigaDaCondividere,
-  TENTATIVI,
+  REGOLE,
   type Esito,
   type Formato,
 } from "@/lib/sfida";
@@ -26,10 +26,9 @@ import { ImmagineSgranata } from "./immagine-sgranata";
 import { usePartita } from "./partita";
 import { Ricerca, Scelte } from "./risposta";
 
-export type VarianteSfida = "a" | "b" | "c";
-type Comune = { numero: number; giorno: number; variante: VarianteSfida };
+type Comune = { numero: number; giorno: number };
 
-/** Solo per l'anteprima: ?f=gioco|trofeo|classico mostra un formato diverso da quello di oggi. */
+/** Per le prove: ?f=gioco|trofeo|classico mostra un formato diverso da quello di oggi. */
 function useFormatoScelto(): Formato | null {
   return useSyncExternalStore(
     (f) => {
@@ -44,16 +43,16 @@ function useFormatoScelto(): Formato | null {
   );
 }
 
-function Caselle({ tentativi, giusta }: { tentativi: string[]; giusta: (t: string) => boolean }) {
+function Caselle({ tentativi, giusta, max }: { tentativi: string[]; giusta: (t: string) => boolean; max: number }) {
   return (
-    <ol className="flex gap-1.5" aria-label={`Tentativi: ${tentativi.length} di ${TENTATIVI}`}>
-      {Array.from({ length: TENTATIVI }, (_, i) => {
+    <ol className="grid grid-cols-5 gap-1.5" aria-label={`Tentativi: ${tentativi.length} di ${max}`}>
+      {Array.from({ length: max }, (_, i) => {
         const t = tentativi[i];
         const ok = t !== undefined && giusta(t);
         return (
           <li
             key={i}
-            className={`flex h-10 flex-1 items-center justify-center rounded-lg border-2 ${
+            className={`flex h-10 items-center justify-center rounded-lg border-2 ${
               t === undefined ? "border-linea" : ok ? "border-azione bg-azione text-su-azione" : "border-(--errore)/70 text-(--errore)"
             }`}
           >
@@ -65,26 +64,11 @@ function Caselle({ tentativi, giusta }: { tentativi: string[]; giusta: (t: strin
   );
 }
 
-function Contatore({ usati }: { usati: number }) {
+function Contatore({ usati, max }: { usati: number; max: number }) {
   return (
     <p className="cifre text-sm text-tenue" aria-live="polite">
-      Tentativi: <span className="font-semibold text-testo">{usati}</span> di {TENTATIVI}
+      Tentativi: <span className="font-semibold text-testo">{usati}</span> di {max}
     </p>
-  );
-}
-
-function Sbagliati({ tentativi, giusta }: { tentativi: string[]; giusta: (t: string) => boolean }) {
-  const no = tentativi.filter((t) => !giusta(t));
-  if (!no.length) return null;
-  return (
-    <ul className="flex flex-wrap gap-1.5" aria-label="Risposte sbagliate">
-      {no.map((t) => (
-        <li key={t} className="inline-flex items-center gap-1 rounded-full border border-linea px-3 py-1 text-sm text-tenue line-through">
-          <XIcon weight="bold" className="size-3.5 text-(--errore)" aria-hidden="true" />
-          {t}
-        </li>
-      ))}
-    </ul>
   );
 }
 
@@ -142,9 +126,10 @@ function Fine({
 
 // --- Riconosci il gioco -----------------------------------------------------------------------
 
-function Gioco({ s, numero, giorno, variante }: Comune & { s: SfidaGioco }) {
+function Gioco({ s, numero, giorno }: Comune & { s: SfidaGioco }) {
   const giusta = (t: string) => normale(t) === normale(s.soluzione);
-  const p = usePartita(`platinatore:sfida:${giorno}:gioco`, giusta, TENTATIVI);
+  const max = REGOLE.gioco.tentativi;
+  const p = usePartita(`platinatore:sfida:${giorno}:gioco`, giusta, max);
   const lato = quadretti(p.errori, p.finita);
   const opzioni = opzioniDelGiorno(s.soluzione, s.risposte, 6, giorno);
   const fine = p.finita && (
@@ -155,35 +140,21 @@ function Gioco({ s, numero, giorno, variante }: Comune & { s: SfidaGioco }) {
       condividi={rigaDaCondividere(numero, "gioco", p.tentativi.map(giusta), p.vinta)}
     />
   );
-  const risposta = !p.finita && (variante === "a"
-    ? <Scelte opzioni={opzioni} provati={p.tentativi} giusta={giusta} prova={p.prova} />
-    : <Ricerca elenco={s.risposte} provati={p.tentativi} prova={p.prova} etichetta="Che gioco è?" />);
-
-  if (variante === "c")
-    return (
-      <div className="flex flex-col gap-4">
-        <div className="-mx-4 overflow-hidden">
-          <ImmagineSgranata immagine={s.immagine} lato={lato} />
-        </div>
-        <Caselle tentativi={p.tentativi} giusta={giusta} />
-        {fine || risposta}
-      </div>
-    );
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-linea bg-superficie p-3 sm:p-4">
       <ImmagineSgranata immagine={s.immagine} lato={lato} classe="rounded-lg" />
-      <Contatore usati={p.tentativi.length} />
-      {variante === "b" && <Sbagliati tentativi={p.tentativi} giusta={giusta} />}
-      {fine || risposta}
+      <Contatore usati={p.tentativi.length} max={max} />
+      {fine || <Scelte opzioni={opzioni} provati={p.tentativi} giusta={giusta} prova={p.prova} />}
     </div>
   );
 }
 
 // --- Indovina il trofeo -----------------------------------------------------------------------
 
-function Trofeo({ s, numero, giorno, variante }: Comune & { s: SfidaTrofeo }) {
+function Trofeo({ s, numero, giorno }: Comune & { s: SfidaTrofeo }) {
   const giusta = (t: string) => normale(t) === normale(s.soluzione);
-  const p = usePartita(`platinatore:sfida:${giorno}:trofeo`, giusta, TENTATIVI);
+  const max = REGOLE.trofeo.tentativi;
+  const p = usePartita(`platinatore:sfida:${giorno}:trofeo`, giusta, max);
   const indizi = [
     { etichetta: "Come si ottiene", testo: s.indizi.come },
     { etichetta: "Gruppo della guida", testo: s.indizi.gruppo },
@@ -192,7 +163,7 @@ function Trofeo({ s, numero, giorno, variante }: Comune & { s: SfidaTrofeo }) {
   const visibili = p.finita ? indizi.length : Math.min(indizi.length, p.errori + 1);
   const opzioni = opzioniDelGiorno(s.soluzione, s.risposte, 6, giorno + 1);
   const elenco = (
-    <ol className={`flex flex-col gap-2 ${variante === "c" ? "" : ""}`}>
+    <ol className="flex flex-col gap-2">
       {indizi.map((x, i) => (
         <li
           key={x.etichetta}
@@ -213,19 +184,14 @@ function Trofeo({ s, numero, giorno, variante }: Comune & { s: SfidaTrofeo }) {
   const fine = p.finita && (
     <Fine vinta={p.vinta} soluzione={s.soluzione} rimando={s.rimando} condividi={rigaDaCondividere(numero, "trofeo", p.tentativi.map(giusta), p.vinta)} />
   );
-  const risposta = !p.finita && (variante === "a"
-    ? <Scelte opzioni={opzioni} provati={p.tentativi} giusta={giusta} prova={p.prova} />
-    : <Ricerca elenco={s.risposte} provati={p.tentativi} prova={p.prova} etichetta={`Quale trofeo di ${s.gioco}?`} />);
-
   return (
-    <div className={`flex flex-col gap-4 ${variante === "c" ? "" : "rounded-xl border border-linea bg-superficie p-3 sm:p-4"}`}>
+    <div className="flex flex-col gap-4">
       <p className="font-semibold">
         Un trofeo di <span className="text-viola">{s.gioco}</span>. Quale?
       </p>
       {elenco}
-      {variante === "c" ? <Caselle tentativi={p.tentativi} giusta={giusta} /> : <Contatore usati={p.tentativi.length} />}
-      {variante === "b" && <Sbagliati tentativi={p.tentativi} giusta={giusta} />}
-      {fine || risposta}
+      <Caselle tentativi={p.tentativi} giusta={giusta} max={max} />
+      {fine || <Scelte opzioni={opzioni} provati={p.tentativi} giusta={giusta} prova={p.prova} />}
     </div>
   );
 }
@@ -254,12 +220,12 @@ function Indizio({ esito, etichetta, valore, verso }: { esito: Esito; etichetta:
   );
 }
 
-function Classico({ s, numero, giorno, variante }: Comune & { s: SfidaClassico }) {
+function Classico({ s, numero, giorno }: Comune & { s: SfidaClassico }) {
   const giusta = (t: string) => normale(t) === normale(s.soluzione.nome);
-  const p = usePartita(`platinatore:sfida:${giorno}:classico`, giusta, TENTATIVI);
+  const { tentativi: max, aiutoDopo = max } = REGOLE.classico;
+  const p = usePartita(`platinatore:sfida:${giorno}:classico`, giusta, max);
   const perNome = new Map(s.elenco.map((c) => [c.nome, c]));
   const nomi = s.elenco.map((c) => c.nome);
-  const opzioni = opzioniDelGiorno(s.soluzione.nome, nomi, 6, giorno + 2);
   const righe = p.tentativi.map((t) => perNome.get(t)).filter((c): c is NonNullable<typeof c> => Boolean(c));
 
   const tabella = (
@@ -298,19 +264,37 @@ function Classico({ s, numero, giorno, variante }: Comune & { s: SfidaClassico }
       }
     />
   );
-  const risposta = !p.finita && (variante === "a"
-    ? <Scelte opzioni={opzioni} provati={p.tentativi} giusta={giusta} prova={p.prova} />
-    : <Ricerca elenco={nomi} provati={p.tentativi} prova={p.prova} etichetta="Prova un classico" />);
+  // dopo il quinto errore: iniziale, genere e studio (scelta dell'utente)
+  const aiuto = !p.finita && p.errori >= aiutoDopo && (
+    <section aria-label="Aiuto" className="animate-[apri_250ms_var(--ease-uscita)] rounded-xl border-2 border-viola/70 bg-superficie p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.06em] text-viola">Aiuto dopo {aiutoDopo} errori</p>
+      <dl className="mt-2 grid grid-cols-3 gap-2 text-sm">
+        <div>
+          <dt className="text-tenue">Iniziale</dt>
+          <dd className="text-lg font-bold">{sol.nome.charAt(0)}</dd>
+        </div>
+        <div>
+          <dt className="text-tenue">Genere</dt>
+          <dd className="font-semibold">{sol.genere}</dd>
+        </div>
+        <div>
+          <dt className="text-tenue">Studio</dt>
+          <dd className="font-semibold">{sol.sviluppatore}</dd>
+        </div>
+      </dl>
+    </section>
+  );
 
   return (
-    <div className={`flex flex-col gap-4 ${variante === "c" ? "" : "rounded-xl border border-linea bg-superficie p-3 sm:p-4"}`}>
+    <div className="flex flex-col gap-4">
       <p className="text-[0.9375rem]">
         Un classico dell&apos;era PlayStation e dintorni. A ogni tentativo scopri se <strong>anno, console, studio, genere e serie</strong> sono giusti, vicini o
-        sbagliati. La freccia dice se il gioco da indovinare è uscito prima o dopo.
+        sbagliati. La freccia dice se il gioco da indovinare è uscito prima o dopo. Hai {max} tentativi; dopo {aiutoDopo} errori arriva un aiuto.
       </p>
       {righe.length > 0 && tabella}
-      {variante === "c" ? <Caselle tentativi={p.tentativi} giusta={giusta} /> : <Contatore usati={p.tentativi.length} />}
-      {fine || risposta}
+      {aiuto}
+      <Caselle tentativi={p.tentativi} giusta={giusta} max={max} />
+      {fine || <Ricerca elenco={nomi} provati={p.tentativi} prova={p.prova} etichetta="Prova un classico" />}
     </div>
   );
 }
@@ -323,7 +307,7 @@ function Corpo({ s, comune }: { s: Sfida; comune: Comune }) {
   return <Classico s={s} {...comune} />;
 }
 
-export function LaSfida({ dati, variante }: { dati: DatiSfida; variante: VarianteSfida }) {
+export function LaSfida({ dati }: { dati: DatiSfida }) {
   const scelto = useFormatoScelto();
   const formato = scelto && dati.sfide[scelto] ? scelto : dati.oggi;
   const s = formato ? dati.sfide[formato] : undefined;
@@ -340,9 +324,9 @@ export function LaSfida({ dati, variante }: { dati: DatiSfida; variante: Variant
           Sfida n. {dati.numero}
           {formato !== dati.oggi && " · formato di prova"}
         </p>
-        <h2 className={`font-bold leading-tight ${variante === "c" ? "text-[clamp(1.75rem,1.4rem+2vw,2.5rem)]" : "text-[1.5rem]"}`}>{NOMI_FORMATO[formato]}</h2>
+        <h2 className={`font-bold leading-tight ${REGOLE[formato].stile === "rivelazione" ? "text-[clamp(1.75rem,1.4rem+2vw,2.5rem)]" : "text-[1.5rem]"}`}>{NOMI_FORMATO[formato]}</h2>
       </header>
-      <Corpo s={s} comune={{ numero: dati.numero, giorno: dati.giorno, variante }} />
+      <Corpo s={s} comune={{ numero: dati.numero, giorno: dati.giorno }} />
     </div>
   );
 }
