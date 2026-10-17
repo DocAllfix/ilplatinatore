@@ -13,6 +13,11 @@ on:
   schedule:
     - cron: "*/10 * * * *"
   workflow_dispatch:
+    inputs:
+      rompi:
+        description: "Aggiunge un controllo che deve fallire (per vedere la sorveglianza diventare rossa)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -49,6 +54,9 @@ jobs:
           prova "Immagine dal sito"    "$SITO/wp-content/uploads/2026/10/Valor-Mortis-guida-al-Platino-tutti-i-39-trofei-e-roadmap-completa-300x169.jpg?v=2"
           prova "REST del CMS"         "$CMS/wp-json/wp/v2/posts?per_page=1&_fields=id" '"id"'
           prova "Immagine dal CMS"     "$CMS/wp-content/uploads/2026/10/Valor-Mortis-guida-al-Platino-tutti-i-39-trofei-e-roadmap-completa-300x169.jpg"
+          if [ "${{ inputs.rompi }}" = "true" ]; then
+            prova "Guasto messo apposta" "$SITO/pagina-che-non-esiste-per-prova/"
+          fi
           # il sito di prova deve restare fuori da Google finche' non si passa
           if ! curl -sSI -m 20 "$SITO/" | grep -qi '^x-robots-tag: noindex'; then
             echo "::error::Il sito di prova ha perso il noindex"; errori=$((errori+1))
