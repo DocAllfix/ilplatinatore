@@ -41,10 +41,20 @@ export function Hero({ voci }: { voci: VoceHero[] }) {
   const [sospeso, setSospeso] = useState(false); // mouse sopra, fuoco dentro, dito appoggiato
   const ridotto = useMovimentoRidotto();
   const partenza = useRef<number | null>(null);
+  // le immagini degli articoli 2 e 3 partono dopo: sovrapposte alla prima sono «a schermo» e il browser
+  // le scaricava insieme, rubando banda all'immagine principale (LCP 3,5 s su rete lenta)
+  const [tutte, setTutte] = useState(false);
+  useEffect(() => {
+    const t = window.setTimeout(() => setTutte(true), 2500);
+    return () => window.clearTimeout(t);
+  }, []);
   const n = voci.length;
   const gira = !ridotto && !fermo && !sospeso && n > 1;
 
-  const vai = (i: number) => setAttivo(((i % n) + n) % n);
+  const vai = (i: number) => {
+    setTutte(true);
+    setAttivo(((i % n) + n) % n);
+  };
 
   // il nuovo articolo riparte da zero (la cornice e' un'animazione CSS: riparte cambiando chiave)
   useEffect(() => {
@@ -101,12 +111,12 @@ export function Hero({ voci }: { voci: VoceHero[] }) {
                 draggable={false}
                 className="group relative isolate flex size-full flex-col justify-end overflow-hidden rounded-2xl p-5"
               >
-                {v.immagine && (
+                {v.immagine && (i === 0 || tutte) && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={v.immagine.src}
                     srcSet={v.immagine.srcset}
-                    sizes="(min-width: 768px) 736px, 100vw"
+                    sizes="(min-width: 768px) 736px, calc(100vw - 2rem)"
                     alt=""
                     draggable={false}
                     loading={i === 0 ? "eager" : "lazy"}
