@@ -23,7 +23,10 @@ describe("home a sezioni", () => {
 describe("senzaRipetizioni", () => {
   it("toglie i doppioni dalle file sotto, ma non svuota una fila", () => {
     const x = (...ids: number[]) => ids.map((id) => ({ id }));
-    const r = senzaRipetizioni([x(1, 2, 3, 4), x(1, 2, 5, 6, 7, 8), x(1, 2)], 4);
+    const r = senzaRipetizioni([x(1, 2, 3, 4), x(1, 2, 5, 6, 7, 8), x(1, 2)], 4, 10);
     expect(r.map((l) => l.map((a) => a.id))).toEqual([[1, 2, 3, 4], [5, 6, 7, 8], [1, 2]]);
+    // quelli rimasti fuori dalla fila non contano come mostrati
+    const s = senzaRipetizioni([x(1, 2, 3, 4, 9), x(9, 5, 6, 7)], 4, 4);
+    expect(s[1].map((a) => a.id)).toEqual([9, 5, 6, 7]);
   });
 });

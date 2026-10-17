@@ -38,12 +38,14 @@ export function perModifica<T extends ConData>(liste: T[][], quanti: number): T[
 /**
  * Niente doppioni fra le file: un articolo gia' mostrato in una sezione piu' in alto si toglie da
  * quelle sotto, finche' la sezione resta con almeno `minimo` schede (altrimenti si lascia com'e').
+ * Ogni fila mostra al massimo `massimo` schede.
  */
-export function senzaRipetizioni<T extends { id: number }>(sezioni: T[][], minimo: number): T[][] {
+export function senzaRipetizioni<T extends { id: number }>(sezioni: T[][], minimo: number, massimo: number): T[][] {
   const visti = new Set<number>();
   return sezioni.map((voci) => {
     const nuove = voci.filter((a) => !visti.has(a.id));
-    const scelte = nuove.length >= minimo ? nuove : voci;
+    // contano come «gia' mostrati» solo quelli che entrano davvero nella fila
+    const scelte = (nuove.length >= minimo ? nuove : voci).slice(0, massimo);
     scelte.forEach((a) => visti.add(a.id));
     return scelte;
   });

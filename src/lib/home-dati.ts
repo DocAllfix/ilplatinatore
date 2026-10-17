@@ -59,7 +59,8 @@ async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeo
   if (s.regola === "titolo") {
     const parole = paroleDa(s.parametro);
     if (!parole.length) return null;
-    const liste = await Promise.all(parole.map((p) => articoliModificati(`search=${encodeURIComponent(p)}`, 30)));
+    // la ricerca di WordPress guarda anche il testo: se ne chiedono tanti e si tengono quelli col titolo giusto
+    const liste = await Promise.all(parole.map((p) => articoliModificati(`search=${encodeURIComponent(p)}`, 100)));
     const voci = perModifica(liste.map((l) => l.filter((a) => titoloContiene(a.titolo, parole))), PER_SEZIONE);
     return voci.length ? { tipo: "articoli", titolo: s.titolo, voci, criterio: "Dall'ultimo aggiornato." } : null;
   }
@@ -97,6 +98,6 @@ async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeo
 export async function datiHome(oggi: Date): Promise<SezioneDati[]> {
   const [elenco, tag] = await Promise.all([sezioniHome(), tuttiITermini("tags")]);
   const tutte = (await Promise.all(elenco.map((s) => sezione(s, oggi, tag).catch(() => null)))).filter((x): x is SezioneDati => x !== null);
-  const voci = senzaRipetizioni(tutte.map((s) => (s.tipo === "articoli" ? s.voci : [])), 4);
-  return tutte.map((s, i) => (s.tipo === "articoli" ? { ...s, voci: voci[i].slice(0, IN_FILA) } : s));
+  const voci = senzaRipetizioni(tutte.map((s) => (s.tipo === "articoli" ? s.voci : [])), 4, IN_FILA);
+  return tutte.map((s, i) => (s.tipo === "articoli" ? { ...s, voci: voci[i] } : s));
 }
