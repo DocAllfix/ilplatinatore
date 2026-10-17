@@ -26,7 +26,7 @@ function Elenco({ g, tutte }: { g: Gruppo; tutte: boolean }) {
       <ul className="mt-2 border-t border-linea">
         {mostra.map((v) => (
           <li key={v.id} className="border-b border-linea">
-            <Link href={v.percorso} className="flex min-h-12 items-center py-2.5 leading-snug [@media(hover:hover)]:hover:text-link">
+            <Link prefetch={false} href={v.percorso} className="flex min-h-12 items-center py-2.5 leading-snug [@media(hover:hover)]:hover:text-link">
               {senzaGioco(v.titolo)}
             </Link>
           </li>

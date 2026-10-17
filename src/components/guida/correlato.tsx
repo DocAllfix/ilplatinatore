@@ -27,7 +27,7 @@ function Etichetta({ tipo }: { tipo: string }) {
 export function Correlato({ c, a }: Props) {
   return (
     <aside aria-label={c.tipo} className="my-6">
-      <Link
+      <Link prefetch={false}
         href={a.percorso}
         data-misura="correlato"
         data-misura-dettaglio={c.tipo}

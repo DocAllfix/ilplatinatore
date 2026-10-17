@@ -166,7 +166,7 @@ export default async function PaginaArticolo({ params }: Parametri) {
         <ul className="mt-8 flex flex-wrap gap-2 text-sm">
           {a.tag.map((t) => (
             <li key={t.slug}>
-              <Link href={`/tag/${t.slug}/`} className="flex min-h-11 items-center rounded-full border border-linea px-4 hover:border-link">
+              <Link prefetch={false} href={`/tag/${t.slug}/`} className="flex min-h-11 items-center rounded-full border border-linea px-4 hover:border-link">
                 #{t.nome}
               </Link>
             </li>

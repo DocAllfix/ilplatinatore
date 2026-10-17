@@ -29,7 +29,7 @@ export function SchedaArticolo({ a, prima = false }: { a: Articolo; prima?: bool
       <div className="min-w-0">
         {a.categoria && <p className="text-xs uppercase tracking-wide text-tenue">{a.categoria.nome}</p>}
         <h2 className="mt-1 font-semibold leading-snug">
-          <Link href={a.percorso} className="hover:text-accento">
+          <Link prefetch={false} href={a.percorso} className="hover:text-accento">
             {a.titolo}
           </Link>
         </h2>
@@ -44,11 +44,11 @@ export function Paginazione({ base, pagina, pagine }: { base: string; pagina: nu
   const href = (n: number) => (n === 1 ? base : `${base}page/${n}/`);
   return (
     <nav aria-label="Pagine" className="mt-6 flex items-center justify-between text-sm">
-      {pagina > 1 ? <Link href={href(pagina - 1)} className="inline-flex min-h-11 items-center">← Più recenti</Link> : <span />}
+      {pagina > 1 ? <Link prefetch={false} href={href(pagina - 1)} className="inline-flex min-h-11 items-center">← Più recenti</Link> : <span />}
       <span className="text-tenue">
         Pagina {pagina} di {pagine}
       </span>
-      {pagina < pagine ? <Link href={href(pagina + 1)} className="inline-flex min-h-11 items-center">Meno recenti →</Link> : <span />}
+      {pagina < pagine ? <Link prefetch={false} href={href(pagina + 1)} className="inline-flex min-h-11 items-center">Meno recenti →</Link> : <span />}
     </nav>
   );
 }

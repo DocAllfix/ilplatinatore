@@ -8,6 +8,9 @@ import type { SezioneDati } from "@/lib/home-dati";
 import { CartaSfida } from "./carta-sfida";
 import { FilaScorrevole } from "./fila-scorrevole";
 
+// Niente precaricamento dei link nelle schede (prefetch={false}, anche nel resto del sito): Next
+// scaricava in anticipo ogni articolo visibile, circa 550 KB in piu' alla prima apertura da telefono,
+// e per gli articoli non ancora pronti faceva lavorare il CMS (17/10/2026).
 const NEWS = /^news$/i;
 
 /** Guida o News: due formati coerenti (PDF 01), si distinguono a colpo d'occhio. */
@@ -24,11 +27,18 @@ function Tipo({ a, sopra = false }: { a: Articolo; sopra?: boolean }) {
   );
 }
 
-/** `carico`: «subito» (la prima della home, priorita' alta), «pigro» (lazy), «dopo» (parte quando si tocca la fila). */
-function Img({ a, classe, sizes, carico }: { a: Articolo; classe: string; sizes: string; carico: "subito" | "pigro" | "dopo" }) {
+type Carico = "subito" | "pigro" | "vicino" | "dopo";
+
+/**
+ * `carico`: «subito» (la prima della home, priorita' alta), «pigro» (le altre della prima fila),
+ * «vicino» (parte quando la fila sta per entrare nello schermo), «dopo» (quando si tocca la fila).
+ */
+function Img({ a, classe, sizes, carico }: { a: Articolo; classe: string; sizes: string; carico: Carico }) {
   if (!a.immagine) return <span className={`block bg-superficie-alta ${classe}`} />;
-  const sorgente =
-    carico === "dopo" ? { "data-src": a.immagine.src, "data-srcset": a.immagine.srcset } : { src: a.immagine.src, srcSet: a.immagine.srcset };
+  const differita = carico === "vicino" || carico === "dopo";
+  const sorgente = differita
+    ? { "data-src": a.immagine.src, "data-srcset": a.immagine.srcset, "data-carico": carico }
+    : { src: a.immagine.src, srcSet: a.immagine.srcset };
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -43,9 +53,9 @@ function Img({ a, classe, sizes, carico }: { a: Articolo; classe: string; sizes:
   );
 }
 
-function CartaLocandina({ a, carico, grande = false, sezione }: { a: Articolo; carico: "subito" | "pigro" | "dopo"; grande?: boolean; sezione: string }) {
+function CartaLocandina({ a, carico, grande = false, sezione }: { a: Articolo; carico: Carico; grande?: boolean; sezione: string }) {
   return (
-    <Link
+    <Link prefetch={false}
       href={a.percorso}
       data-misura="home_sezione"
       data-misura-dettaglio={sezione}
@@ -72,7 +82,7 @@ function Fila({ voci, prima, apertura, sezione }: { voci: Articolo[]; prima: boo
         const grande = apertura && i === 0;
         return (
           <li key={a.id} className={`shrink-0 snap-start ${grande ? "w-[min(22rem,84vw)]" : "w-[min(11rem,46vw)]"}`}>
-            <CartaLocandina a={a} carico={prima && i === 0 ? "subito" : i < 4 ? "pigro" : "dopo"} grande={grande} sezione={sezione} />
+            <CartaLocandina a={a} carico={prima ? (i === 0 ? "subito" : i < 3 ? "pigro" : "dopo") : i < 3 ? "vicino" : "dopo"} grande={grande} sezione={sezione} />
           </li>
         );
       })}
@@ -91,7 +101,7 @@ export function Sezioni({ sezioni }: { sezioni: SezioneDati[] }) {
               {s.tipo === "articoli" && <p className="mt-0.5 text-sm text-tenue">{s.criterio}</p>}
             </div>
             {s.tipo === "articoli" && s.tutti && (
-              <Link href={s.tutti.href} className="inline-flex min-h-11 max-w-[45%] shrink-0 items-center text-right text-sm font-semibold text-link underline underline-offset-4">
+              <Link prefetch={false} href={s.tutti.href} className="inline-flex min-h-11 max-w-[45%] shrink-0 items-center text-right text-sm font-semibold text-link underline underline-offset-4">
                 {s.tutti.testo}
               </Link>
             )}

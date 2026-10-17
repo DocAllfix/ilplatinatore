@@ -15,7 +15,7 @@ export function CartaSfida({ s, grande = false }: { s: SfidaInBreve; grande?: bo
   const p = usePartita(`platinatore:sfida:${s.giorno}:${s.formato}`, () => false, max);
   const stato = p.finita ? (p.vinta ? "Indovinata oggi" : "Giocata oggi") : p.tentativi.length ? `In corso: ${p.tentativi.length} di ${max}` : null;
   return (
-    <Link
+    <Link prefetch={false}
       href="/sfida/"
       data-misura="home_sezione"
       data-misura-dettaglio="La sfida del giorno"

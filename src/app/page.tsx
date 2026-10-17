@@ -31,7 +31,7 @@ export default async function Home() {
       <h1 className="sr-only">Il Platinatore: guide ai trofei, collezionabili e news sui videogiochi</h1>
       <Sezioni sezioni={sezioni} />
       <p className="mt-10 border-t border-linea pt-4">
-        <Link href="/page/2/" className="inline-flex min-h-11 items-center font-semibold text-link underline underline-offset-4">
+        <Link prefetch={false} href="/page/2/" className="inline-flex min-h-11 items-center font-semibold text-link underline underline-offset-4">
           Tutti gli articoli, dal più recente
         </Link>
       </p>

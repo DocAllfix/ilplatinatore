@@ -121,7 +121,7 @@ function Completamento({ d }: { d: DatiHub }) {
       <div className="mt-3">
         <Mancabili s={s} />
       </div>
-      <Link href={d.platino.percorso} className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-link [@media(hover:hover)]:hover:underline">
+      <Link prefetch={false} href={d.platino.percorso} className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-link [@media(hover:hover)]:hover:underline">
         Guida al Platino e roadmap
         <ArrowRightIcon weight="bold" className="size-3.5" aria-hidden="true" />
       </Link>
@@ -131,7 +131,7 @@ function Completamento({ d }: { d: DatiHub }) {
 
 function CartaPlatino({ a }: { a: Articolo }) {
   return (
-    <Link
+    <Link prefetch={false}
       href={a.percorso}
       className="group grid grid-cols-[7rem_1fr] overflow-hidden rounded-xl border-2 border-viola/70 bg-superficie transition-[border-color,transform] duration-150 active:scale-[0.99] sm:grid-cols-[11rem_1fr] [@media(hover:hover)]:hover:border-link"
     >
@@ -160,7 +160,7 @@ function IniziaQui({ d }: { d: DatiHub }) {
     <ol className="flex flex-col gap-2">
       {d.iniziaQui.map((a, i) => (
         <li key={a.id}>
-          <Link
+          <Link prefetch={false}
             href={a.percorso}
             className="group flex min-h-14 items-center gap-3 rounded-xl border border-linea bg-superficie p-3 transition-[border-color,transform] duration-150 active:scale-[0.99] [@media(hover:hover)]:hover:border-link"
           >
@@ -185,7 +185,7 @@ function Notizie({ d }: { d: DatiHub }) {
         <ul className="mt-2 border-t border-linea">
           {d.notizie.slice(0, 8).map((a) => (
             <li key={a.id} className="border-b border-linea py-2.5">
-              <Link href={a.percorso} className="font-medium leading-snug [@media(hover:hover)]:hover:text-link">
+              <Link prefetch={false} href={a.percorso} className="font-medium leading-snug [@media(hover:hover)]:hover:text-link">
                 {a.titolo}
               </Link>
               <p className="text-sm text-tenue">{dataLeggibile(a.data)}</p>
@@ -210,7 +210,7 @@ function Piede({ d }: { d: DatiHub }) {
         </>
       )}
       {d.archivio && (
-      <Link href={`/tag/${d.slug}/page/2/`} className="inline-flex min-h-11 items-center text-link underline underline-offset-4">
+      <Link prefetch={false} href={`/tag/${d.slug}/page/2/`} className="inline-flex min-h-11 items-center text-link underline underline-offset-4">
         Archivio in ordine di data
       </Link>
       )}
@@ -275,7 +275,7 @@ function ElencoBreve({ guide }: { guide: Articolo[] }) {
     <ul className="border-t border-linea">
       {guide.map((a) => (
         <li key={a.id} className="border-b border-linea">
-          <Link href={a.percorso} className="flex min-h-12 items-center py-2 leading-snug [@media(hover:hover)]:hover:text-link">
+          <Link prefetch={false} href={a.percorso} className="flex min-h-12 items-center py-2 leading-snug [@media(hover:hover)]:hover:text-link">
             {senzaGioco(a.titolo)}
           </Link>
         </li>

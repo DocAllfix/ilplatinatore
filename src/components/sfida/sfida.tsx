@@ -109,7 +109,7 @@ function Fine({
       {dettaglio}
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         {rimando && (
-          <Link href={rimando.href} data-misura="sfida_rimando" className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-xl bg-azione px-4 font-semibold text-su-azione active:scale-[0.98]">
+          <Link prefetch={false} href={rimando.href} data-misura="sfida_rimando" className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-xl bg-azione px-4 font-semibold text-su-azione active:scale-[0.98]">
             {rimando.testo}
             <ArrowRightIcon weight="bold" className="size-4" aria-hidden="true" />
           </Link>
@@ -314,7 +314,7 @@ export function LaSfida({ dati }: { dati: DatiSfida }) {
   if (!formato || !s)
     return (
       <p className="rounded-xl border border-dashed border-linea p-4 text-tenue">
-        Oggi niente sfida: torna domani. Intanto, <Link href="/category/guide/" className="text-link underline underline-offset-4">le ultime guide</Link>.
+        Oggi niente sfida: torna domani. Intanto, <Link prefetch={false} href="/category/guide/" className="text-link underline underline-offset-4">le ultime guide</Link>.
       </p>
     );
   return (

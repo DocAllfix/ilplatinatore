@@ -11,14 +11,14 @@ function Briciole({ a }: { a: Articolo }) {
     <nav aria-label="Briciole" className="text-sm text-tenue">
       <ol className="flex flex-wrap items-center gap-x-1.5">
         <li>
-          <Link href="/" className="inline-flex min-h-11 items-center hover:text-testo">
+          <Link prefetch={false} href="/" className="inline-flex min-h-11 items-center hover:text-testo">
             Home
           </Link>
         </li>
         {a.categoria && (
           <li className="flex items-center gap-x-1.5">
             <span aria-hidden="true">›</span>
-            <Link href={`/category/${a.categoria.slug}/`} className="inline-flex min-h-11 items-center hover:text-testo">
+            <Link prefetch={false} href={`/category/${a.categoria.slug}/`} className="inline-flex min-h-11 items-center hover:text-testo">
               {a.categoria.nome}
             </Link>
           </li>
@@ -26,7 +26,7 @@ function Briciole({ a }: { a: Articolo }) {
         {gioco && (
           <li className="flex min-w-0 items-center gap-x-1.5">
             <span aria-hidden="true">›</span>
-            <Link href={`/tag/${gioco.slug}/`} className="inline-flex min-h-11 items-center truncate hover:text-testo">
+            <Link prefetch={false} href={`/tag/${gioco.slug}/`} className="inline-flex min-h-11 items-center truncate hover:text-testo">
               {gioco.nome}
             </Link>
           </li>
@@ -57,7 +57,7 @@ function Gioco({ a }: { a: Articolo }) {
   if (!gioco) return null;
   return (
     // bersaglio da 44 px per il pollice, etichetta visiva compatta dentro
-    <Link href={`/tag/${gioco.slug}/`} className="inline-flex min-h-11 max-w-full items-center self-start">
+    <Link prefetch={false} href={`/tag/${gioco.slug}/`} className="inline-flex min-h-11 max-w-full items-center self-start">
       <span className="truncate rounded bg-viola px-2 py-0.5 text-[0.8125rem] font-semibold text-su-viola">{gioco.nome}</span>
     </Link>
   );
