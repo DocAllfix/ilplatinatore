@@ -27,9 +27,9 @@ function Etichetta({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Copertina (dalla guida al Platino), nome, piattaforme, uscita, chi l'ha fatto. */
+/** Copertina (guida al Platino o, se manca, la guida piu' recente), nome, piattaforme, uscita, chi l'ha fatto. */
 function Testata({ d }: { d: DatiHub }) {
-  const img = d.platino?.immagine;
+  const img = d.copertina;
   const g = d.gioco;
   const chi = [g.sviluppatore, g.editore && g.editore !== g.sviluppatore ? g.editore : null].filter(Boolean).join(" · ");
   return (

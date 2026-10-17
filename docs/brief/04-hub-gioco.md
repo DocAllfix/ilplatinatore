@@ -46,3 +46,4 @@ Titolo e descrizione dell'hub nuovi (oggi «Valor Mortis Archivi», nessuna desc
 - Hub del gioco: **A, «Percorso»** (passi numerati Inizia qui, Platino, Raccogli tutto, Pulizia finale; poi tutte le guide con il filtro a pulsanti).
 - Barra di lettura: **A, «Linea»** in cima, col trofeo in punta che si accende a fine lettura, su tutti gli articoli (prima scelta C «Anello», cambiata subito dall'utente). Il pulsante «Torna all'inizio» resta.
 - Da far confermare al proprietario: presentazione del gioco, guide di «Inizia qui», editore (Lyrical Games).
+- Giochi senza guida al Platino (17/10/2026): scheda del Platino e passo «Punta al Platino» omessi, il resto dell'hub resta; copertina dalla guida più recente del gioco con un'immagine. Gli hub si accendono a mano, con la spunta «È un gioco» sul tag (confermato dall'utente).

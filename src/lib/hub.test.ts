@@ -67,3 +67,17 @@ describe("senzaGioco", () => {
     expect(senzaGioco("Senza due punti")).toBe("Senza due punti");
   });
 });
+
+describe("copertinaHub", () => {
+  it("prima la guida al Platino, poi la guida piu' recente con un'immagine, altrimenti niente", async () => {
+    const { copertinaHub } = await import("./hub");
+    type G = { immagine?: string; data: string };
+    const vecchia: G = { immagine: "vecchia", data: "2026-10-01T10:00:00Z" };
+    const recente: G = { immagine: "recente", data: "2026-10-15T10:00:00Z" };
+    const senza: G = { data: "2026-10-20T10:00:00Z" };
+    expect(copertinaHub<string, G>({ immagine: "platino", data: "2026-09-01" }, [recente])).toBe("platino");
+    expect(copertinaHub(null, [vecchia, senza, recente])).toBe("recente");
+    expect(copertinaHub<string, G>({ data: "x" }, [vecchia])).toBe("vecchia");
+    expect(copertinaHub(null, [senza])).toBeUndefined();
+  });
+});

@@ -49,7 +49,7 @@ Un tag diventa l'**hub del gioco** su `/tag/<slug>/` quando ha «È un gioco» s
 | `pl_piattaforme` | `PS5, Xbox Series X\|S, PC` | separate da virgola |
 | `pl_uscita` | `2026-10-13` | AAAA-MM-GG |
 | `pl_sviluppatore`, `pl_editore` | `One More Level` | |
-| `pl_guida_platino` | `valor-mortis-guida-platino-tutti-trofei` | slug: da qui l'hub prende copertina e dati del completamento |
+| `pl_guida_platino` | `valor-mortis-guida-platino-tutti-trofei` | slug: da qui l'hub prende copertina e dati del completamento. Se manca, niente scheda del Platino e la copertina viene dalla guida più recente del gioco con un'immagine |
 | `pl_inizia_qui` | uno slug per riga | le guide da leggere per prime, in ordine |
 
 Il **tipo di aiuto** di ogni guida (Platino e trofei, Collezionabili, Missioni, Boss, Armi e potenziamenti, Meccaniche e consigli) non si compila: il sito lo deduce dal titolo. Perché finisca nel gruppo giusto, il titolo dice di che si tratta («tutti i collezionabili del Capitolo 4», «come completare la missione...», «come sconfiggere...»). Le notizie del gioco sono gli articoli del tag nella categoria News.

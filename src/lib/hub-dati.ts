@@ -3,12 +3,12 @@
 
 import { PER_PAGINA } from "./cms/config";
 import { articoliDelTag, articoloPerSlug, terminePerSlug } from "./cms/wp";
-import type { Articolo } from "./cms/tipi";
+import type { Articolo, Immagine } from "./cms/tipi";
 import { collezionabiliDaCampi } from "./guida/collezionabili";
 import { schedaDaCampi, trofeiDaCampi } from "./guida/campi";
 import { estraiChecklist } from "./guida/checklist";
 import { estraiScheda, type Scheda } from "./guida/scheda";
-import { giocoDaMeta, perAiuto, type Gioco } from "./hub";
+import { copertinaHub, giocoDaMeta, perAiuto, type Gioco } from "./hub";
 
 /** Un articolo con spunte: l'hub legge dal browser quante ne ha fatte il lettore. */
 export type Tracciabile = { id: number; titolo: string; percorso: string; ids: string[]; unita: string };
@@ -18,6 +18,8 @@ export type DatiHub = {
   slug: string;
   gioco: Gioco;
   platino: Articolo | null;
+  /** dalla guida al Platino, altrimenti dalla guida piu' recente con un'immagine */
+  copertina?: Immagine;
   scheda: Scheda | null;
   iniziaQui: Articolo[];
   gruppi: ReturnType<typeof perAiuto<Articolo>>;
@@ -71,6 +73,7 @@ export async function datiHub(slug: string): Promise<DatiHub | null> {
     slug,
     gioco,
     platino,
+    copertina: copertinaHub(platino, guide),
     scheda,
     iniziaQui: gioco.iniziaQui.map((s) => perSlug.get(s)).filter((a): a is Articolo => Boolean(a)),
     gruppi: perAiuto(guide),

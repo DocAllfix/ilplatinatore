@@ -93,3 +93,12 @@ export function senzaGioco(t: string): string {
   const resto = t.replace(/^[^:]{2,40}:\s*/, "");
   return resto.charAt(0).toLocaleUpperCase("it-IT") + resto.slice(1);
 }
+
+/**
+ * L'immagine della testata: quella della guida al Platino; se manca, quella della guida piu' recente
+ * del gioco che ne ha una (scelta dell'utente, 17/10/2026). Nessuna immagine: undefined.
+ */
+export function copertinaHub<I, A extends { immagine?: I; data: string }>(platino: A | null, guide: A[]): I | undefined {
+  if (platino?.immagine) return platino.immagine;
+  return [...guide].filter((g) => g.immagine).sort((x, y) => y.data.localeCompare(x.data))[0]?.immagine;
+}
