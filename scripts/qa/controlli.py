@@ -32,6 +32,10 @@ PAGINE = [
     "/2026/10/13/valor-mortis-guida-platino-tutti-trofei/",
     "/2026/10/15/valor-mortis-collezionabili-capitolo-2/",
     "/tag/valor-mortis/",
+    # piano 05 in prova: la sfida in tre varianti, un formato per variante
+    "/sfida/?v=a&f=gioco",
+    "/sfida/?v=b&f=trofeo",
+    "/sfida/?v=c&f=classico",
     "/tag/crimson-desert/page/2/",
     "/category/guide/",
     "/privacy-policy/",

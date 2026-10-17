@@ -157,6 +157,16 @@ export async function tuttiITermini(tassonomia: "categories" | "tags"): Promise<
   return out.map((t) => ({ ...t, name: decodificaEntita(t.name) }));
 }
 
+/** Elenco dei classici della sfida (mu-plugin, sezione 7). Vuoto se il CMS non risponde. */
+export async function classiciSfida(): Promise<
+  Array<{ nome: string; anno: number; piattaforme: string[]; sviluppatore: string; genere: string; serie: string }>
+> {
+  const r = await chiamata<Array<{ nome: string; anno: number; piattaforme: string[]; sviluppatore: string; genere: string; serie: string }>>(
+    "/platinatore/v1/classici",
+  );
+  return Array.isArray(r?.dati) ? r.dati : [];
+}
+
 export async function terminePerSlug(tassonomia: "categories" | "tags", slug: string) {
   const r = await chiamata<TermineCompletoWP[]>(`/wp/v2/${tassonomia}?slug=${encodeURIComponent(slug)}`);
   const t = r?.dati?.[0];

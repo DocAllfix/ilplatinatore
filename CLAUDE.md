@@ -98,6 +98,8 @@ Poi il commit «Fase N completata».
   - `?p=` di un articolo non pubblicato dava 500: 401 e 403 della REST valgono «non trovato».
   - Il build si fa su Vercel, non in locale (memoria e percorsi di Windows).
   - Commit prima di qualsiasi prova che rompe apposta qualcosa.
+  - Il mu-plugin si controlla con `php -l` su una copia temporanea nel contenitore, e solo dopo si sostituisce quello attivo (17/10/2026: un apostrofo non protetto ha fermato il CMS di lavoro per circa un minuto). Nei testi PHP fra apici singoli, niente apostrofi.
+  - Cache di sviluppo di Next rotta («HMR hash mismatch», pagine che si ricaricano da sole): si ferma il server sulla propria porta e si cancella `.next`.
 - **Debiti aperti**:
   - allarme «uomo morto» dei backup predisposto ma senza `HEALTHCHECK_URL` (serve un account healthchecks.io dall'utente);
   - DNS di `cms.ilplatinatore.it` non ancora propagato: si usa l'host provvisorio `49-13-164-162.sslip.io` (da togliere);

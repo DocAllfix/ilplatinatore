@@ -333,6 +333,7 @@ function platinatore_campi_gioco()
 {
     return array(
         'pl_gioco'          => array('label' => 'È un gioco (hub)', 'tipo' => 'si'),
+        'pl_sfida'          => array('label' => 'Usabile nella sfida', 'tipo' => 'si', 'aiuto' => 'Il gioco può uscire in «Riconosci il gioco», con la foto della sua guida più recente. Non accende la pagina hub.'),
         'pl_presentazione'  => array('label' => 'Presentazione breve', 'tipo' => 'area', 'aiuto' => 'Due o tre frasi: che gioco è e cosa trova qui chi lo gioca.'),
         'pl_piattaforme'    => array('label' => 'Piattaforme', 'aiuto' => 'Separate da virgola: «PS5, Xbox Series X|S, PC».'),
         'pl_uscita'         => array('label' => 'Data di uscita', 'aiuto' => 'AAAA-MM-GG.'),
@@ -421,6 +422,71 @@ add_action('edited_post_tag', 'platinatore_avvisa_hub', 20);
 // dalla REST i meta si salvano dopo edited_term: si avvisa a lavoro finito
 add_action('rest_after_insert_post_tag', function ($t) {
     platinatore_avvisa_hub($t->term_id);
+});
+
+/* ---------------------------------------------------------------------------------------
+ * 7. SFIDA: ELENCO DEI CLASSICI (PDF 08, piano 05)
+ *
+ * «Riconosci il classico» si gioca a indizi (anno, piattaforme, sviluppatore, genere, serie), senza
+ * immagini: nessun problema di diritti. L'elenco sta in un'opzione, modificabile in Strumenti >
+ * Classici della sfida, una riga per gioco:
+ *   Nome | anno | piattaforme separate da virgola | sviluppatore | genere | serie (facoltativa)
+ * Il sito lo legge da una rotta REST pubblica (non rivela nulla che non sia gia' nel gioco).
+ * ------------------------------------------------------------------------------------- */
+
+function platinatore_classici()
+{
+    $righe = preg_split('/\r?\n/', (string) get_option('platinatore_classici', ''));
+    $out = array();
+    foreach ($righe as $riga) {
+        $c = array_map('trim', explode('|', $riga));
+        if (count($c) < 5 || $c[0] === '' || !preg_match('/^\d{4}$/', $c[1])) {
+            continue;
+        }
+        $out[] = array(
+            'nome'         => $c[0],
+            'anno'         => (int) $c[1],
+            'piattaforme'  => array_values(array_filter(array_map('trim', explode(',', $c[2])))),
+            'sviluppatore' => $c[3],
+            'genere'       => $c[4],
+            'serie'        => isset($c[5]) ? $c[5] : '',
+        );
+    }
+    return $out;
+}
+
+add_action('rest_api_init', function () {
+    register_rest_route('platinatore/v1', '/classici', array(
+        'methods'             => 'GET',
+        'permission_callback' => '__return_true',
+        'callback'            => function () {
+            return rest_ensure_response(platinatore_classici());
+        },
+    ));
+});
+
+add_action('admin_menu', function () {
+    add_management_page('Classici della sfida', 'Classici della sfida', 'edit_others_posts', 'platinatore-classici', function () {
+        if (isset($_POST['platinatore_classici']) && check_admin_referer('platinatore_classici')) {
+            update_option('platinatore_classici', sanitize_textarea_field(wp_unslash($_POST['platinatore_classici'])), false);
+            echo '<div class="notice notice-success"><p>Salvato: ' . count(platinatore_classici()) . ' classici validi.</p></div>';
+            // la sfida legge l'elenco: si avvisa il sito come per un articolo
+            if (defined('PLATINATORE_SITO_PUBBLICO') && defined('PLATINATORE_REVALIDATE_TOKEN')) {
+                wp_remote_post(rtrim(PLATINATORE_SITO_PUBBLICO, '/') . '/api/revalidate/', array(
+                    'timeout' => 3, 'blocking' => true,
+                    'headers' => array('Content-Type' => 'application/json', 'x-cms-token' => PLATINATORE_REVALIDATE_TOKEN),
+                    'body'    => '{}',
+                ));
+            }
+        }
+        echo '<div class="wrap"><h1>Classici della sfida</h1>';
+        echo '<p>Una riga per gioco: <code>Nome | anno | piattaforme separate da virgola | sviluppatore | genere | serie</code>. La serie è facoltativa. Le righe scritte male si ignorano.</p>';
+        echo '<form method="post">';
+        wp_nonce_field('platinatore_classici');
+        echo '<textarea name="platinatore_classici" rows="30" class="large-text code">' . esc_textarea(get_option('platinatore_classici', '')) . '</textarea>';
+        submit_button('Salva');
+        echo '</form></div>';
+    });
 });
 
 // NB dal riferimento: l'elenco delle rotte REST NON va filtrato a mano (`rest_endpoints`): un
