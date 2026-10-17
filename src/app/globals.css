@@ -158,6 +158,38 @@ body {
   to { transform: scale(1); }
 }
 
+/* Il bagliore della scheda del gioco (piano 07), due varianti in prova. Con movimento ridotto la
+   regola globale ferma le animazioni: resta un bordo a tre colori fermo. */
+.bagliore-ruota {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 1rem;
+  padding: 2px;
+  box-shadow: 0 0 26px oklch(62% 0.2 290 / 0.35);
+}
+.bagliore-ruota::before {
+  content: "";
+  position: absolute;
+  inset: -60%;
+  z-index: -1;
+  background: conic-gradient(var(--ciano), var(--viola), var(--acido), var(--ciano));
+  animation: gira 6s linear infinite;
+}
+@keyframes gira {
+  to { transform: rotate(1turn); }
+}
+.bagliore-pulsa {
+  border: 2px solid var(--ciano);
+  border-radius: 1rem;
+  animation: pulsa-bagliore 6s ease-in-out infinite;
+}
+@keyframes pulsa-bagliore {
+  0%, 100% { border-color: var(--ciano); box-shadow: 0 0 24px color-mix(in oklch, var(--ciano) 45%, transparent); }
+  33% { border-color: var(--viola); box-shadow: 0 0 24px color-mix(in oklch, var(--viola) 50%, transparent); }
+  66% { border-color: var(--acido); box-shadow: 0 0 24px color-mix(in oklch, var(--acido) 40%, transparent); }
+}
+
 /* la cornice dell'hero che si consuma come un timer (piano 07) */
 @keyframes timer-hero {
   from { stroke-dashoffset: 0; }

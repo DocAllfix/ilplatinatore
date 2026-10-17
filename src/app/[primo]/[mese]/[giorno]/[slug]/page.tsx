@@ -18,10 +18,12 @@ import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
 import { ChecklistGruppo, NotaEAzzera } from "@/components/guida/checklist";
 import { TabellaCollezionabili } from "@/components/guida/collezionabili";
 import { Correlato } from "@/components/guida/correlato";
-import { collezionabiliDaCampi, collocaCorrelati, correlatiDaCampi } from "@/lib/guida/collezionabili";
+import { collezionabiliDaRighe, collocaCorrelati, correlatiDaCampi, estraiTabelleOggetti, righeDaCampi } from "@/lib/guida/collezionabili";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { jsonLd } from "@/lib/cms/seo";
-import { articoloPerSlug, indirizzoAttuale, tuttiGliArticoli } from "@/lib/cms/wp";
+import { articoloPerSlug, indirizzoAttuale, terminePerSlug, tuttiGliArticoli } from "@/lib/cms/wp";
+import { SchedaGioco } from "@/components/gioco/scheda-gioco";
+import { schedaDaDescrizione } from "@/lib/scheda-gioco";
 
 export const revalidate = 3600;
 // un articolo pubblicato dopo il build si genera alla prima visita (completo, senza scheletro)
@@ -77,10 +79,14 @@ export default async function PaginaArticolo({ params }: Parametri) {
     ? collocaGruppi(gruppiTabelle.map((g) => g.id), gruppiCampi)
     : new Map(gruppiTabelle.map((g) => [g.id, [g]]));
   const senzaPosto = gruppiCampi.length && !gruppiTabelle.length ? gruppiCampi : [];
-  const { html: conAncore, indice } = aggiungiAncore(senzaTabelle);
-  const ancore = new Set([...conAncore.matchAll(/<h[23][^>]*\sid="([^"]+)"/g)].map((m) => m[1]));
+  // articoli-elenco (piano 07): le tabelle «Oggetto/Arma/...» del testo diventano la tabella dei mancanti
+  const { righe: righeTabelle, corpo: senzaOggetti } = estraiTabelleOggetti(senzaTabelle);
+  const { html: conAncore, indice } = aggiungiAncore(senzaOggetti);
+  const titoli = [...conAncore.matchAll(/<h([23])[^>]*\sid="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g)].map((m) => ({ id: m[2], testo: m[3].replace(/<[^>]+>/g, "") }));
   // Piano 03: collezionabili e correlati dai campi. Un correlato verso un articolo non pubblicato non compare.
-  const oggetti = collezionabiliDaCampi(a.meta, ancore);
+  // prima il campo pl_collezionabili, poi le tabelle del testo come ripiego
+  const righeCampi = righeDaCampi(a.meta);
+  const oggetti = collezionabiliDaRighe(righeCampi.length ? righeCampi : righeTabelle, titoli);
   const { html, collocati } = collocaCorrelati(conAncore, correlatiDaCampi(a.meta));
   const destinazioni = new Map(
     (await Promise.all(collocati.map(async (c) => [c.id, (await articoloPerSlug(c.articolo))?.articolo] as const))).filter(
@@ -88,6 +94,16 @@ export default async function PaginaArticolo({ params }: Parametri) {
     ),
   );
   const pezzi = dividiCorpo(html);
+  const termini = await Promise.all(a.tag.map((t) => terminePerSlug("tags", t.slug)));
+  const giochi: Array<{ slug: string; nome: string; dati: ReturnType<typeof schedaDaDescrizione> }> = [];
+  const altriTag: typeof a.tag = [];
+  a.tag.forEach((t, i) => {
+    const tt = termini[i];
+    const dati = schedaDaDescrizione(tt?.description);
+    const segnato = tt?.meta?.pl_gioco === "1" || tt?.meta?.pl_sfida === "1";
+    if (dati || segnato) giochi.push({ slug: t.slug, nome: t.nome, dati });
+    else altriTag.push(t);
+  });
   const idsTrofei = gruppi.flatMap((g) => g.voci.map((v) => v.id));
   const ultimoGruppo = gruppi.at(-1)?.id;
 
@@ -113,14 +129,16 @@ export default async function PaginaArticolo({ params }: Parametri) {
   const idsProgressione = oggetti.length ? oggetti.map((o) => o.id) : idsTrofei;
 
   return (
-    // Prova del piano 07: titoli h2 A in viola / B con la linea viola, ?v=a|b (regole in globals.css)
+    // Prova del piano 07, ?v=a|b: A titoli h2 in viola e bagliore che ruota, B linea viola e bagliore
+    // che pulsa (regole in globals.css)
     <article id="lab" data-v="a">
+      <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]){display:none}`}</style>
       <SelettoreVarianti
-        sezione="Titoli"
+        sezione="Stile"
         posizione="alto"
         varianti={[
-          { id: "a", nome: "Viola" },
-          { id: "b", nome: "Linea" },
+          { id: "a", nome: "Viola, ruota" },
+          { id: "b", nome: "Linea, pulsa" },
         ]}
       />
       <div id="inizio-articolo" />
@@ -172,9 +190,20 @@ export default async function PaginaArticolo({ params }: Parametri) {
         )}
       </div>
 
-      {a.tag.length > 0 && (
-        <ul className="mt-8 flex flex-wrap gap-2 text-sm">
-          {a.tag.map((t) => (
+      {/* Il gioco a fine articolo, come scheda col bagliore (piano 07); gli altri tag come etichette */}
+      {giochi.map((g) => (
+        <div key={g.slug} className="mt-10">
+          <div data-variant="a">
+            <SchedaGioco nome={g.nome} slug={g.slug} dati={g.dati} bagliore="ruota" />
+          </div>
+          <div data-variant="b">
+            <SchedaGioco nome={g.nome} slug={g.slug} dati={g.dati} bagliore="pulsa" />
+          </div>
+        </div>
+      ))}
+      {altriTag.length > 0 && (
+        <ul className="mt-6 flex flex-wrap gap-2 text-sm">
+          {altriTag.map((t) => (
             <li key={t.slug}>
               <Link prefetch={false} href={`/tag/${t.slug}/`} className="flex min-h-11 items-center rounded-full border border-linea px-4 hover:border-link">
                 #{t.nome}

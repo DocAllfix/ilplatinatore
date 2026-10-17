@@ -55,6 +55,15 @@ function Testata({ d }: { d: DatiHub }) {
             ))}
           </ul>
         )}
+        {d.schedaGioco && (
+          <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-platino/90">
+            {[d.schedaGioco.genere, d.schedaGioco.voto && `Voto medio ${d.schedaGioco.voto}`, d.schedaGioco.storia && `Storia ${d.schedaGioco.storia}`, d.schedaGioco.completista && `Completista ${d.schedaGioco.completista}`]
+              .filter(Boolean)
+              .map((x) => (
+                <span key={String(x)}>{x}</span>
+              ))}
+          </p>
+        )}
         {(g.uscita || chi) && (
           <p className="mt-2 text-sm text-platino/80">
             {g.uscita && <>Uscito il <time dateTime={g.uscita}>{dataUscita(g.uscita)}</time></>}

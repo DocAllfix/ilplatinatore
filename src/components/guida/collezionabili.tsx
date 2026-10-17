@@ -38,7 +38,7 @@ function Riepilogo({ voci, fatti }: { voci: Collezionabile[]; fatti: ReadonlySet
         {completo && (
           <span className="inline-flex items-center gap-1 rounded bg-azione px-2 py-0.5 text-sm font-semibold text-su-azione">
             <CheckIcon weight="bold" className="size-3.5" aria-hidden="true" />
-            Capitolo completato
+            Completato
           </span>
         )}
       </div>
@@ -111,7 +111,7 @@ function Tabella({ articolo, voci, spoiler }: Props & { spoiler: boolean }) {
         <tr className="border-b border-linea text-xs uppercase tracking-[0.04em] text-tenue">
           <th scope="col" className="w-12 py-2 font-semibold">Stato</th>
           <th scope="col" className="py-2 font-semibold">Oggetto</th>
-          <th scope="col" className="py-2 font-semibold">Area</th>
+          <th scope="col" className="py-2 font-semibold">Dove</th>
           <th scope="col" className="py-2 font-semibold">Tipo</th>
         </tr>
       </thead>
@@ -155,10 +155,10 @@ function Tabella({ articolo, voci, spoiler }: Props & { spoiler: boolean }) {
 function FiltroAree({ voci, area, scegli }: Pick<Props, "voci"> & { area: string | null; scegli: (a: string | null) => void }) {
   const aree = distinti(voci, (v) => v.area);
   return (
-    <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:px-0" role="group" aria-label="Filtra per area">
+    <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:px-0" role="group" aria-label="Filtra per luogo">
       <div className="flex w-max gap-2">
         <button type="button" onClick={() => scegli(null)} aria-pressed={area === null} className={pulsante(area === null)}>
-          Tutte le aree
+          Tutto
         </button>
         {aree.map((a) => (
           <button key={a} type="button" onClick={() => scegli(a)} aria-pressed={area === a} className={pulsante(area === a)}>
@@ -181,7 +181,7 @@ export function TabellaCollezionabili({ articolo, voci }: Props) {
   return (
     <section id="collezionabili" data-collezionabili aria-labelledby="titolo-collezionabili" className="my-6 scroll-mt-4 rounded-xl border border-linea p-4 md:p-5">
       <h2 id="titolo-collezionabili" className="mb-3 text-xs font-semibold uppercase tracking-[0.06em] text-tenue">
-        Cosa ti manca in questo capitolo
+        Cosa ti manca
       </h2>
       <Riepilogo voci={voci} fatti={fatti} />
 
@@ -197,7 +197,8 @@ export function TabellaCollezionabili({ articolo, voci }: Props) {
         )}
       </div>
       <div className="mt-3">
-        <FiltroAree voci={voci} area={area} scegli={setArea} />
+        {/* il filtro serve solo se gli oggetti stanno in piu' luoghi */}
+        {new Set(voci.map((v) => v.area)).size > 1 && <FiltroAree voci={voci} area={area} scegli={setArea} />}
       </div>
 
       <div className="mt-4">

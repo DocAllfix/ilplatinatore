@@ -20,6 +20,7 @@ Criteri:
   12 spoiler: nome nascosto, «Mostra spoiler» lo rivela (solo se un oggetto e' segnato spoiler)
   13 testata da tastiera: menu e ricerca si aprono con Invio, Esc li chiude (piano 07)
   14 tema chiaro/scuro: la scelta resta dopo il ricaricamento ed e' applicata prima del disegno (piano 07)
+  15 scheda del gioco: c'e' a fine articolo e in cima al tag, e le righe grezze della descrizione no (piano 07)
 
 Uso:
   python -I scripts/qa/criteri.py https://ilplatinatore.vercel.app          (devono essere tutti verdi)
@@ -59,6 +60,7 @@ GUASTI = {
     12: CSS("[aria-pressed]{display:none!important} button:has(svg)+*{}"),
     13: "window.addEventListener('keydown',e=>{if(e.key==='Escape')e.stopImmediatePropagation()},true);",
     14: "Storage.prototype.setItem=function(){};",
+    15: CSS("aside[aria-label^='Scheda di']{display:none!important}"),
 }
 
 
@@ -226,7 +228,7 @@ def c6(b, base, g):
         clic(inp)
     pg.wait_for_timeout(400)
     testo = pg.locator("#collezionabili").inner_text()
-    capitolo = "Capitolo completato" in testo
+    capitolo = "Completato" in testo
     vai(pg, base, "/sfida/?f=classico")
     inp = pg.locator("input[type=text]").first
     inp.fill("me")
@@ -238,7 +240,7 @@ def c6(b, base, g):
     parole = pg.locator('ol[aria-label="I tuoi tentativi"]').inner_text().lower()
     indizi_scritti = all(w in parole for w in ("anno", "console", "studio", "genere", "serie")) and any(w in parole for w in ("giusto", "vicino", "no"))
     ctx.close()
-    return capitolo and len(etichette) > 0 and indizi_scritti, f"«Capitolo completato» scritto={capitolo}; caselle con etichetta={len(etichette)}; indizi a parole={indizi_scritti}"
+    return capitolo and len(etichette) > 0 and indizi_scritti, f"«Completato» scritto={capitolo}; caselle con etichetta={len(etichette)}; indizi a parole={indizi_scritti}"
 
 
 def c7(b, base, g):
@@ -393,7 +395,21 @@ def c14(b, base, g):
     return ok, f"prima={prima or 'sistema'}, scelto={scelto}, dopo il ricaricamento={dopo or 'sistema'}, gia' prima del disegno={subito or 'no'}"
 
 
-CRITERI = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14]
+def c15(b, base, g):
+    ctx, pg = nuovo(b, g)
+    esiti = []
+    for percorso in (GUIDA, HUB.replace("valor-mortis", "valor-mortis"), "/tag/warzone/"):
+        vai(pg, base, percorso)
+        scheda = [x for x in pg.locator("aside[aria-label^='Scheda di']").all() if x.is_visible()]
+        testo = pg.locator("main").inner_text()
+        grezze = any(r in testo for r in ("Storia + extra:", "Completista:", "Voto medio:", "Anno:"))
+        esiti.append(f"{percorso}: scheda={len(scheda)}, righe grezze={grezze}")
+    ctx.close()
+    ok = all("scheda=0" not in e and "grezze=False" in e for e in esiti[:1] + esiti[2:])
+    return ok, "; ".join(esiti)
+
+
+CRITERI = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15]
 
 
 def main() -> int:

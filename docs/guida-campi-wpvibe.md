@@ -54,6 +54,29 @@ Un tag diventa l'**hub del gioco** su `/tag/<slug>/` quando ha «È un gioco» s
 
 Il **tipo di aiuto** di ogni guida (Platino e trofei, Collezionabili, Missioni, Boss, Armi e potenziamenti, Meccaniche e consigli) non si compila: il sito lo deduce dal titolo. Perché finisca nel gruppo giusto, il titolo dice di che si tratta («tutti i collezionabili del Capitolo 4», «come completare la missione...», «come sconfiggere...»). Le notizie del gioco sono gli articoli del tag nella categoria News.
 
+## La scheda del gioco (descrizione del tag)
+
+La **descrizione di ogni tag di un videogioco** contiene solo le righe della scheda, una per riga. Il sito non la mostra mai così com'è: la trasforma nella scheda col bagliore a fine articolo e in cima alla pagina del tag, e ne ricava da solo la descrizione per Google.
+
+```
+Anno: 2026
+Genere: Soulslike in prima persona
+Voto medio: 82
+Storia: 15 ore
+Storia + extra: 25 ore
+Completista: 40 ore
+```
+
+Ogni riga è facoltativa. Le durate seguono HowLongToBeat (Storia, Storia + extra, Completista). Etichette accettate anche in altre forme: «Anno di distribuzione», «Recensioni medie», «Durata storia». Una descrizione senza nessuna di queste righe non diventa una scheda.
+
+## Liste di cose da trovare o sbloccare (articoli-elenco)
+
+Negli articoli che elencano oggetti, armi, collezionabili o ricompense, la tabella dei mancanti in testa all'articolo nasce da:
+1. il campo `pl_collezionabili` (vedi sopra), se c'è;
+2. altrimenti una **tabella nel testo** con la prima colonna intitolata **«Oggetto»** (accettati anche «Arma», «Elemento», «Collezionabile», «Ricompensa»). Colonne facoltative: «Tipo», «Dove» (o «Area», «Zona»), «Sblocco» (o «Prerequisito», «Requisito»), «Sezione». La tabella sparisce dal testo e diventa la lista da spuntare in testa.
+
+Il link «Come prenderlo» va da solo al titolo della sezione che contiene il nome dell'oggetto («TR51 Para: fucile d'assalto del Battle Pass» per «TR51 Para»); la colonna «Sezione» serve solo se il nome non compare nel titolo.
+
 ## Scrittura via REST (quello che fa wpvibe)
 
 ```http
@@ -95,3 +118,7 @@ Basta un'intestazione scritta diversa e la scheda non compare: per questo, d'ora
 > Quando scrivi una guida al platino, compila anche i campi `pl_*` del post via REST (formato in docs/guida-campi-wpvibe.md): difficoltà da 1 a 10, ore per il platino con trattino normale, partite, trofei mancabili con numero e nomi, trofei online, trofei totali, eventuali condizioni delle stime, e l'elenco dei trofei con gruppo, nome e come ottenerlo. Non usare trattini lunghi.
 
 > Quando scrivi un articolo sui collezionabili di un capitolo, compila `pl_collezionabili`: un oggetto per riga con area, nome, tipo al singolare, prerequisito se serve, e in `sezione` il titolo h2 esatto del paragrafo che lo spiega. Se una guida rimanda a un'altra in un punto preciso, aggiungi una voce in `pl_correlati` con lo slug, il perché in una frase e il titolo h2 dopo cui mostrarla.
+
+> Per ogni tag di videogioco, scrivi nella descrizione solo le righe della scheda, una per riga: «Anno: …», «Genere: …», «Voto medio: …», «Storia: … ore», «Storia + extra: … ore», «Completista: … ore». Niente altro testo nella descrizione.
+
+> Quando un articolo elenca cose da trovare o sbloccare (armi, collezionabili, ricompense, oggetti), aggiungi una tabella con le colonne «Oggetto | Tipo | Dove | Sblocco», una riga per elemento, con il nome esatto usato nei titoli delle sezioni.

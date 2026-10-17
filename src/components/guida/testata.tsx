@@ -52,25 +52,11 @@ function Firma({ a }: { a: Articolo }) {
   );
 }
 
-function Gioco({ a }: { a: Articolo }) {
-  const gioco = a.tag[0];
-  if (!gioco) return null;
-  return (
-    // bersaglio da 44 px per il pollice, etichetta visiva compatta dentro
-    <Link prefetch={false} href={`/tag/${gioco.slug}/`} className="inline-flex min-h-11 max-w-full items-center self-start">
-      <span className="truncate rounded bg-viola px-2 py-0.5 text-[0.8125rem] font-semibold text-su-viola">{gioco.nome}</span>
-    </Link>
-  );
-}
-
 export function TestataGuida({ a }: { a: Articolo }) {
   return (
     <header>
       <Briciole a={a} />
-      <div className="mt-1">
-        <Gioco a={a} />
-      </div>
-      <h1 className="mt-3 text-[clamp(1.75rem,1.4rem+2.4vw,2.75rem)] font-bold leading-[1.1] tracking-[-0.01em] text-balance">
+      <h1 className="mt-2 text-[clamp(1.75rem,1.4rem+2.4vw,2.75rem)] font-bold leading-[1.1] tracking-[-0.01em] text-balance">
         {a.titolo}
       </h1>
       <div className="mt-3">
@@ -105,8 +91,7 @@ export function TestataCopertina({ a, alta = false }: { a: Articolo; alta?: bool
           className="absolute inset-0 -z-10 size-full object-cover"
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-notte via-notte/80 to-notte/10" aria-hidden="true" />
-        <Gioco a={a} />
-        <h1 className="mt-3 text-[clamp(1.75rem,1.4rem+2.4vw,2.75rem)] font-bold leading-[1.1] tracking-[-0.01em] text-platino text-balance">
+        <h1 className="text-[clamp(1.75rem,1.4rem+2.4vw,2.75rem)] font-bold leading-[1.1] tracking-[-0.01em] text-platino text-balance">
           {a.titolo}
         </h1>
         <div className="mt-3 [&_p]:text-platino/80">

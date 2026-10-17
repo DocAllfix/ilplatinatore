@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { aggiungiAncore, dividiCorpo } from "./checklist";
-import { collezionabiliDaCampi, collocaCorrelati, correlatiDaCampi, plurale } from "./collezionabili";
+import { collezionabiliDaCampi, collocaCorrelati, correlatiDaCampi, estraiTabelleOggetti, plurale } from "./collezionabili";
 
 describe("collezionabiliDaCampi", () => {
-  const ancore = new Set(["prima-ambra-bottomless-well"]);
+  const ancore = [{ id: "prima-ambra-bottomless-well", testo: "Prima Ambra: Bottomless Well" }];
 
   it("legge le righe, scarta quelle senza nome e collega solo le sezioni che esistono", () => {
     const v = collezionabiliDaCampi(
@@ -69,5 +69,31 @@ describe("correlati", () => {
     expect(html.endsWith("<p>c</p><!--correlato:correlato-1-->")).toBe(true);
     const pezzi = dividiCorpo(html);
     expect(pezzi.filter((p) => "correlato" in p)).toHaveLength(2);
+  });
+});
+
+describe("articoli-elenco (piano 07)", () => {
+  const titoli = [
+    { id: "tr51-para-fucile-d-assalto-del-battle-pass", testo: "TR51 Para: fucile d’assalto del Battle Pass" },
+    { id: "vmp-mitraglietta-veloce", testo: "VMP: mitraglietta veloce" },
+  ];
+  it("senza sezione indicata, l'ancora e' il titolo che contiene il nome", () => {
+    const v = collezionabiliDaCampi({ pl_collezionabili: [{ oggetto: "TR51 Para", tipo: "Fucile d'assalto" }, { oggetto: "Arcblade" }] }, titoli);
+    expect(v[0].ancora).toBe("tr51-para-fucile-d-assalto-del-battle-pass");
+    expect(v[1].ancora).toBeNull();
+  });
+  it("una tabella con la prima colonna «Arma» diventa la lista e sparisce dal testo; le altre tabelle restano", () => {
+    const html =
+      "<p>a</p><figure class=\"wp-block-table\"><table><thead><tr><th>Arma</th><th>Tipo</th><th>Dove</th><th>Sblocco</th></tr></thead><tbody><tr><td>TR51 Para</td><td>Fucile</td><td>Battle Pass</td><td>Pagina 6</td></tr><tr><td>VMP</td><td>Mitraglietta</td><td>Battle Pass</td><td>Pagina 3</td></tr></tbody></table></figure><table><tr><th>Nome</th></tr><tr><td>x</td></tr></table>";
+    const { righe, corpo } = estraiTabelleOggetti(html);
+    expect(righe.map((r) => [r.oggetto, r.tipo, r.area, r.prerequisito])).toEqual([
+      ["TR51 Para", "Fucile", "Battle Pass", "Pagina 6"],
+      ["VMP", "Mitraglietta", "Battle Pass", "Pagina 3"],
+    ]);
+    expect(corpo).not.toContain("TR51");
+    expect(corpo).toContain("<th>Nome</th>");
+  });
+  it("una tabella «Trofeo» non e' una lista di oggetti", () => {
+    expect(estraiTabelleOggetti("<table><tr><th>Trofeo</th></tr><tr><td>x</td></tr></table>").righe).toEqual([]);
   });
 });
