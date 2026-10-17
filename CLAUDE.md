@@ -107,7 +107,7 @@ Poi il commit «Fase N completata».
   - wpvibe spento sul CMS di lavoro, da provare al passaggio; password di prova `collaudo-rest` da revocare;
   - importazione incrementale da Aruba ancora da fare (Fase 6).
 
-#### Fase 2, Prototipo (in corso)
+#### Fase 2, Prototipo (completata)
 - **Fatto, con le scelte dell'utente e del proprietario**:
   - piano 01, testata e scheda: B «Sovrapposta»;
   - piano 02, checklist «Lista» e progressione a «Pillola», più il pulsante «Torna all'inizio» su tutti gli articoli;
@@ -117,4 +117,13 @@ Poi il commit «Fase N completata».
   - Brief e scelte in `docs/brief/`; formato dei campi per redazione e wpvibe in `docs/guida-campi-wpvibe.md`.
 - **Regole nate**: ogni dato del prototipo sta in un campo `pl_*` del CMS, mai nel codice; la tabella del testo resta solo come ripiego. Prima di ogni consegna, passata con impeccable polish e design-taste-frontend.
   - piano 06, home a sezioni sul modello games.gg (cambiata dal proprietario rispetto ai tre moduli del PDF 10): dieci file che si riempiono da sole per regola (Strumenti > Sezioni della home), locandine con una scheda grande ogni due sezioni; «Più letti» da Search Console, collegata il 17/10/2026 (proprietà `https://www.ilplatinatore.it/`, account di servizio in sola lettura; senza dati, ripiego dichiarato in pagina).
-- **Da fare**: verifica del prototipo con i criteri del PDF (Fase 3). Debito: la chiave di Search Console è passata via WhatsApp, da ruotare a fine lavoro. Breaking, Hot take ed «Esplora per gioco» vanno nella home completa (Fase 4).
+- **Cancello**: le varianti scelte dall'utente e dal proprietario sono online sull'anteprima; tutti i componenti leggono dati veri del CMS di lavoro (campi `pl_*`, campi del tag, opzioni in Strumenti), nessun dato scritto nel codice.
+
+#### Fase 3, Verifica del prototipo (in attesa di approvazione)
+- **Fatto**: suite `scripts/qa/criteri.py` con i 12 criteri del PDF, ognuno con il suo guasto (`--rompi`); misure d'uso come eventi nella pagina (`src/lib/misure.ts`). Rapporto in `docs/analisi/fase3-verifica.md`.
+- **Cancello**: 12 criteri verdi nel modo normale e rossi con i guasti; `controlli.py` a 0 problemi. Manca l'approvazione dell'utente.
+- **Regole nate**:
+  - Un guasto messo prima che React prenda la pagina viene cancellato da React: i guasti nel DOM si inseriscono dopo il caricamento, o il controllo sembra rotto quando non lo è.
+  - Nelle file orizzontali le immagini fuori schermo si caricano comunque: oltre la quarta partono solo quando si tocca la fila.
+  - Una parola più lunga della riga fa scorrere la pagina: `overflow-wrap: anywhere` sul corpo, e niente `shrink-0` senza una larghezza massima.
+- **Debiti**: PageSpeed da ripetere (quota esaurita); LCP della guida al limite (immagini di WordPress senza formati moderni, Fase 6); misure d'uso senza trasporto (Fase 5); chiave di Search Console passata via WhatsApp, da ruotare a fine lavoro. Breaking, Hot take ed «Esplora per gioco» vanno nella home completa (Fase 4).
