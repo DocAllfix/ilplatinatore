@@ -187,7 +187,7 @@ function Trofeo({ s, numero, giorno }: Comune & { s: SfidaTrofeo }) {
   return (
     <div className="flex flex-col gap-4">
       <p className="font-semibold">
-        Un trofeo di <span className="text-viola">{s.gioco}</span>. Quale?
+        Un trofeo di <span className="text-viola-testo">{s.gioco}</span>. Quale?
       </p>
       {elenco}
       <Caselle tentativi={p.tentativi} giusta={giusta} max={max} />
@@ -267,7 +267,7 @@ function Classico({ s, numero, giorno }: Comune & { s: SfidaClassico }) {
   // dopo il quinto errore: iniziale, genere e studio (scelta dell'utente)
   const aiuto = !p.finita && p.errori >= aiutoDopo && (
     <section aria-label="Aiuto" className="animate-[apri_250ms_var(--ease-uscita)] rounded-xl border-2 border-viola/70 bg-superficie p-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.06em] text-viola">Aiuto dopo {aiutoDopo} errori</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.06em] text-viola-testo">Aiuto dopo {aiutoDopo} errori</p>
       <dl className="mt-2 grid grid-cols-3 gap-2 text-sm">
         <div>
           <dt className="text-tenue">Iniziale</dt>

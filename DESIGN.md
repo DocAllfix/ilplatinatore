@@ -142,7 +142,7 @@ La palette dei post social del Platinatore, usata con ruoli fissi: neutri freddi
 - **Ciano** (#35E0FF): link, icone di navigazione, bordo dello stato attivo e del focus, campo di ricerca. 12,3:1 su Notte. È il colore del «vai».
 
 ### Tertiary
-- **Viola** (#7C4DFF): identità (logo, striscia di testata), etichette dei giochi, riempimenti grafici. Mai come testo piccolo su scuro (4,0:1): solo riempimenti, o testo grande. Sopra il Viola, testo Bianco (4,8:1).
+- **Viola** (#7C4DFF): identità (logo, striscia di testata), etichette dei giochi, riempimenti grafici. Mai come testo piccolo su scuro (4,0:1): solo riempimenti, o testo grande. Sopra il Viola, testo Bianco (4,8:1). Per il testo in viola c'è **Viola testo** (`--viola-testo`): #A98BFF sullo scuro (7,2:1 su Notte), #5B2FE0 sul chiaro (7,2:1 su bianco).
 
 ### Neutral
 - **Notte** (#0B0D12): fondo di pagina, testata, piede.

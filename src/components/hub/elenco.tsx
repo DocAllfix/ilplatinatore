@@ -19,7 +19,7 @@ function Elenco({ g, tutte }: { g: Gruppo; tutte: boolean }) {
   return (
     <section aria-label={g.aiuto}>
       <h3 className="flex items-center gap-2 text-lg font-bold">
-        <IconaAiuto aiuto={g.aiuto} className="size-5 text-viola" />
+        <IconaAiuto aiuto={g.aiuto} className="size-5 text-viola-testo" />
         {g.aiuto}
         <span className="cifre text-sm font-medium text-tenue">{g.guide.length}</span>
       </h3>

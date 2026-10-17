@@ -140,11 +140,11 @@ function CartaPlatino({ a }: { a: Articolo }) {
         <img src={a.immagine.src} srcSet={a.immagine.srcset} sizes="176px" alt="" loading="lazy" className="h-full min-h-28 w-full object-cover" />
       ) : (
         <span className="flex items-center justify-center bg-superficie-alta">
-          <IconaAiuto aiuto="Platino e trofei" className="size-8 text-viola" />
+          <IconaAiuto aiuto="Platino e trofei" className="size-8 text-viola-testo" />
         </span>
       )}
       <span className="min-w-0 p-3">
-        <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.06em] text-viola">
+        <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.06em] text-viola-testo">
           <IconaAiuto aiuto="Platino e trofei" className="size-4" />
           Guida al Platino
         </span>
@@ -178,7 +178,7 @@ function Notizie({ d }: { d: DatiHub }) {
   return (
     <section aria-label="Notizie" className="mt-10">
       <h2 className="flex items-center gap-2 text-lg font-bold">
-        <NewspaperIcon weight="duotone" className="size-5 text-viola" aria-hidden="true" />
+        <NewspaperIcon weight="duotone" className="size-5 text-viola-testo" aria-hidden="true" />
         Notizie
       </h2>
       {d.notizie.length ? (
@@ -248,7 +248,7 @@ export function Hub({ d }: { d: DatiHub }) {
           {passi.map((p, i) => (
             <li key={p.titolo} className="relative pb-8 pl-12 last:pb-0">
               {i < passi.length - 1 && <span className="absolute bottom-0 left-[1.0625rem] top-10 w-0.5 bg-linea" aria-hidden="true" />}
-              <span className="cifre absolute left-0 top-0 flex size-9 items-center justify-center rounded-full border-2 border-viola text-sm font-bold text-viola">
+              <span className="cifre absolute left-0 top-0 flex size-9 items-center justify-center rounded-full border-2 border-viola text-sm font-bold text-viola-testo">
                 {i + 1}
               </span>
               <h3 className="text-lg font-bold leading-9">{p.titolo}</h3>
