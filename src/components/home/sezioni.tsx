@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Articolo } from "@/lib/cms/tipi";
 import type { SezioneDati } from "@/lib/home-dati";
 import { CartaSfida } from "./carta-sfida";
+import { FilaScorrevole } from "./fila-scorrevole";
 
 const NEWS = /^news$/i;
 
@@ -23,15 +24,26 @@ function Tipo({ a, sopra = false }: { a: Articolo; sopra?: boolean }) {
   );
 }
 
-function Img({ a, classe, sizes, prima }: { a: Articolo; classe: string; sizes: string; prima?: boolean }) {
+/** `carico`: «subito» (la prima della home, priorita' alta), «pigro» (lazy), «dopo» (parte quando si tocca la fila). */
+function Img({ a, classe, sizes, carico }: { a: Articolo; classe: string; sizes: string; carico: "subito" | "pigro" | "dopo" }) {
   if (!a.immagine) return <span className={`block bg-superficie-alta ${classe}`} />;
+  const sorgente =
+    carico === "dopo" ? { "data-src": a.immagine.src, "data-srcset": a.immagine.srcset } : { src: a.immagine.src, srcSet: a.immagine.srcset };
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={a.immagine.src} srcSet={a.immagine.srcset} sizes={sizes} alt="" loading={prima ? "eager" : "lazy"} decoding="async" className={`object-cover ${classe}`} />
+    <img
+      {...sorgente}
+      sizes={sizes}
+      alt=""
+      loading={carico === "subito" ? "eager" : "lazy"}
+      fetchPriority={carico === "subito" ? "high" : "auto"}
+      decoding="async"
+      className={`bg-superficie-alta object-cover ${classe}`}
+    />
   );
 }
 
-function CartaLocandina({ a, prima, grande = false, sezione }: { a: Articolo; prima?: boolean; grande?: boolean; sezione: string }) {
+function CartaLocandina({ a, carico, grande = false, sezione }: { a: Articolo; carico: "subito" | "pigro" | "dopo"; grande?: boolean; sezione: string }) {
   return (
     <Link
       href={a.percorso}
@@ -41,7 +53,7 @@ function CartaLocandina({ a, prima, grande = false, sezione }: { a: Articolo; pr
         grande ? "h-full p-4" : "aspect-[3/4] p-3"
       }`}
     >
-      <Img a={a} classe="absolute inset-0 -z-10 size-full" sizes={grande ? "360px" : "180px"} prima={prima} />
+      <Img a={a} classe="absolute inset-0 -z-10 size-full" sizes={grande ? "360px" : "180px"} carico={carico} />
       <span className="absolute inset-0 -z-10 bg-gradient-to-t from-notte via-notte/80 to-transparent" aria-hidden="true" />
       <span className="flex min-w-0 items-center gap-1.5">
         <Tipo a={a} sopra />
@@ -55,16 +67,16 @@ function CartaLocandina({ a, prima, grande = false, sezione }: { a: Articolo; pr
 /** Una fila di locandine; con `apertura` la prima e' larga il doppio, alta come le altre. */
 function Fila({ voci, prima, apertura, sezione }: { voci: Articolo[]; prima: boolean; apertura: boolean; sezione: string }) {
   return (
-    <ul className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:thin]">
+    <FilaScorrevole>
       {voci.map((a, i) => {
         const grande = apertura && i === 0;
         return (
           <li key={a.id} className={`shrink-0 snap-start ${grande ? "w-[min(22rem,84vw)]" : "w-[min(11rem,46vw)]"}`}>
-            <CartaLocandina a={a} prima={prima && i < 2} grande={grande} sezione={sezione} />
+            <CartaLocandina a={a} carico={prima && i === 0 ? "subito" : i < 4 ? "pigro" : "dopo"} grande={grande} sezione={sezione} />
           </li>
         );
       })}
-    </ul>
+    </FilaScorrevole>
   );
 }
 

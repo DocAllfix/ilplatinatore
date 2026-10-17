@@ -51,7 +51,8 @@ GUASTI = {
     7: CSS("details>p button{display:none!important}"),
     8: "window.addEventListener('load',()=>{setTimeout(()=>{throw new Error('guasto messo apposta')},0)});",
     9: CSS("section[aria-label='Il platino in breve'] p.text-xs{display:none!important}"),
-    10: "document.addEventListener('DOMContentLoaded',()=>{const d=document.createElement('div');d.style.cssText='width:640px;height:4px';document.querySelector('main').appendChild(d)});",
+    # dopo il caricamento: un elemento aggiunto prima che React prenda la pagina viene tolto da React
+    10: "window.addEventListener('load',()=>setTimeout(()=>{const d=document.createElement('div');d.style.cssText='width:640px;height:4px';document.querySelector('main').appendChild(d)},200));",
     11: "const _d=EventTarget.prototype.dispatchEvent;EventTarget.prototype.dispatchEvent=function(e){if(e&&e.type==='platinatore:misura')return true;return _d.call(this,e)};",
     12: CSS("[aria-pressed]{display:none!important} button:has(svg)+*{}"),
 }
