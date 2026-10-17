@@ -44,5 +44,5 @@ Titolo e descrizione dell'hub nuovi (oggi «Valor Mortis Archivi», nessuna desc
 ## Scelte (17/10/2026)
 
 - Hub del gioco: **A, «Percorso»** (passi numerati Inizia qui, Platino, Raccogli tutto, Pulizia finale; poi tutte le guide con il filtro a pulsanti).
-- Barra di lettura: **C, «Anello»** intorno al pulsante per tornare all'inizio, su tutti gli articoli; sostituisce il vecchio pulsante «Torna all'inizio».
+- Barra di lettura: **A, «Linea»** in cima, col trofeo in punta che si accende a fine lettura, su tutti gli articoli (prima scelta C «Anello», cambiata subito dall'utente). Il pulsante «Torna all'inizio» resta.
 - Da far confermare al proprietario: presentazione del gioco, guide di «Inizia qui», editore (Lyrical Games).

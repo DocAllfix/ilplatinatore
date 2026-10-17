@@ -1,11 +1,10 @@
 "use client";
 
-// Avanzamento della lettura su tutti gli articoli (richiesta dell'utente, 17/10/2026), variante scelta
-// C «Anello»: l'anello si riempie intorno al pulsante per tornare all'inizio e a fine lettura diventa
-// un trofeo. Prende il posto del vecchio pulsante «Torna all'inizio».
-// Si aggiorna scrivendo direttamente sull'elemento (niente stato React a ogni scorrimento).
+// Barra di lettura su tutti gli articoli (richiesta dell'utente, 17/10/2026): a che punto sei della
+// pagina, «un po' piu' ludica». Variante scelta: A «Linea», col trofeo in punta che si accende a fine
+// lettura. Si aggiorna scrivendo direttamente sugli elementi (niente stato React a ogni scorrimento).
 
-import { ArrowUpIcon, TrophyIcon } from "@phosphor-icons/react/ssr";
+import { TrophyIcon } from "@phosphor-icons/react/ssr";
 import { useEffect, useRef, useState } from "react";
 
 /** Da 0 a 1: dall'inizio dell'articolo a quando la sua fine arriva in fondo allo schermo. */
@@ -44,53 +43,30 @@ function useScorrimento(aggiorna: (p: number, inizio: HTMLElement, fine: HTMLEle
   }, []);
 }
 
-/** L'anello di avanzamento intorno al pulsante «Torna all'inizio»; a fine lettura diventa un trofeo. */
+/** Una linea Acido in cima, con il trofeo che la cavalca; a fine lettura il trofeo si accende. */
 export function BarraLettura() {
-  const cerchio = useRef<SVGCircleElement>(null);
-  const [visibile, setVisibile] = useState(false);
+  const barra = useRef<HTMLSpanElement>(null);
+  const punta = useRef<HTMLSpanElement>(null);
   const [finito, setFinito] = useState(false);
-  const R = 22;
-  const C = 2 * Math.PI * R;
-  useScorrimento((p, inizio) => {
-    if (cerchio.current) cerchio.current.style.strokeDashoffset = String(C * (1 - p));
-    const v = inizio.getBoundingClientRect().top < -window.innerHeight;
-    setVisibile((x) => (x !== v ? v : x));
+  useScorrimento((p) => {
+    if (barra.current) barra.current.style.transform = `scaleX(${p})`;
+    // larghezza vera della barra (100vw comprende la barra di scorrimento da computer)
+    const largo = punta.current?.parentElement?.clientWidth ?? 0;
+    if (punta.current) punta.current.style.transform = `translateX(${p * Math.max(0, largo - 24)}px)`;
     setFinito((x) => (x !== p > 0.995 ? p > 0.995 : x));
   });
-  function torna() {
-    const ridotto = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    window.scrollTo({ top: 0, behavior: ridotto ? "auto" : "smooth" });
-  }
   return (
-    <button
-      type="button"
-      onClick={torna}
-      aria-label="Torna all'inizio"
-      aria-hidden={!visibile}
-      tabIndex={visibile ? 0 : -1}
-      className={`fixed right-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex size-13 items-center justify-center rounded-full bg-superficie-alta shadow-[0_8px_24px_oklch(0%_0_0/0.45)] transition-[opacity,transform] duration-[var(--durata-media)] ease-(--ease-uscita) active:scale-[0.97] ${
-        visibile ? "opacity-100" : "pointer-events-none translate-y-4 opacity-0"
-      }`}
-    >
-      <svg viewBox="0 0 52 52" className="absolute inset-0 size-full -rotate-90" aria-hidden="true">
-        <circle cx="26" cy="26" r={R} fill="none" strokeWidth="3" className="stroke-linea" />
-        <circle
-          ref={cerchio}
-          cx="26"
-          cy="26"
-          r={R}
-          fill="none"
-          strokeWidth="3"
-          strokeLinecap="round"
-          className="stroke-riempimento"
-          style={{ strokeDasharray: C, strokeDashoffset: C }}
-        />
-      </svg>
-      {finito ? (
-        <TrophyIcon weight="fill" className="size-5 animate-[scatto_250ms_var(--ease-uscita)] text-riempimento" aria-hidden="true" />
-      ) : (
-        <ArrowUpIcon weight="bold" className="size-5" aria-hidden="true" />
-      )}
-    </button>
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-40 h-1 bg-linea/40" aria-hidden="true">
+      <span ref={barra} className="block h-full origin-left bg-riempimento" style={{ transform: "scaleX(0)" }} />
+      <span ref={punta} className="absolute left-0 top-1 block">
+        <span
+          className={`flex size-6 items-center justify-center rounded-full border transition-[background-color,color,transform] duration-[var(--durata-media)] ease-(--ease-uscita) ${
+            finito ? "scale-110 border-azione bg-azione text-su-azione" : "border-linea bg-superficie-alta text-tenue"
+          }`}
+        >
+          <TrophyIcon weight={finito ? "fill" : "bold"} className="size-3.5" />
+        </span>
+      </span>
+    </div>
   );
 }

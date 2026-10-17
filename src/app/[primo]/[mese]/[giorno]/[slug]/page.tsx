@@ -13,6 +13,7 @@ import { collocaGruppi, schedaDaCampi, trofeiDaCampi } from "@/lib/guida/campi";
 import { aggiungiAncore, dividiCorpo, estraiChecklist } from "@/lib/guida/checklist";
 import { PillolaProgressione } from "@/components/guida/barra";
 import { BarraLettura } from "@/components/barra-lettura";
+import { TornaSu } from "@/components/torna-su";
 import { ChecklistGruppo, NotaEAzzera } from "@/components/guida/checklist";
 import { TabellaCollezionabili } from "@/components/guida/collezionabili";
 import { Correlato } from "@/components/guida/correlato";
@@ -113,8 +114,9 @@ export default async function PaginaArticolo({ params }: Parametri) {
   return (
     <article>
       <div id="inizio-articolo" />
-      {/* Piano 04 chiuso: avanzamento della lettura ad «Anello», che fa anche da «Torna all'inizio» */}
+      {/* Piano 04 chiuso: barra di lettura A «Linea»; «Torna all'inizio» resta su tutti gli articoli */}
       <BarraLettura />
+      <TornaSu />
       {seo.schema ? (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(seo.schema) }} />
       ) : null}
