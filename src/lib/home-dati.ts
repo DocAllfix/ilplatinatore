@@ -8,8 +8,8 @@ import { giochiDelMomento, paroleDa, perModifica, senzaRipetizioni, titoloContie
 import { giornoRoma, NOMI_FORMATO, numeroSfida } from "./sfida";
 import { datiSfida } from "./sfida-dati";
 
-// se ne chiedono 20 per sezione, se ne mostrano 12: tolti i doppioni la fila resta piena
-const PER_SEZIONE = 20;
+// se ne chiedono 36 per sezione, se ne mostrano 12: tolti i doppioni la fila resta piena
+const PER_SEZIONE = 36;
 const IN_FILA = 12;
 
 export type SfidaInBreve = { numero: number; giorno: number; formato: keyof typeof NOMI_FORMATO; nome: string; invito: string; immagine?: Articolo["immagine"] };
