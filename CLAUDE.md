@@ -126,4 +126,11 @@ Poi il commit «Fase N completata».
   - Un guasto messo prima che React prenda la pagina viene cancellato da React: i guasti nel DOM si inseriscono dopo il caricamento, o il controllo sembra rotto quando non lo è.
   - Nelle file orizzontali le immagini fuori schermo si caricano comunque: oltre la quarta partono solo quando si tocca la fila.
   - Una parola più lunga della riga fa scorrere la pagina: `overflow-wrap: anywhere` sul corpo, e niente `shrink-0` senza una larghezza massima.
+- **Incidente del 17/10/2026** (anteprima e CMS di lavoro, sito su Aruba mai toccato): rapporto in `docs/analisi/incidente-2026-10-17.md`. Regole nate:
+  - Mai una richiesta `cache: "no-store"` dentro una pagina pubblica: la rende dinamica e ogni visita interroga il CMS.
+  - Il webhook segna i dati come vecchi (`revalidateTag(…, "max")`), mai `expire: 0`: il visitatore riceve sempre l'ultima versione pronta.
+  - Una pagina con una parte fallita non si salva: si lancia l'errore e resta la versione buona.
+  - Le immagini le serve Caddy dal disco, senza WordPress; la conservazione lunga solo sui file che esistono, mai sugli errori.
+  - Pubblicazione limitata a 2 processi con 3 pagine ciascuno, Apache a 12 processi: il CMS non si satura.
+  - Prima di dire «risolto»: prova con WordPress spento, e prova da telefono emulato (Pixel e iPhone) che conti le immagini rotte.
 - **Debiti**: PageSpeed da ripetere (quota esaurita); LCP della guida al limite (immagini di WordPress senza formati moderni, Fase 6); misure d'uso senza trasporto (Fase 5); chiave di Search Console passata via WhatsApp, da ruotare a fine lavoro. Breaking, Hot take ed «Esplora per gioco» vanno nella home completa (Fase 4).
