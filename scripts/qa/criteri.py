@@ -18,6 +18,8 @@ Criteri:
   10 titoli lunghissimi (break-ui): niente scorrimento laterale a 360 px
   11 misure d'uso: gli eventi partono (spunta, riprendi, sfida, correlato, lettura)
   12 spoiler: nome nascosto, «Mostra spoiler» lo rivela (solo se un oggetto e' segnato spoiler)
+  13 testata da tastiera: menu e ricerca si aprono con Invio, Esc li chiude (piano 07)
+  14 tema chiaro/scuro: la scelta resta dopo il ricaricamento ed e' applicata prima del disegno (piano 07)
 
 Uso:
   python -I scripts/qa/criteri.py https://ilplatinatore.vercel.app          (devono essere tutti verdi)
@@ -55,6 +57,8 @@ GUASTI = {
     10: "window.addEventListener('load',()=>setTimeout(()=>{const d=document.createElement('div');d.style.cssText='width:640px;height:4px';document.querySelector('main').appendChild(d)},200));",
     11: "const _d=EventTarget.prototype.dispatchEvent;EventTarget.prototype.dispatchEvent=function(e){if(e&&e.type==='platinatore:misura')return true;return _d.call(this,e)};",
     12: CSS("[aria-pressed]{display:none!important} button:has(svg)+*{}"),
+    13: "window.addEventListener('keydown',e=>{if(e.key==='Escape')e.stopImmediatePropagation()},true);",
+    14: "Storage.prototype.setItem=function(){};",
 }
 
 
@@ -345,7 +349,51 @@ def c12(b, base, g):
     return ok and rimasti == 0, f"veli {n}; «Mostra spoiler» presente={bool(rivela)}; veli dopo={rimasti}"
 
 
-CRITERI = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12]
+def c13(b, base, g):
+    ctx, pg = nuovo(b, g)
+    vai(pg, base, "/")
+    esiti = []
+    for nome, aperto in (("Apri il menu", lambda: pg.locator('nav[aria-label="Sezioni"] a', has_text="Guide").is_visible()),
+                         ("Cerca nel sito", lambda: pg.evaluate("document.activeElement && document.activeElement.name === 's'"))):
+        trovato = False
+        for _ in range(15):
+            pg.keyboard.press("Tab")
+            if pg.evaluate("document.activeElement && document.activeElement.getAttribute('aria-label')") == nome:
+                trovato = True
+                break
+        if not trovato:
+            esiti.append(f"{nome}: non raggiungibile con Tab")
+            continue
+        pg.keyboard.press("Enter")
+        pg.wait_for_timeout(400)
+        a = bool(aperto())
+        pg.keyboard.press("Escape")
+        pg.wait_for_timeout(400)
+        chiuso = pg.locator('[aria-expanded="true"]').count() == 0
+        esiti.append(f"{nome}: aperto con Invio={a}, chiuso con Esc={chiuso}")
+        pg.evaluate("document.activeElement && document.activeElement.blur()")
+    ctx.close()
+    return all("=True" in e and "False" not in e for e in esiti), "; ".join(esiti)
+
+
+def c14(b, base, g):
+    ctx, pg = nuovo(b, g)
+    # il tema com'e' al momento in cui il documento e' pronto, prima di React: se c'e', niente lampo
+    ctx.add_init_script("document.addEventListener('DOMContentLoaded',()=>{window.__temaSubito=document.documentElement.dataset.theme||''})")
+    vai(pg, base, "/")
+    prima = pg.evaluate("document.documentElement.dataset.theme || ''")
+    clic(pg.locator('button[aria-label^="Passa al tema"]').first)
+    scelto = pg.evaluate("document.documentElement.dataset.theme || ''")
+    pg.reload(wait_until="load")
+    pg.wait_for_timeout(500)
+    dopo = pg.evaluate("document.documentElement.dataset.theme || ''")
+    subito = pg.evaluate("window.__temaSubito")
+    ctx.close()
+    ok = scelto in ("light", "dark") and scelto != prima and dopo == scelto and subito == scelto
+    return ok, f"prima={prima or 'sistema'}, scelto={scelto}, dopo il ricaricamento={dopo or 'sistema'}, gia' prima del disegno={subito or 'no'}"
+
+
+CRITERI = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14]
 
 
 def main() -> int:
