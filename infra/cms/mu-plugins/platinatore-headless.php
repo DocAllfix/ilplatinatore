@@ -333,6 +333,7 @@ function platinatore_campi_gioco()
 {
     return array(
         'pl_gioco'          => array('label' => 'È un gioco (hub)', 'tipo' => 'si'),
+        'pl_sezioni'        => array('label' => 'Sezioni della home', 'aiuto' => 'Chiavi separate da virgola, per esempio «classico» o «indie»: tutti gli articoli del gioco entrano in quella sezione della home.'),
         'pl_sfida'          => array('label' => 'Usabile nella sfida', 'tipo' => 'si', 'aiuto' => 'Il gioco può uscire in «Riconosci il gioco», con la foto della sua guida più recente. Non accende la pagina hub.'),
         'pl_presentazione'  => array('label' => 'Presentazione breve', 'tipo' => 'area', 'aiuto' => 'Due o tre frasi: che gioco è e cosa trova qui chi lo gioca.'),
         'pl_piattaforme'    => array('label' => 'Piattaforme', 'aiuto' => 'Separate da virgola: «PS5, Xbox Series X|S, PC».'),
@@ -484,6 +485,71 @@ add_action('admin_menu', function () {
         echo '<form method="post">';
         wp_nonce_field('platinatore_classici');
         echo '<textarea name="platinatore_classici" rows="30" class="large-text code">' . esc_textarea(get_option('platinatore_classici', '')) . '</textarea>';
+        submit_button('Salva');
+        echo '</form></div>';
+    });
+});
+
+/* ---------------------------------------------------------------------------------------
+ * 8. HOME A SEZIONI (PDF 01, 02, 09; piano 06, modello games.gg chiesto dal proprietario)
+ *
+ * Una decina di sezioni a tema, ciascuna una fila di news e guide ordinate per ultima modifica.
+ * Nessuno sceglie gli articoli: entrano da soli secondo la regola della sezione. Elenco in
+ * Strumenti > Sezioni della home, una riga per sezione:
+ *   Titolo | regola | parametro
+ * Regole: piu-letti (Search Console, 28 giorni) · giochi-momento (giorni) · tag-sezione (chiave,
+ * es. classico o indie: i giochi segnati sul tag) · titolo (parole separate da virgola) ·
+ * categoria (slug) · sfida. Il sito le legge da una rotta REST pubblica.
+ * ------------------------------------------------------------------------------------- */
+
+function platinatore_sezioni_home()
+{
+    $righe = preg_split('/\r?\n/', (string) get_option('platinatore_sezioni_home', ''));
+    $regole = array('piu-letti', 'giochi-momento', 'tag-sezione', 'titolo', 'categoria', 'sfida');
+    $out = array();
+    foreach ($righe as $riga) {
+        $c = array_map('trim', explode('|', $riga));
+        if (count($c) < 2 || $c[0] === '' || !in_array($c[1], $regole, true)) {
+            continue;
+        }
+        $out[] = array('titolo' => $c[0], 'regola' => $c[1], 'parametro' => isset($c[2]) ? $c[2] : '');
+    }
+    return $out;
+}
+
+add_action('rest_api_init', function () {
+    register_rest_route('platinatore/v1', '/home', array(
+        'methods'             => 'GET',
+        'permission_callback' => '__return_true',
+        'callback'            => function () {
+            return rest_ensure_response(array('sezioni' => platinatore_sezioni_home()));
+        },
+    ));
+});
+
+add_action('admin_menu', function () {
+    add_management_page('Sezioni della home', 'Sezioni della home', 'edit_others_posts', 'platinatore-home', function () {
+        if (isset($_POST['platinatore_sezioni_home']) && check_admin_referer('platinatore_home')) {
+            update_option('platinatore_sezioni_home', sanitize_textarea_field(wp_unslash($_POST['platinatore_sezioni_home'])), false);
+            echo '<div class="notice notice-success"><p>Salvato: ' . count(platinatore_sezioni_home()) . ' sezioni valide.</p></div>';
+            if (defined('PLATINATORE_SITO_PUBBLICO') && defined('PLATINATORE_REVALIDATE_TOKEN')) {
+                wp_remote_post(rtrim(PLATINATORE_SITO_PUBBLICO, '/') . '/api/revalidate/', array(
+                    'timeout' => 3, 'blocking' => true,
+                    'headers' => array('Content-Type' => 'application/json', 'x-cms-token' => PLATINATORE_REVALIDATE_TOKEN),
+                    'body'    => '{}',
+                ));
+            }
+        }
+        echo '<div class="wrap"><h1>Sezioni della home</h1>';
+        echo '<p>Una riga per sezione, nell ordine in cui compaiono: <code>Titolo | regola | parametro</code>.</p>';
+        echo '<ul style="list-style:disc;padding-left:2em"><li><code>piu-letti</code>: le guide più cliccate da Google negli ultimi 28 giorni.</li>';
+        echo '<li><code>giochi-momento | 30</code>: gli articoli dei giochi con più uscite negli ultimi 30 giorni.</li>';
+        echo '<li><code>tag-sezione | indie</code>: gli articoli dei giochi che hanno «indie» nel campo Sezioni della home del tag.</li>';
+        echo '<li><code>titolo | enigma, soluzione</code>: gli articoli con una di queste parole nel titolo.</li>';
+        echo '<li><code>categoria | news</code>: gli articoli della categoria. <code>sfida</code>: la sfida del giorno.</li></ul>';
+        echo '<form method="post">';
+        wp_nonce_field('platinatore_home');
+        echo '<textarea name="platinatore_sezioni_home" rows="14" class="large-text code">' . esc_textarea(get_option('platinatore_sezioni_home', '')) . '</textarea>';
         submit_button('Salva');
         echo '</form></div>';
     });

@@ -157,6 +157,44 @@ export async function tuttiITermini(tassonomia: "categories" | "tags"): Promise<
   return out.map((t) => ({ ...t, name: decodificaEntita(t.name) }));
 }
 
+export type SezioneHome = { titolo: string; regola: "piu-letti" | "giochi-momento" | "tag-sezione" | "titolo" | "categoria" | "sfida"; parametro: string };
+
+/** Le sezioni della home (mu-plugin, sezione 8), nell'ordine della redazione. */
+export async function sezioniHome(): Promise<SezioneHome[]> {
+  const r = await chiamata<{ sezioni?: SezioneHome[] }>("/platinatore/v1/home");
+  return Array.isArray(r?.dati?.sezioni) ? r.dati.sezioni : [];
+}
+
+const LEGGERI = "_fields=id,slug,date,date_gmt,modified_gmt,title,meta,_links,_embedded&_embed=wp:featuredmedia,wp:term";
+
+/** Articoli per slug, leggeri, nell'ordine chiesto; quelli non pubblicati mancano. */
+export async function articoliPerSlug(slugs: string[]): Promise<Articolo[]> {
+  if (!slugs.length) return [];
+  const lista = slugs.slice(0, 100).map(encodeURIComponent).join(",");
+  const r = await chiamata<PostWP[]>(`/wp/v2/posts?status=publish&per_page=100&slug=${lista}&${LEGGERI}`);
+  const perSlug = new Map((r?.dati ?? []).map((p) => [p.slug, mappaPost(p, ctx())]));
+  return slugs.map((s) => perSlug.get(s)).filter((a): a is Articolo => Boolean(a));
+}
+
+/** Articoli leggeri secondo un filtro REST, dal piu' recentemente modificato. */
+export async function articoliModificati(filtro: string, quanti = 12): Promise<Articolo[]> {
+  const r = await chiamata<PostWP[]>(`/wp/v2/posts?status=publish&orderby=modified&order=desc&per_page=${quanti}&${filtro}&${LEGGERI}`);
+  return (r?.dati ?? []).map((p) => mappaPost(p, ctx()));
+}
+
+/** Per «I giochi del momento»: i tag degli articoli pubblicati dopo una data (solo id). */
+export async function tagDegliUltimi(dopo: Date): Promise<number[][]> {
+  const out: number[][] = [];
+  for (let p = 1; p <= 3; p++) {
+    const r = await chiamata<Array<{ tags?: number[] }>>(
+      `/wp/v2/posts?status=publish&per_page=100&page=${p}&after=${encodeURIComponent(dopo.toISOString())}&_fields=tags`,
+    );
+    out.push(...(r?.dati ?? []).map((x) => x.tags ?? []));
+    if (!r || p >= r.pagine) break;
+  }
+  return out;
+}
+
 /** Elenco dei classici della sfida (mu-plugin, sezione 7). Vuoto se il CMS non risponde. */
 export async function classiciSfida(): Promise<
   Array<{ nome: string; anno: number; piattaforme: string[]; sviluppatore: string; genere: string; serie: string }>
