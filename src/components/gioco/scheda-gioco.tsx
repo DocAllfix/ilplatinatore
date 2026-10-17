@@ -9,13 +9,16 @@ import type { SchedaGioco as Dati } from "@/lib/scheda-gioco";
 
 function Dato({ icona, etichetta, valore }: { icona: React.ReactNode; etichetta: string; valore?: string }) {
   if (!valore) return null;
+  // dl > div > dt + dd, niente altro in mezzo (axe): l'icona sta dentro l'etichetta
   return (
-    <div className="flex min-w-0 items-start gap-2">
-      <span className="mt-0.5 text-viola-testo">{icona}</span>
-      <div className="min-w-0">
-        <dt className="text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-tenue">{etichetta}</dt>
-        <dd className="font-semibold leading-snug">{valore}</dd>
-      </div>
+    <div className="min-w-0">
+      <dt className="flex items-center gap-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.05em] text-tenue">
+        <span className="text-viola-testo" aria-hidden="true">
+          {icona}
+        </span>
+        {etichetta}
+      </dt>
+      <dd className="mt-0.5 font-semibold leading-snug">{valore}</dd>
     </div>
   );
 }
