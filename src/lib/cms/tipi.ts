@@ -95,6 +95,8 @@ export type TermineCompletoWP = {
   count: number;
   description?: string;
   yoast_head_json?: Record<string, unknown>;
+  /** campi del tag registrati dal mu-plugin (pl_*): dati del gioco per l'hub */
+  meta?: Record<string, unknown>;
 };
 
 export type PaginaWP = {

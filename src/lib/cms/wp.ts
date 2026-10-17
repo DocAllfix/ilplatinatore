@@ -118,6 +118,20 @@ export async function paginaArticoli(filtro: {
 }
 
 /**
+ * Tutti gli articoli di un tag, leggeri (senza testo) ma con immagine, categorie e campi: per l'hub
+ * del gioco. Piu' pagine da 100 se il gioco ha molte guide.
+ */
+export async function articoliDelTag(tag: number): Promise<Articolo[]> {
+  const campi = "_fields=id,slug,date,date_gmt,modified_gmt,title,meta,_links,_embedded";
+  const url = (p: number) => `/wp/v2/posts?status=publish&tags=${tag}&per_page=100&page=${p}&_embed=wp:featuredmedia,wp:term&${campi}`;
+  const prima = await chiamata<PostWP[]>(url(1));
+  if (!prima) return [];
+  const tutti = [...prima.dati];
+  for (let p = 2; p <= prima.pagine; p++) tutti.push(...((await chiamata<PostWP[]>(url(p)))?.dati ?? []));
+  return tutti.map((p) => mappaPost(p, ctx()));
+}
+
+/**
  * Se un indirizzo non esiste, dove sta adesso l'articolo (slug o data cambiati).
  * Rotta del mu-plugin. Se il CMS non risponde, meglio un 404 che un errore in faccia.
  */

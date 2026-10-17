@@ -321,5 +321,107 @@ add_action('init', function () {
     }
 }, 11);
 
+/* ---------------------------------------------------------------------------------------
+ * 6. HUB DEL GIOCO: CAMPI DEL TAG (PDF 04, piano 04)
+ *
+ * Non tutti i tag sono giochi (00-raccordo, punto 4): l'hub compare solo dove `pl_gioco` vale 1.
+ * Campi del termine, nativi (wpvibe non ha campi per i termini): leggibili e scrivibili dalla
+ * REST (`meta` del tag) e modificabili nella pagina del tag in wp-admin.
+ * ------------------------------------------------------------------------------------- */
+
+function platinatore_campi_gioco()
+{
+    return array(
+        'pl_gioco'          => array('label' => 'È un gioco (hub)', 'tipo' => 'si'),
+        'pl_presentazione'  => array('label' => 'Presentazione breve', 'tipo' => 'area', 'aiuto' => 'Due o tre frasi: che gioco è e cosa trova qui chi lo gioca.'),
+        'pl_piattaforme'    => array('label' => 'Piattaforme', 'aiuto' => 'Separate da virgola: «PS5, Xbox Series X|S, PC».'),
+        'pl_uscita'         => array('label' => 'Data di uscita', 'aiuto' => 'AAAA-MM-GG.'),
+        'pl_sviluppatore'   => array('label' => 'Sviluppatore'),
+        'pl_editore'        => array('label' => 'Editore'),
+        'pl_guida_platino'  => array('label' => 'Guida al Platino', 'aiuto' => 'Slug dell\'articolo. Da qui l\'hub prende i dati del completamento e la copertina.'),
+        'pl_inizia_qui'     => array('label' => 'Inizia qui', 'tipo' => 'area', 'aiuto' => 'Slug degli articoli, uno per riga, nell\'ordine in cui leggerli.'),
+    );
+}
+
+add_action('init', function () {
+    foreach (platinatore_campi_gioco() as $chiave => $c) {
+        register_term_meta('post_tag', $chiave, array(
+            'type'          => 'string',
+            'single'        => true,
+            'default'       => '',
+            'show_in_rest'  => true,
+            'auth_callback' => function () {
+                return current_user_can('manage_categories');
+            },
+        ));
+    }
+});
+
+add_action('post_tag_edit_form_fields', function ($termine) {
+    wp_nonce_field('platinatore_gioco', 'platinatore_gioco_nonce');
+    echo '<tr><th colspan="2"><h2>Hub del gioco</h2></th></tr>';
+    foreach (platinatore_campi_gioco() as $chiave => $c) {
+        $valore = get_term_meta($termine->term_id, $chiave, true);
+        $tipo = isset($c['tipo']) ? $c['tipo'] : 'testo';
+        echo '<tr class="form-field"><th scope="row"><label for="' . esc_attr($chiave) . '">' . esc_html($c['label']) . '</label></th><td>';
+        if ($tipo === 'si') {
+            echo '<input type="checkbox" id="' . esc_attr($chiave) . '" name="' . esc_attr($chiave) . '" value="1"' . checked($valore, '1', false) . '>';
+        } elseif ($tipo === 'area') {
+            echo '<textarea id="' . esc_attr($chiave) . '" name="' . esc_attr($chiave) . '" rows="4">' . esc_textarea($valore) . '</textarea>';
+        } else {
+            echo '<input type="text" id="' . esc_attr($chiave) . '" name="' . esc_attr($chiave) . '" value="' . esc_attr($valore) . '">';
+        }
+        if (!empty($c['aiuto'])) {
+            echo '<p class="description">' . esc_html($c['aiuto']) . '</p>';
+        }
+        echo '</td></tr>';
+    }
+});
+
+add_action('edited_post_tag', function ($id) {
+    if (!isset($_POST['platinatore_gioco_nonce']) || !wp_verify_nonce($_POST['platinatore_gioco_nonce'], 'platinatore_gioco')) {
+        return;
+    }
+    if (!current_user_can('manage_categories')) {
+        return;
+    }
+    foreach (platinatore_campi_gioco() as $chiave => $c) {
+        $tipo = isset($c['tipo']) ? $c['tipo'] : 'testo';
+        if ($tipo === 'si') {
+            update_term_meta($id, $chiave, empty($_POST[$chiave]) ? '' : '1');
+        } elseif (isset($_POST[$chiave])) {
+            $v = wp_unslash($_POST[$chiave]);
+            update_term_meta($id, $chiave, $tipo === 'area' ? sanitize_textarea_field($v) : sanitize_text_field($v));
+        }
+    }
+});
+
+// Un tag modificato (nome, descrizione o campi del gioco, da wp-admin o dalla REST) rigenera l'hub.
+function platinatore_avvisa_hub($id)
+{
+    if (!defined('PLATINATORE_SITO_PUBBLICO') || !defined('PLATINATORE_REVALIDATE_TOKEN')) {
+        return;
+    }
+    $t = get_term($id, 'post_tag');
+    if (!$t || is_wp_error($t)) {
+        return;
+    }
+    $r = wp_remote_post(rtrim(PLATINATORE_SITO_PUBBLICO, '/') . '/api/revalidate/', array(
+        'timeout'  => 3,
+        'blocking' => true,
+        'headers'  => array('Content-Type' => 'application/json', 'x-cms-token' => PLATINATORE_REVALIDATE_TOKEN),
+        'body'     => wp_json_encode(array('tag' => array($t->slug))),
+    ));
+    if (is_wp_error($r) || wp_remote_retrieve_response_code($r) !== 200) {
+        error_log('[platinatore] webhook non riuscito per il tag ' . $t->slug);
+    }
+}
+// priorita' 20: dopo il salvataggio dei campi qui sopra
+add_action('edited_post_tag', 'platinatore_avvisa_hub', 20);
+// dalla REST i meta si salvano dopo edited_term: si avvisa a lavoro finito
+add_action('rest_after_insert_post_tag', function ($t) {
+    platinatore_avvisa_hub($t->term_id);
+});
+
 // NB dal riferimento: l'elenco delle rotte REST NON va filtrato a mano (`rest_endpoints`): un
 // filtro cosi' ha mandato in errore fatale tutta la REST API.

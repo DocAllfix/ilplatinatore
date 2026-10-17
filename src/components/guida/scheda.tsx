@@ -64,7 +64,7 @@ function TuttiIDati({ s, apertoDa = "Tutti i dati" }: { s: Scheda; apertoDa?: st
   );
 }
 
-function Mancabili({ s }: { s: Scheda }) {
+export function Mancabili({ s }: { s: Scheda }) {
   if (!s.mancabili) return null;
   if (s.mancabili.numero === 0)
     return <p className="text-sm text-tenue">Nessun trofeo mancabile</p>;
@@ -90,7 +90,7 @@ function Dato({ etichetta, children, className = "" }: { etichetta: string; chil
 }
 
 /** Il valore principale (ore per il platino) sul blocco Acido inclinato, firma dei post social. */
-function BloccoAcido({ children }: { children: React.ReactNode }) {
+export function BloccoAcido({ children }: { children: React.ReactNode }) {
   return (
     <span className="cifre inline-block -skew-x-6 whitespace-nowrap bg-azione px-2.5 py-1 text-[1.375rem] font-bold leading-none text-su-azione min-[400px]:text-[1.625rem]">
       {children}
