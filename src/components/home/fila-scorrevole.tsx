@@ -99,9 +99,10 @@ export function FilaScorrevole({ children, quante }: { children: React.ReactNode
       >
         {children}
       </ul>
-      {scorre && (
-        // decorativo per i lettori di schermo: la fila si scorre anche da tastiera passando di scheda in scheda
-        <div aria-hidden="true" className="mt-2">
+      {/* sempre nella pagina (il cursore va misurato da subito), nascosto se la fila non scorre;
+          decorativo per i lettori di schermo: la fila si scorre anche da tastiera di scheda in scheda */}
+      {(
+        <div aria-hidden="true" className={`mt-2 ${scorre ? "" : "hidden"}`}>
           <div
             data-variant="a"
             className="relative h-5 cursor-pointer touch-none"
