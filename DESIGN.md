@@ -242,3 +242,11 @@ La striscia a tre colori (Ciano, Viola, Acido) in cima alla testata. La parola c
 - **Don't** affidare completamento e stati al solo colore.
 - **Don't** usare trattini lunghi nei testi.
 - **Don't** coprire testo o controlli con la pubblicità.
+
+## Componenti nati col piano 07 (18/10/2026)
+- **Testata**: logo e nome al centro; a sinistra i tasti Select/Start (menu a barra orizzontale sotto il titolo), a destra mirino (ricerca) e sole/luna (tema). La striscia a tre colori resta in cima.
+- **Bottone Acido**: blocco Acido inclinato con scritta Notte, come le ore del Platino. Mai scritta bianca sull'Acido (1,1:1).
+- **Ultim'ora**: cornice Errore e bollino rosso chiaro fisso (#FF6B6B, scritta Notte) con il fuoco, sempre sopra l'immagine scurita.
+- **Bagliore** della scheda del gioco: bordo che alterna Ciano, Viola, Acido (in prova: ruota o pulsa); fermo con movimento ridotto.
+- **Cornice-timer** dell'hero: un colore per articolo (Ciano, Viola, Acido), si consuma in 7 s; pausa sempre disponibile.
+- **Controller della sfida**: pulsa solo l'alone viola, il pulsante resta fermo.
