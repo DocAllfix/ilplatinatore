@@ -140,6 +140,8 @@ def titolo_libero(pg, sel):
       for (const f of [0.02, 0.25, 0.5, 0.75, 0.98]) {
         const x = r.left + r.width * f;
         const e = document.elementFromPoint(x, y);
+        // il selettore delle varianti esiste solo sull'anteprima: non conta
+        if (e && e.closest('[data-lab]')) continue;
         if (e && !h.contains(e) && e !== h) return 'coperto da ' + e.tagName.toLowerCase() + '.' + String(e.className).slice(0, 40);
       }
       return 'ok';

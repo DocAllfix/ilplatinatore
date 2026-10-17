@@ -38,7 +38,8 @@ export function SelettoreVarianti({
   }
 
   return (
-    <div className={`fixed left-1/2 z-50 -translate-x-1/2 ${posizione === "alto" ? "top-3" : "bottom-3"}`}>
+    // data-lab: strumento della sola anteprima, i controlli automatici lo ignorano
+    <div data-lab className={`fixed left-1/2 z-50 -translate-x-1/2 ${posizione === "alto" ? "top-3" : "bottom-3"}`}>
       <div className="flex items-center gap-1 rounded-full border border-linea bg-superficie-alta p-1 shadow-[0_8px_24px_rgb(0_0_0/0.45)]">
         <button
           type="button"
