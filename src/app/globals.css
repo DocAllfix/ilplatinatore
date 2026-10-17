@@ -81,6 +81,9 @@ body {
   color: var(--testo);
   font-family: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
+  /* una parola piu' lunga della riga (nomi di giochi, indirizzi incollati) va a capo invece di far
+     scorrere la pagina di lato: trovato dal controllo break-ui della Fase 3 */
+  overflow-wrap: anywhere;
 }
 
 :focus-visible {
