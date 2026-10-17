@@ -31,10 +31,7 @@ PAGINE = [
     "/",
     "/2026/10/13/valor-mortis-guida-platino-tutti-trofei/",
     "/2026/10/15/valor-mortis-collezionabili-capitolo-2/",
-    # piano 04 in prova: hub del gioco in tre varianti
-    "/tag/valor-mortis/?v=a",
-    "/tag/valor-mortis/?v=b",
-    "/tag/valor-mortis/?v=c",
+    "/tag/valor-mortis/",
     "/tag/crimson-desert/page/2/",
     "/category/guide/",
     "/privacy-policy/",

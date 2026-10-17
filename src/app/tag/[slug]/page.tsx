@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { ArchivioTermine, metadatiTermine } from "@/components/archivio-termine";
 import { Hub } from "@/components/hub/hub";
-import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
 import { sitoPubblico } from "@/lib/cms/config";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { jsonLd } from "@/lib/cms/seo";
@@ -62,19 +61,10 @@ export default async function Pagina({ params }: PageProps<"/tag/[slug]">) {
   const d = await datiHub(slug);
   if (!d) return <ArchivioTermine tipo="tag" slug={slug} />;
   return (
-    // Prova del piano 04 (docs/brief/04-hub-gioco.md): tre varianti, ?v=a|b|c
-    <div id="lab" data-v="a">
-      <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]),#lab[data-v="c"] [data-variant]:not([data-variant="c"]){display:none}`}</style>
+    // Piano 04 chiuso: variante A «Percorso»
+    <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(schemaHub(d)) }} />
       <Hub d={d} />
-      <SelettoreVarianti
-        sezione="Hub"
-        varianti={[
-          { id: "a", nome: "Percorso" },
-          { id: "b", nome: "Indice" },
-          { id: "c", nome: "Pannello" },
-        ]}
-      />
-    </div>
+    </>
   );
 }

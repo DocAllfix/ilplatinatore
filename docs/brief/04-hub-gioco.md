@@ -1,6 +1,6 @@
 # Piano di design 04: hub del gioco
 
-Skill: impeccable `shape`. Stato: **confermato** (17/10/2026), varianti in prova sull'anteprima. Ancore: `PRODUCT.md`, `DESIGN.md`, PDF sezioni 04, 05, 09 e 10; riferimenti Game8 (hub Elden Ring) e Nintendo Life (scheda del gioco), `docs/analisi/fase0-analisi.md` 3.2.
+Skill: impeccable `shape`. Stato: **chiuso** (17/10/2026), scelte in fondo. Ancore: `PRODUCT.md`, `DESIGN.md`, PDF sezioni 04, 05, 09 e 10; riferimenti Game8 (hub Elden Ring) e Nintendo Life (scheda del gioco), `docs/analisi/fase0-analisi.md` 3.2.
 
 ## 1. Che cosa
 La pagina `/tag/valor-mortis/` smette di essere un archivio in ordine di data e diventa la **scheda del gioco** (PDF 04): presentazione, piattaforme, dati del completamento, «Inizia qui», guida al Platino, guide specifiche per tipo di aiuto, notizie separate. Stesso indirizzo di oggi (decisione presa: l'hub prende il posto del tag, nessun redirect). La paginazione `/tag/valor-mortis/page/N/` resta raggiungibile come archivio completo.
@@ -40,3 +40,9 @@ Titolo e descrizione dell'hub nuovi (oggi «Valor Mortis Archivi», nessuna desc
 - Copertina: quella della guida al Platino.
 - In più: **barra di lettura** su tutti gli articoli, semplice ma più ludica. Tre varianti: A «Linea» (linea Acido in cima con il trofeo in punta, che si accende a fine lettura), B «Livelli» (una tacca per sezione, come una barra dell'esperienza, con «Sezione 3 di 13»), C «Anello» (anello intorno al pulsante per tornare su, che diventa un trofeo a fine lettura).
 - Breaking, Hot take e flusso delle notizie (PDF 01, 02, 09): home completa, Fase 4.
+
+## Scelte (17/10/2026)
+
+- Hub del gioco: **A, «Percorso»** (passi numerati Inizia qui, Platino, Raccogli tutto, Pulizia finale; poi tutte le guide con il filtro a pulsanti).
+- Barra di lettura: **C, «Anello»** intorno al pulsante per tornare all'inizio, su tutti gli articoli; sostituisce il vecchio pulsante «Torna all'inizio».
+- Da far confermare al proprietario: presentazione del gioco, guide di «Inizia qui», editore (Lyrical Games).

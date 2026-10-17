@@ -1,5 +1,5 @@
-// Hub del gioco (PDF 04, piano 04) su /tag/<gioco>/. Tre varianti in prova sull'anteprima:
-// A «Percorso», B «Indice», C «Pannello». Tutti i dati arrivano dal CMS (lib/hub-dati.ts).
+// Hub del gioco (PDF 04, piano 04) su /tag/<gioco>/. Variante scelta: A «Percorso» (17/10/2026).
+// Tutti i dati arrivano dal CMS (lib/hub-dati.ts).
 
 import { ArrowRightIcon, NewspaperIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
@@ -28,13 +28,13 @@ function Etichetta({ children }: { children: React.ReactNode }) {
 }
 
 /** Copertina (dalla guida al Platino), nome, piattaforme, uscita, chi l'ha fatto. */
-function Testata({ d, alta = false }: { d: DatiHub; alta?: boolean }) {
+function Testata({ d }: { d: DatiHub }) {
   const img = d.platino?.immagine;
   const g = d.gioco;
   const chi = [g.sviluppatore, g.editore && g.editore !== g.sviluppatore ? g.editore : null].filter(Boolean).join(" · ");
   return (
     <header className="-mx-4 -mt-5">
-      <div className={`relative isolate flex flex-col justify-end overflow-hidden px-4 pt-20 ${alta ? "min-h-[22rem] pb-16" : "min-h-[16rem] pb-5"}`}>
+      <div className="relative isolate flex min-h-[16rem] flex-col justify-end overflow-hidden px-4 pb-5 pt-20">
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={img.src} srcSet={img.srcset} sizes="(min-width: 768px) 768px, 100vw" alt="" fetchPriority="high" className="absolute inset-0 -z-10 size-full object-cover" />
@@ -73,13 +73,13 @@ function Presentazione({ d }: { d: DatiHub }) {
 }
 
 /** I dati del completamento, letti dalla scheda della guida al Platino: nessun doppione nel CMS. */
-function Completamento({ d, sovrapposto = false }: { d: DatiHub; sovrapposto?: boolean }) {
+function Completamento({ d }: { d: DatiHub }) {
   const s = d.scheda;
   if (!s || !d.platino) return null;
   return (
     <section
       aria-label="Il Platino in breve"
-      className={`rounded-xl border border-linea p-4 ${sovrapposto ? "relative z-10 -mt-12 bg-superficie-alta shadow-[0_8px_24px_oklch(0%_0_0/0.45)]" : "mt-6 bg-superficie"}`}
+      className="mt-6 rounded-xl border border-linea bg-superficie p-4"
     >
       <Etichetta>Il Platino in breve</Etichetta>
       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4">
@@ -218,8 +218,8 @@ function Piede({ d }: { d: DatiHub }) {
   );
 }
 
-/** A: il percorso a passi numerati, poi tutte le guide con il filtro a pulsanti. */
-function Percorso({ d }: { d: DatiHub }) {
+/** Il percorso a passi numerati, poi tutte le guide con il filtro a pulsanti. */
+export function Hub({ d }: { d: DatiHub }) {
   const gruppo = (a: string) => d.gruppi.find((g) => g.aiuto === a)?.guide ?? [];
   const passi = [
     d.iniziaQui.length > 0 && { titolo: "Inizia qui", testo: "Le basi per non farti travolgere nelle prime ore.", corpo: <IniziaQui d={d} /> },
@@ -281,109 +281,5 @@ function ElencoBreve({ guide }: { guide: Articolo[] }) {
         </li>
       ))}
     </ul>
-  );
-}
-
-/** B: indice per tipo di aiuto in testa (Game8), con il percorso accanto. */
-function Indice({ d }: { d: DatiHub }) {
-  return (
-    <>
-      <Testata d={d} />
-      <Presentazione d={d} />
-      <Riprendi tracciabili={d.tracciabili} />
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
-        {d.iniziaQui.length > 0 && (
-          <section aria-label="Inizia qui">
-            <Etichetta>Inizia qui</Etichetta>
-            <div className="mt-2">
-              <IniziaQui d={d} />
-            </div>
-          </section>
-        )}
-        {d.platino && (
-          <section aria-label="Il Platino" className="flex flex-col gap-2">
-            <Etichetta>Il Platino</Etichetta>
-            <CartaPlatino a={d.platino} />
-          </section>
-        )}
-      </div>
-      <section aria-label="Cosa ti serve?" className="mt-10">
-        <h2 className="mb-4 text-[1.5rem] font-bold">
-          Cosa ti serve?
-        </h2>
-        <GuidePerTipo gruppi={leggeri(d.gruppi)} stile="tessere" />
-      </section>
-      <Completamento d={d} />
-      <Notizie d={d} />
-      <Piede d={d} />
-    </>
-  );
-}
-
-/** C: copertina alta col pannello dei dati sovrapposto, poi file orizzontali di schede per tipo. */
-function Pannello({ d }: { d: DatiHub }) {
-  return (
-    <>
-      <Testata d={d} alta />
-      <Completamento d={d} sovrapposto />
-      <Presentazione d={d} />
-      <Riprendi tracciabili={d.tracciabili} />
-      {d.iniziaQui.length > 0 && <Fila titolo="Inizia qui" guide={d.iniziaQui} numerata />}
-      {d.gruppi.map((g) => (
-        <Fila key={g.aiuto} titolo={g.aiuto} guide={g.aiuto === "Platino e trofei" && d.platino ? [d.platino, ...g.guide] : g.guide} aiuto={g.aiuto} />
-      ))}
-      <Notizie d={d} />
-      <Piede d={d} />
-    </>
-  );
-}
-
-function Fila({ titolo, guide, aiuto, numerata = false }: { titolo: string; guide: Articolo[]; aiuto?: DatiHub["gruppi"][number]["aiuto"]; numerata?: boolean }) {
-  return (
-    <section aria-label={titolo} className="mt-8">
-      <h2 className="flex items-center gap-2 text-lg font-bold">
-        {aiuto && <IconaAiuto aiuto={aiuto} className="size-5 text-viola" />}
-        {titolo}
-        <span className="cifre text-sm font-medium text-tenue">{guide.length}</span>
-      </h2>
-      <ul className="-mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:thin]">
-        {guide.map((a, i) => (
-          <li key={a.id} className="w-[min(15rem,72vw)] shrink-0 snap-start">
-            <Link
-              href={a.percorso}
-              className="group flex h-full flex-col overflow-hidden rounded-xl border border-linea bg-superficie transition-[border-color,transform] duration-150 active:scale-[0.99] [@media(hover:hover)]:hover:border-link"
-            >
-              <span className="relative block aspect-video bg-superficie-alta">
-                {a.immagine && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={a.immagine.src} srcSet={a.immagine.srcset} sizes="240px" alt="" loading="lazy" className="size-full object-cover" />
-                )}
-                {numerata && (
-                  <span className="cifre absolute left-2 top-2 flex size-8 items-center justify-center rounded-full bg-viola text-sm font-bold text-su-viola">{i + 1}</span>
-                )}
-              </span>
-              <span className="p-3 text-sm font-semibold leading-snug [@media(hover:hover)]:group-hover:text-link">{senzaGioco(a.titolo)}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-/** Le tre varianti nell'HTML, una visibile: le sceglie il selettore leggendo ?v=. */
-export function Hub({ d }: { d: DatiHub }) {
-  return (
-    <>
-      <div data-variant="a">
-        <Percorso d={d} />
-      </div>
-      <div data-variant="b">
-        <Indice d={d} />
-      </div>
-      <div data-variant="c">
-        <Pannello d={d} />
-      </div>
-    </>
   );
 }

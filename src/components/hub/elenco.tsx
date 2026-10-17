@@ -1,7 +1,6 @@
 "use client";
 
-// Le guide del gioco per tipo di aiuto, con il filtro (primo filtro chiesto dal PDF 04). Due stili:
-// pulsanti in fila («chip») o tessere con icona e numero («tessere», sul modello dell'indice di Game8).
+// Le guide del gioco per tipo di aiuto, con il filtro a pulsanti (primo filtro chiesto dal PDF 04).
 
 import { CaretDownIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
@@ -43,57 +42,33 @@ function Elenco({ g, tutte }: { g: Gruppo; tutte: boolean }) {
   );
 }
 
-export function GuidePerTipo({ gruppi, stile = "chip" }: { gruppi: Gruppo[]; stile?: "chip" | "tessere" }) {
+export function GuidePerTipo({ gruppi }: { gruppi: Gruppo[] }) {
   const [scelto, setScelto] = useState<Aiuto | null>(null);
   const visibili = scelto ? gruppi.filter((g) => g.aiuto === scelto) : gruppi;
   const totale = gruppi.reduce((n, g) => n + g.guide.length, 0);
 
-  const filtro =
-    stile === "tessere" ? (
-      <div role="group" aria-label="Filtra per tipo di aiuto" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {gruppi.map((g) => {
-          const attivo = scelto === g.aiuto;
+  const filtro = (
+    <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none]" role="group" aria-label="Filtra per tipo di aiuto">
+      <div className="flex w-max gap-2">
+        {[null, ...gruppi.map((g) => g.aiuto)].map((a) => {
+          const attivo = scelto === a;
           return (
             <button
-              key={g.aiuto}
+              key={a ?? "tutte"}
               type="button"
               aria-pressed={attivo}
-              onClick={() => setScelto(attivo ? null : g.aiuto)}
-              className={`flex min-h-16 items-center gap-3 rounded-xl border p-3 text-left transition-[background-color,border-color,transform] duration-150 active:scale-[0.98] ${
-                attivo ? "border-azione bg-azione text-su-azione" : "border-linea bg-superficie [@media(hover:hover)]:hover:border-link"
+              onClick={() => setScelto(a)}
+              className={`inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 text-sm font-semibold transition-[background-color,border-color,transform] duration-150 active:scale-[0.97] ${
+                attivo ? "border-azione bg-azione text-su-azione" : "border-linea [@media(hover:hover)]:hover:border-link"
               }`}
             >
-              <IconaAiuto aiuto={g.aiuto} className={`size-6 shrink-0 ${attivo ? "" : "text-viola"}`} />
-              <span className="min-w-0">
-                <span className="block text-sm font-semibold leading-tight">{g.aiuto}</span>
-                <span className={`cifre text-xs ${attivo ? "" : "text-tenue"}`}>{g.guide.length === 1 ? "1 guida" : `${g.guide.length} guide`}</span>
-              </span>
+              {a ? a : `Tutte (${totale})`}
             </button>
           );
         })}
       </div>
-    ) : (
-      <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none]" role="group" aria-label="Filtra per tipo di aiuto">
-        <div className="flex w-max gap-2">
-          {[null, ...gruppi.map((g) => g.aiuto)].map((a) => {
-            const attivo = scelto === a;
-            return (
-              <button
-                key={a ?? "tutte"}
-                type="button"
-                aria-pressed={attivo}
-                onClick={() => setScelto(a)}
-                className={`inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 text-sm font-semibold transition-[background-color,border-color,transform] duration-150 active:scale-[0.97] ${
-                  attivo ? "border-azione bg-azione text-su-azione" : "border-linea [@media(hover:hover)]:hover:border-link"
-                }`}
-              >
-                {a ? a : `Tutte (${totale})`}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-6">

@@ -12,9 +12,7 @@ import { estraiScheda } from "@/lib/guida/scheda";
 import { collocaGruppi, schedaDaCampi, trofeiDaCampi } from "@/lib/guida/campi";
 import { aggiungiAncore, dividiCorpo, estraiChecklist } from "@/lib/guida/checklist";
 import { PillolaProgressione } from "@/components/guida/barra";
-import { TornaSu } from "@/components/torna-su";
 import { BarraLettura } from "@/components/barra-lettura";
-import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
 import { ChecklistGruppo, NotaEAzzera } from "@/components/guida/checklist";
 import { TabellaCollezionabili } from "@/components/guida/collezionabili";
 import { Correlato } from "@/components/guida/correlato";
@@ -113,30 +111,10 @@ export default async function PaginaArticolo({ params }: Parametri) {
   const idsProgressione = oggetti.length ? oggetti.map((o) => o.id) : idsTrofei;
 
   return (
-    <article id="lab" data-v="a">
+    <article>
       <div id="inizio-articolo" />
-      {/* Prova della barra di lettura (piano 04): tre varianti su tutti gli articoli, ?v=a|b|c */}
-      <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]),#lab[data-v="c"] [data-variant]:not([data-variant="c"]){display:none}`}</style>
-      <div data-variant="a">
-        <BarraLettura variante="a" />
-        <TornaSu />
-      </div>
-      <div data-variant="b">
-        <BarraLettura variante="b" />
-        <TornaSu />
-      </div>
-      <div data-variant="c">
-        <BarraLettura variante="c" />
-      </div>
-      <SelettoreVarianti
-        sezione="Lettura"
-        posizione="alto"
-        varianti={[
-          { id: "a", nome: "Linea" },
-          { id: "b", nome: "Livelli" },
-          { id: "c", nome: "Anello" },
-        ]}
-      />
+      {/* Piano 04 chiuso: avanzamento della lettura ad «Anello», che fa anche da «Torna all'inizio» */}
+      <BarraLettura />
       {seo.schema ? (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(seo.schema) }} />
       ) : null}
