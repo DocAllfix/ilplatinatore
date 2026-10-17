@@ -23,6 +23,9 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data       # certificati TLS: perderli significa rifare tutti i rilasci
       - caddy-config:/config
+      # le immagini caricate le serve Caddy dal disco, senza passare da WordPress: restano online anche
+      # con WordPress lento o fermo (17/10/2026, home e immagini cadute col CMS sovraccarico)
+      - wp-data:/srv/wp:ro
     depends_on:
       - wp
     networks: [rete-cms]

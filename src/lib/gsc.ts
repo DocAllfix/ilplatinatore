@@ -6,6 +6,7 @@
 // restituisce null e la home usa il ripiego dichiarato. Nessuna libreria: JWT firmato con node:crypto.
 
 import { createSign } from "node:crypto";
+import { unstable_cache } from "next/cache";
 
 /** I 28 giorni da chiedere: Search Console ha circa due giorni di ritardo, quindi si finisce l'altro ieri. */
 export function periodo(oggi: Date): { inizio: string; fine: string } {
@@ -42,14 +43,13 @@ async function token(cred: { client_email: string; private_key: string }): Promi
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: `${corpo}.${b64url(firma)}` }),
-    cache: "no-store",
+    // nessuna opzione di cache qui: tutta la risposta di Search Console si conserva sotto (piuCliccati)
   });
   if (!r.ok) throw new Error(`Search Console: token rifiutato (${r.status})`);
   return (await r.json()).access_token;
 }
 
-/** Gli slug piu' cliccati nel periodo, o null se Search Console non e' configurata o non risponde. */
-export async function piuCliccati(oggi: Date): Promise<{ slug: string[]; periodo: { inizio: string; fine: string } } | null> {
+async function interroga(oggi: Date): Promise<{ slug: string[]; periodo: { inizio: string; fine: string } } | null> {
   const grezzo = process.env.GSC_CREDENZIALI;
   const proprieta = process.env.GSC_PROPRIETA;
   if (!grezzo || !proprieta) return null;
@@ -69,4 +69,14 @@ export async function piuCliccati(oggi: Date): Promise<{ slug: string[]; periodo
     console.error(e instanceof Error ? e.message : e);
     return null;
   }
+}
+
+/**
+ * Gli slug piu' cliccati nel periodo, o null se Search Console non e' configurata o non risponde.
+ * Conservati 6 ore: una richiesta senza cache (il token) rendeva DINAMICA la home intera, rifatta da
+ * zero a ogni visita con decine di chiamate al CMS (17/10/2026: CMS sovraccarico e home ferma).
+ */
+export function piuCliccati(oggi: Date) {
+  const giorno = oggi.toISOString().slice(0, 10);
+  return unstable_cache(() => interroga(new Date(`${giorno}T12:00:00Z`)), ["gsc-piu-cliccati", giorno], { revalidate: 21600 })();
 }

@@ -47,7 +47,16 @@
 		max_size 64MB
 	}
 
-	reverse_proxy wp:80
+	# Le immagini caricate: dal disco, direttamente da Caddy (volume di WordPress in sola lettura). Non
+	# dipendono da PHP: se WordPress e' lento o fermo, il sito continua a mostrarle. Un file che non
+	# c'e' risponde 404 come prima.
+	handle @immagini {
+		root * /srv/wp
+		file_server
+	}
+	handle {
+		reverse_proxy wp:80
+	}
 
 	encode zstd gzip
 	log {
