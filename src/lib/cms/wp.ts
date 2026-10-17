@@ -11,8 +11,9 @@ import { mappaPost, mappaVoce, decodificaEntita } from "./mappa";
 import { seoDaYoast } from "./seo";
 import type { Articolo, PaginaWP, PostWP, Seo, TermineCompletoWP, VoceArticolo } from "./tipi";
 
-const TIMEOUT_MS = 20_000;
-const TENTATIVI = 3;
+// tempi brevi: con il CMS lento meglio una sezione in meno che una pagina che non risponde
+const TIMEOUT_MS = 8_000;
+const TENTATIVI = 2;
 const RIVALIDA_SECONDI = 3600;
 export const ETICHETTA = "cms";
 

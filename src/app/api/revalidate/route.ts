@@ -3,10 +3,13 @@
 //
 // - token nell'header, confronto in tempo costante; senza token valido si risponde 404, non 401,
 //   cosi' a chi bussa non si dice nemmeno che la rotta esiste;
-// - si invalida l'etichetta "cms" (tutti i dati) e i percorsi toccati.
+// - si segna come vecchia l'etichetta "cms" (tutti i dati), con il profilo "max": il visitatore riceve
+//   SUBITO l'ultima versione pronta e la pagina si rifa' in sottofondo. Con `expire: 0` (prima) ogni
+//   modifica nel CMS buttava via tutto e il primo visitatore aspettava la rigenerazione da zero: con
+//   il CMS lento la home e' rimasta senza risposta (17/10/2026). Mai piu' scadenza immediata.
 
 import { timingSafeEqual } from "node:crypto";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { ETICHETTA } from "@/lib/cms/wp";
 
 function tokenValido(dato: string | null): boolean {
@@ -29,12 +32,12 @@ export async function POST(req: Request) {
     categorie?: string[];
   };
 
-  revalidateTag(ETICHETTA, { expire: 0 });
+  revalidateTag(ETICHETTA, "max");
+  // i percorsi si restituiscono solo per il registro: l'etichetta copre gia' tutte le pagine
   const percorsi = ["/", "/feed", "/sitemap_index.xml", "/post-sitemap.xml", "/post-sitemap2.xml", "/post-sitemap3.xml"];
   if (corpo.percorso && PERCORSO.test(corpo.percorso)) percorsi.push(corpo.percorso);
   for (const t of corpo.tag ?? []) if (SLUG.test(t)) percorsi.push(`/tag/${t}/`);
   for (const c of corpo.categorie ?? []) if (SLUG.test(c)) percorsi.push(`/category/${c}/`);
-  for (const p of percorsi) revalidatePath(p);
 
   return Response.json({ ok: true, percorsi });
 }

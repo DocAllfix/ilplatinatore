@@ -8,8 +8,8 @@ import { giochiDelMomento, paroleDa, perModifica, senzaRipetizioni, titoloContie
 import { giornoRoma, NOMI_FORMATO, numeroSfida } from "./sfida";
 import { datiSfida } from "./sfida-dati";
 
-// se ne chiedono 36 per sezione, se ne mostrano 12: tolti i doppioni la fila resta piena
-const PER_SEZIONE = 36;
+// se ne chiedono 24 per sezione, se ne mostrano 12: tolti i doppioni la fila resta piena
+const PER_SEZIONE = 24;
 const IN_FILA = 12;
 
 export type SfidaInBreve = { numero: number; giorno: number; formato: keyof typeof NOMI_FORMATO; nome: string; invito: string; immagine?: Articolo["immagine"] };
@@ -59,8 +59,8 @@ async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeo
   if (s.regola === "titolo") {
     const parole = paroleDa(s.parametro);
     if (!parole.length) return null;
-    // la ricerca di WordPress guarda anche il testo: se ne chiedono tanti e si tengono quelli col titolo giusto
-    const liste = await Promise.all(parole.map((p) => articoliModificati(`search=${encodeURIComponent(p)}`, 100)));
+    // ricerca SOLO nei titoli (search_columns): leggera per il CMS, e niente articoli che citano la parola nel testo
+    const liste = await Promise.all(parole.map((p) => articoliModificati(`search=${encodeURIComponent(p)}&search_columns=post_title`, PER_SEZIONE)));
     const voci = perModifica(liste.map((l) => l.filter((a) => titoloContiene(a.titolo, parole))), PER_SEZIONE);
     return voci.length ? { tipo: "articoli", titolo: s.titolo, voci, criterio: "Dall'ultimo aggiornato." } : null;
   }
@@ -97,7 +97,11 @@ async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeo
 
 export async function datiHome(oggi: Date): Promise<SezioneDati[]> {
   const [elenco, tag] = await Promise.all([sezioniHome(), tuttiITermini("tags")]);
-  const tutte = (await Promise.all(elenco.map((s) => sezione(s, oggi, tag).catch(() => null)))).filter((x): x is SezioneDati => x !== null);
+  // ogni sezione ha un tempo massimo: se il CMS e' lento, quella sezione salta e la home esce lo stesso
+  const entro = <T,>(p: Promise<T>, ms: number) => Promise.race([p, new Promise<null>((r) => setTimeout(() => r(null), ms))]);
+  const tutte = (await Promise.all(elenco.map((s) => entro(sezione(s, oggi, tag).catch(() => null), 10_000)))).filter(
+    (x): x is SezioneDati => x !== null,
+  );
   const voci = senzaRipetizioni(tutte.map((s) => (s.tipo === "articoli" ? s.voci : [])), 4, IN_FILA);
   return tutte.map((s, i) => (s.tipo === "articoli" ? { ...s, voci: voci[i] } : s));
 }
