@@ -133,4 +133,5 @@ Poi il commit «Fase N completata».
   - Le immagini le serve Caddy dal disco, senza WordPress; la conservazione lunga solo sui file che esistono, mai sugli errori.
   - Pubblicazione limitata a 2 processi con 3 pagine ciascuno, Apache a 12 processi: il CMS non si satura.
   - Prima di dire «risolto»: prova con WordPress spento, e prova da telefono emulato (Pixel e iPhone) che conti le immagini rotte.
+- **Piano di stabilità ed efficienza**: `docs/piano-stabilita.md` (monitor, server CAX21, allarme dei backup, Redis, riscaldamento dopo le pubblicazioni; al passaggio DNS su Cloudflare e immagini su R2). Sorveglianza ogni 10 minuti già attiva su GitHub Actions.
 - **Debiti**: PageSpeed da ripetere (quota esaurita); LCP della guida al limite (immagini di WordPress senza formati moderni, Fase 6); misure d'uso senza trasporto (Fase 5); chiave di Search Console passata via WhatsApp, da ruotare a fine lavoro. Breaking, Hot take ed «Esplora per gioco» vanno nella home completa (Fase 4).
