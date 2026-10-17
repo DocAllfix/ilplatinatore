@@ -107,3 +107,17 @@ describe("titoli delle pagine d'archivio, come Yoast oggi", async () => {
     );
   });
 });
+
+describe("conVersione", () => {
+  it("aggiunge la versione alle immagini caricate, una volta sola, e a nient'altro", async () => {
+    const { conVersione, VERSIONE_IMMAGINI } = await import("./seo");
+    const v = `?v=${VERSIONE_IMMAGINI}`;
+    const html = '<img src="https://x.it/wp-content/uploads/2026/09/a-768x432.jpg" srcset="https://x.it/wp-content/uploads/2026/09/a-300x169.jpg 300w, https://x.it/wp-content/uploads/2026/09/a.avif 1200w"><a href="/wp-content/uploads/doc.pdf">pdf</a>';
+    const out = conVersione(html);
+    expect(out).toContain(`a-768x432.jpg${v}"`);
+    expect(out).toContain(`a-300x169.jpg${v} 300w`);
+    expect(out).toContain(`a.avif${v} 1200w`);
+    expect(out).toContain('doc.pdf"');
+    expect(conVersione(out)).toBe(out);
+  });
+});

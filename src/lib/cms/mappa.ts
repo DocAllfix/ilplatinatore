@@ -1,7 +1,7 @@
 // Traduzione dei post WordPress nella forma del sito. Funzioni PURE: si provano con un post finto.
 
 import { sanificaHtml, soloTesto } from "./sanitize";
-import { riportaSuPubblico } from "./seo";
+import { conVersione, riportaSuPubblico } from "./seo";
 import type { Articolo, Immagine, PostWP, Termine, VoceArticolo } from "./tipi";
 
 const ENTITA: Record<string, string> = {
@@ -50,9 +50,12 @@ function termini(post: PostWP, tassonomia: string): Termine[] {
 function immagine(post: PostWP, cms: string, pubblico: string): Immagine | undefined {
   const m = post._embedded?.["wp:featuredmedia"]?.[0];
   if (!m?.source_url) return undefined;
-  const r = (u: string) => riportaSuPubblico(u, cms, pubblico);
+  const r = (u: string) => conVersione(riportaSuPubblico(u, cms, pubblico));
+  // solo le misure con le proporzioni dell'originale: la miniatura quadrata 150x150 di WordPress,
+  // scelta a volte dal telefono, mostrava un ritaglio sbagliato
+  const proporzione = (m.media_details?.width ?? 0) / (m.media_details?.height || 1);
   const misure = Object.values(m.media_details?.sizes ?? {})
-    .filter((x) => x.source_url && x.width)
+    .filter((x) => x.source_url && x.width && x.height && Math.abs(x.width / x.height - proporzione) / proporzione < 0.06)
     .sort((a, b) => (a.width ?? 0) - (b.width ?? 0));
   // le misure che WordPress genera gia': niente ottimizzazione immagini di Vercel (si paga)
   const srcset = misure.map((x) => `${r(x.source_url!)} ${x.width}w`).join(", ") || undefined;
@@ -93,7 +96,7 @@ export function mappaPost(post: PostWP, opts: { cms: string; pubblico: string })
     modificato: utc(post.modified_gmt),
     immagine: immagine(post, opts.cms, opts.pubblico),
     // la sanificazione va per ULTIMA, sull'HTML gia' riscritto: cosi' nulla le sfugge
-    contenuto: sanificaHtml(riportaSuPubblico(post.content?.rendered ?? "", opts.cms, opts.pubblico)),
+    contenuto: conVersione(sanificaHtml(riportaSuPubblico(post.content?.rendered ?? "", opts.cms, opts.pubblico))),
     meta: post.meta,
   };
 }

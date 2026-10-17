@@ -20,7 +20,9 @@
 		Referrer-Policy "strict-origin-when-cross-origin"
 		-Server
 	}
-	header @immagini Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
+	# La conservazione lunga vale SOLO per le immagini servite davvero (dentro handle, sotto). Prima stava
+	# qui e finiva anche sulle risposte di errore: il 17/10/2026, con WordPress fermo, Vercel ha conservato
+	# dei 502 come se fossero immagini e i telefoni le vedevano rotte.
 	@non_immagini not path /wp-content/uploads/*
 	header @non_immagini X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
 
@@ -52,7 +54,16 @@
 	# c'e' risponde 404 come prima.
 	handle @immagini {
 		root * /srv/wp
+		# solo se il file esiste davvero: un 404 non si conserva
+		@esiste file
+		header @esiste Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
 		file_server
+	}
+
+	# Nessun errore si conserva: un 404 o un 502 non deve restare in memoria a Vercel o al browser
+	handle_errors {
+		header Cache-Control "no-store"
+		respond "{err.status_code} {err.status_text}" {err.status_code}
 	}
 	handle {
 		reverse_proxy wp:80
