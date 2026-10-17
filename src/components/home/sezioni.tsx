@@ -79,7 +79,7 @@ export function Sezioni({ sezioni }: { sezioni: SezioneDati[] }) {
               {s.tipo === "articoli" && <p className="mt-0.5 text-sm text-tenue">{s.criterio}</p>}
             </div>
             {s.tipo === "articoli" && s.tutti && (
-              <Link href={s.tutti.href} className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-link underline underline-offset-4">
+              <Link href={s.tutti.href} className="inline-flex min-h-11 max-w-[45%] shrink-0 items-center text-right text-sm font-semibold text-link underline underline-offset-4">
                 {s.tutti.testo}
               </Link>
             )}
