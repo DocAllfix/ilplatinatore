@@ -27,7 +27,12 @@ const nextConfig: NextConfig = {
   // Processi paralleli del build. Su Vercel il valore predefinito; in locale si abbassa con
   // BUILD_CPUS quando la macchina e' carica (sette processi esauriscono la memoria virtuale).
   experimental: {
-    ...(process.env.BUILD_CPUS ? { cpus: Number(process.env.BUILD_CPUS) } : {}),
+    // Il build chiede al CMS ogni articolo: senza limiti Vercel ne generava decine in parallelo e il
+    // server del CMS (2 processori) andava in coda, fino a fermarsi (17/10/2026). Al massimo 2 processi
+    // per 3 pagine ciascuno: il build dura di piu', il CMS resta in piedi per chi scrive.
+    cpus: Number(process.env.BUILD_CPUS) || 2,
+    staticGenerationMaxConcurrency: 3,
+    staticGenerationRetryCount: 2,
     // Cache di Turbopack fra un build e l'altro SPENTA: il 16/10/2026 Vercel ha pubblicato il CSS
     // del build precedente (stesso nome di file, contenuto vecchio) dopo una modifica a
     // globals.css. Un build piu' lento e' meglio di un sito che pubblica stili vecchi in silenzio.

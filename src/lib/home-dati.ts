@@ -97,9 +97,13 @@ async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeo
 
 export async function datiHome(oggi: Date): Promise<SezioneDati[]> {
   const [elenco, tag] = await Promise.all([sezioniHome(), tuttiITermini("tags")]);
-  // ogni sezione ha un tempo massimo: se il CMS e' lento, quella sezione salta e la home esce lo stesso
-  const entro = <T,>(p: Promise<T>, ms: number) => Promise.race([p, new Promise<null>((r) => setTimeout(() => r(null), ms))]);
-  const tutte = (await Promise.all(elenco.map((s) => entro(sezione(s, oggi, tag).catch(() => null), 10_000)))).filter(
+  // Una sezione VUOTA (nessun articolo per la sua regola) non compare: e' normale. Una sezione FALLITA
+  // (CMS lento o in errore) invece fa fallire tutta la home: cosi' Next tiene la versione buona di prima
+  // invece di salvare una home a meta' per un'ora (17/10/2026: home salvata con la sola sfida). Al build,
+  // la pubblicazione fallisce e resta online quella precedente.
+  const entro = <T,>(p: Promise<T>, ms: number, nome: string) =>
+    Promise.race([p, new Promise<never>((_, no) => setTimeout(() => no(new Error(`Home: la sezione «${nome}» non ha risposto in ${ms / 1000} s`)), ms))]);
+  const tutte = (await Promise.all(elenco.map((s) => entro(sezione(s, oggi, tag), 20_000, s.titolo)))).filter(
     (x): x is SezioneDati => x !== null,
   );
   const voci = senzaRipetizioni(tutte.map((s) => (s.tipo === "articoli" ? s.voci : [])), 4, IN_FILA);

@@ -81,6 +81,7 @@ services:
       - wp-data:/var/www/html
       # i nostri innesti: caricati sempre, non disattivabili per sbaglio dalla dashboard
       - ./mu-plugins:/var/www/html/wp-content/mu-plugins:ro
+      - ./apache/mpm_prefork.conf:/etc/apache2/mods-available/mpm_prefork.conf:ro
       - ./php/caricamenti.ini:/usr/local/etc/php/conf.d/caricamenti.ini:ro
     networks: [rete-cms]
 
