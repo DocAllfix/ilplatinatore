@@ -39,12 +39,15 @@ function Durate({ s }: { s: Dati }) {
       </p>
       <dl className="mt-2 flex flex-col gap-2">
         {voci.map((v, i) => (
-          <div key={v.etichetta} className="grid grid-cols-[7.5rem_1fr_auto] items-center gap-2 text-sm">
+          <div key={v.etichetta} className="grid grid-cols-[7.5rem_1fr] items-center gap-2 text-sm">
             <dt className="text-tenue">{v.etichetta}</dt>
-            <span className="block h-2 overflow-hidden rounded-full bg-linea" aria-hidden="true">
-              <span className={`block h-full rounded-full ${colori[i]}`} style={{ width: `${Math.max(8, (ore[i] / massimo) * 100)}%` }} />
-            </span>
-            <dd className="cifre font-semibold">{v.valore}</dd>
+            {/* la barra sta dentro il valore: in un elenco di definizioni fra dt e dd non va altro */}
+            <dd className="flex items-center gap-2">
+              <span className="block h-2 flex-1 overflow-hidden rounded-full bg-linea" aria-hidden="true">
+                <span className={`block h-full rounded-full ${colori[i]}`} style={{ width: `${Math.max(8, (ore[i] / massimo) * 100)}%` }} />
+              </span>
+              <span className="cifre font-semibold">{v.valore}</span>
+            </dd>
           </div>
         ))}
       </dl>
