@@ -175,7 +175,7 @@ function Trofeo({ s, numero, giorno }: Comune & { s: SfidaTrofeo }) {
           {i < visibili ? (
             <p className={`mt-1 ${x.etichetta === "Lettere" ? "cifre font-bold tracking-[0.12em]" : "font-medium"}`}>{x.testo}</p>
           ) : (
-            <p className="mt-1 text-sm text-tenue">Si scopre dopo un errore.</p>
+            <p className="mt-1 text-sm text-tenue">{i === visibili ? "Si scopre al prossimo errore." : `Si scopre dopo ${i} errori.`}</p>
           )}
         </li>
       ))}
