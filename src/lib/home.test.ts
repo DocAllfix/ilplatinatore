@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { giochiDelMomento, paroleDa, perModifica, titoloContiene } from "./home";
+import { giochiDelMomento, paroleDa, perModifica, senzaRipetizioni, titoloContiene } from "./home";
 
 describe("home a sezioni", () => {
   it("giochi del momento: solo i tag che sono giochi, per numero di articoli", () => {
@@ -17,5 +17,13 @@ describe("home a sezioni", () => {
     const b = { id: 2, titolo: "b", data: "2026-10-12" };
     const c = { id: 3, titolo: "c", data: "2026-01-01", modificato: "2026-10-11" };
     expect(perModifica([[a, b], [a, c]], 10).map((x) => x.id)).toEqual([2, 3, 1]);
+  });
+});
+
+describe("senzaRipetizioni", () => {
+  it("toglie i doppioni dalle file sotto, ma non svuota una fila", () => {
+    const x = (...ids: number[]) => ids.map((id) => ({ id }));
+    const r = senzaRipetizioni([x(1, 2, 3, 4), x(1, 2, 5, 6, 7, 8), x(1, 2)], 4);
+    expect(r.map((l) => l.map((a) => a.id))).toEqual([[1, 2, 3, 4], [5, 6, 7, 8], [1, 2]]);
   });
 });

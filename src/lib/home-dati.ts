@@ -4,11 +4,13 @@
 import type { Articolo } from "./cms/tipi";
 import { articoliModificati, articoliPerSlug, sezioniHome, tagDegliUltimi, terminePerSlug, tuttiITermini, type SezioneHome } from "./cms/wp";
 import { piuCliccati } from "./gsc";
-import { giochiDelMomento, paroleDa, perModifica, titoloContiene } from "./home";
+import { giochiDelMomento, paroleDa, perModifica, senzaRipetizioni, titoloContiene } from "./home";
 import { giornoRoma, NOMI_FORMATO, numeroSfida } from "./sfida";
 import { datiSfida } from "./sfida-dati";
 
-const PER_SEZIONE = 12;
+// se ne chiedono 20 per sezione, se ne mostrano 12: tolti i doppioni la fila resta piena
+const PER_SEZIONE = 20;
+const IN_FILA = 12;
 
 export type SfidaInBreve = { numero: number; giorno: number; formato: keyof typeof NOMI_FORMATO; nome: string; invito: string; immagine?: Articolo["immagine"] };
 export type SezioneDati =
@@ -94,6 +96,7 @@ async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeo
 
 export async function datiHome(oggi: Date): Promise<SezioneDati[]> {
   const [elenco, tag] = await Promise.all([sezioniHome(), tuttiITermini("tags")]);
-  const tutte = await Promise.all(elenco.map((s) => sezione(s, oggi, tag).catch(() => null)));
-  return tutte.filter((x): x is SezioneDati => x !== null);
+  const tutte = (await Promise.all(elenco.map((s) => sezione(s, oggi, tag).catch(() => null)))).filter((x): x is SezioneDati => x !== null);
+  const voci = senzaRipetizioni(tutte.map((s) => (s.tipo === "articoli" ? s.voci : [])), 4);
+  return tutte.map((s, i) => (s.tipo === "articoli" ? { ...s, voci: voci[i].slice(0, IN_FILA) } : s));
 }

@@ -34,3 +34,17 @@ export function perModifica<T extends ConData>(liste: T[][], quanti: number): T[
   for (const l of liste) for (const a of l) if (!visti.has(a.id)) visti.set(a.id, a);
   return [...visti.values()].sort((a, b) => (b.modificato ?? b.data).localeCompare(a.modificato ?? a.data)).slice(0, quanti);
 }
+
+/**
+ * Niente doppioni fra le file: un articolo gia' mostrato in una sezione piu' in alto si toglie da
+ * quelle sotto, finche' la sezione resta con almeno `minimo` schede (altrimenti si lascia com'e').
+ */
+export function senzaRipetizioni<T extends { id: number }>(sezioni: T[][], minimo: number): T[][] {
+  const visti = new Set<number>();
+  return sezioni.map((voci) => {
+    const nuove = voci.filter((a) => !visti.has(a.id));
+    const scelte = nuove.length >= minimo ? nuove : voci;
+    scelte.forEach((a) => visti.add(a.id));
+    return scelte;
+  });
+}
