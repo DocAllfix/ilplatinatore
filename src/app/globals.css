@@ -158,6 +158,18 @@ body {
   to { transform: scale(1); }
 }
 
+/* la cornice dell'hero che si consuma come un timer (piano 07) */
+@keyframes timer-hero {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: 100; }
+}
+
+/* il controller della sfida che pulsa (piano 07): solo ombra e scala, mai le dimensioni */
+@keyframes pulsa-sfida {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(62% 0.22 290 / 0.55), 0 8px 24px oklch(0% 0 0 / 0.4); transform: scale(1); }
+  50% { box-shadow: 0 0 0 10px oklch(62% 0.22 290 / 0), 0 8px 24px oklch(0% 0 0 / 0.4); transform: scale(1.06); }
+}
+
 /* il pannello della pillola si apre dal basso: scala e trasparenza, mai le dimensioni */
 @keyframes apri {
   from { transform: scale(0.96) translateY(6px); opacity: 0; }

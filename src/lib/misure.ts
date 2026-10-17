@@ -14,6 +14,7 @@ export type NomeMisura =
   | "come_prenderlo" // dalla tabella dei collezionabili alla soluzione
   | "correlato" // un correlato contestuale aperto
   | "hub_riprendi" // «Riprendi da dove eri» nell'hub
+  | "sfida_apertura" // la sfida aperta dal controller luminoso, da qualunque pagina
   | "sfida_inizio" // primo tentativo della sfida del giorno
   | "sfida_fine" // sfida finita, vinta o persa
   | "sfida_rimando" // dalla fine della sfida verso una guida o un hub

@@ -2,7 +2,7 @@
 // Ogni sezione dichiara il suo criterio in pagina, come chiede il PDF (02).
 
 import type { Articolo } from "./cms/tipi";
-import { articoliModificati, articoliPerSlug, sezioniHome, tagDegliUltimi, terminePerSlug, tuttiITermini, type SezioneHome } from "./cms/wp";
+import { articoliModificati, articoliPerSlug, sezioniHome, tagDegliUltimi, terminePerSlug, tuttiITermini, ultimiPubblicati, type SezioneHome } from "./cms/wp";
 import { piuCliccati } from "./gsc";
 import { giochiDelMomento, paroleDa, perModifica, senzaRipetizioni, titoloContiene } from "./home";
 import { giornoRoma, NOMI_FORMATO, numeroSfida } from "./sfida";
@@ -95,8 +95,9 @@ async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeo
   return null;
 }
 
-export async function datiHome(oggi: Date): Promise<SezioneDati[]> {
-  const [elenco, tag] = await Promise.all([sezioniHome(), tuttiITermini("tags")]);
+/** La home: l'hero (gli ultimi 3 pubblicati, piano 07) e le sezioni. */
+export async function datiHome(oggi: Date): Promise<{ hero: Articolo[]; sezioni: SezioneDati[] }> {
+  const [elenco, tag, hero] = await Promise.all([sezioniHome(), tuttiITermini("tags"), ultimiPubblicati(3)]);
   // Una sezione VUOTA (nessun articolo per la sua regola) non compare: e' normale. Una sezione FALLITA
   // (CMS lento o in errore) invece fa fallire tutta la home: cosi' Next tiene la versione buona di prima
   // invece di salvare una home a meta' per un'ora (17/10/2026: home salvata con la sola sfida). Al build,
@@ -106,6 +107,7 @@ export async function datiHome(oggi: Date): Promise<SezioneDati[]> {
   const tutte = (await Promise.all(elenco.map((s) => entro(sezione(s, oggi, tag), 20_000, s.titolo)))).filter(
     (x): x is SezioneDati => x !== null,
   );
-  const voci = senzaRipetizioni(tutte.map((s) => (s.tipo === "articoli" ? s.voci : [])), 4, IN_FILA);
-  return tutte.map((s, i) => (s.tipo === "articoli" ? { ...s, voci: voci[i] } : s));
+  // gli articoli dell'hero non si ripetono nelle sezioni sotto
+  const [, ...voci] = senzaRipetizioni([hero, ...tutte.map((s) => (s.tipo === "articoli" ? s.voci : []))], 4, IN_FILA);
+  return { hero, sezioni: tutte.map((s, i) => (s.tipo === "articoli" ? { ...s, voci: voci[i] } : s)) };
 }

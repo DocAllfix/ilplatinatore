@@ -177,6 +177,12 @@ export async function articoliPerSlug(slugs: string[]): Promise<Articolo[]> {
   return slugs.map((s) => perSlug.get(s)).filter((a): a is Articolo => Boolean(a));
 }
 
+/** Gli ultimi articoli pubblicati, leggeri, dal piu' recente (hero della home, piano 07). */
+export async function ultimiPubblicati(quanti: number): Promise<Articolo[]> {
+  const r = await chiamata<PostWP[]>(`/wp/v2/posts?status=publish&orderby=date&order=desc&per_page=${quanti}&${LEGGERI}`);
+  return (r?.dati ?? []).map((p) => mappaPost(p, ctx()));
+}
+
 /** Articoli leggeri secondo un filtro REST, dal piu' recentemente modificato. */
 export async function articoliModificati(filtro: string, quanti = 12): Promise<Articolo[]> {
   const r = await chiamata<PostWP[]>(`/wp/v2/posts?status=publish&orderby=modified&order=desc&per_page=${quanti}&${filtro}&${LEGGERI}`);

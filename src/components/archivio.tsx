@@ -32,11 +32,13 @@ export function Paginazione({ base, pagina, pagine }: { base: string; pagina: nu
 
 /** Gli articoli come schede piccole e discrete, sulla falsa riga della home (piano 07). */
 export function GrigliaArticoli({ articoli }: { articoli: Articolo[] }) {
+  // l'articolo piu' recente della pagina fa da riferimento per l'«ultim'ora» (solo in prima pagina conta)
+  const riferimento = Math.max(0, ...articoli.map((a) => new Date(a.data).getTime() || 0));
   return (
     <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
       {articoli.map((a, i) => (
         <li key={a.id}>
-          <CartaArticolo a={a} carico={i === 0 ? "subito" : "pigro"} piccola conData />
+          <CartaArticolo a={a} carico={i === 0 ? "subito" : "pigro"} piccola conData riferimento={riferimento} />
         </li>
       ))}
     </ul>

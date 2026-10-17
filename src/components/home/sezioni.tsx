@@ -12,7 +12,7 @@ import { CartaSfida } from "./carta-sfida";
 import { FilaScorrevole } from "./fila-scorrevole";
 
 /** Una fila di locandine; con `apertura` la prima e' larga il doppio, alta come le altre. */
-function Fila({ voci, prima, apertura, sezione }: { voci: Articolo[]; prima: boolean; apertura: boolean; sezione: string }) {
+function Fila({ voci, prima, apertura, sezione, riferimento }: { voci: Articolo[]; prima: boolean; apertura: boolean; sezione: string; riferimento: number }) {
   return (
     <FilaScorrevole quante={voci.length}>
       {voci.map((a, i) => {
@@ -24,6 +24,7 @@ function Fila({ voci, prima, apertura, sezione }: { voci: Articolo[]; prima: boo
               carico={prima ? (i === 0 ? "subito" : i < 3 ? "pigro" : "dopo") : i < 3 ? "vicino" : "dopo"}
               grande={grande}
               misura={{ nome: "home_sezione", dettaglio: sezione }}
+              riferimento={riferimento}
             />
           </li>
         );
@@ -32,7 +33,7 @@ function Fila({ voci, prima, apertura, sezione }: { voci: Articolo[]; prima: boo
   );
 }
 
-export function Sezioni({ sezioni }: { sezioni: SezioneDati[] }) {
+export function Sezioni({ sezioni, riferimento }: { sezioni: SezioneDati[]; riferimento: number }) {
   return (
     <div className="flex flex-col gap-10">
       {sezioni.map((s, i) => (
@@ -49,7 +50,7 @@ export function Sezioni({ sezioni }: { sezioni: SezioneDati[] }) {
             <CartaSfida s={s.sfida} />
           ) : (
             // una sezione si' e una no apre con la scheda grande
-            <Fila voci={s.voci} prima={i === 0} apertura={i % 2 === 0} sezione={s.titolo} />
+            <Fila voci={s.voci} prima={i === 0} apertura={i % 2 === 0} sezione={s.titolo} riferimento={riferimento} />
           )}
         </section>
       ))}
