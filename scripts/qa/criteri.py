@@ -398,7 +398,8 @@ def c14(b, base, g):
 def c15(b, base, g):
     ctx, pg = nuovo(b, g)
     esiti = []
-    for percorso in (GUIDA, HUB.replace("valor-mortis", "valor-mortis"), "/tag/warzone/"):
+    # un hub (Valor Mortis) e un gioco senza hub (Cuphead, 4 articoli): la scheda sta nel secondo
+    for percorso in (GUIDA, HUB, "/tag/cuphead/"):
         vai(pg, base, percorso)
         scheda = [x for x in pg.locator("aside[aria-label^='Scheda di']").all() if x.is_visible()]
         testo = pg.locator("main").inner_text()

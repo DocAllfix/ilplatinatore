@@ -34,6 +34,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="it-IT" className={`${jost.variable} antialiased`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: TEMA }} />
+        {/* la versione del codice pubblicata: la usa il controllo dopo ogni pubblicazione su GitHub */}
+        <meta name="platinatore-versione" content={process.env.VERCEL_GIT_COMMIT_SHA ?? "locale"} />
       </head>
       <body className="flex min-h-screen flex-col">
         <Testata />
