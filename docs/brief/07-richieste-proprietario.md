@@ -1,6 +1,6 @@
 # Piano di design 07: richieste del proprietario dopo il prototipo
 
-Stato: **in prova sull'anteprima** (18/10/2026). Piano approvato dall'utente; decisioni prese con lui prima di partire.
+Stato: **chiuso** (18/10/2026). Piano approvato dall'utente; decisioni prese con lui prima di partire; varianti scelte dal proprietario (in fondo).
 
 ## Fatto
 
@@ -31,3 +31,7 @@ Stato: **in prova sull'anteprima** (18/10/2026). Piano approvato dall'utente; de
 
 ## Verifica
 `controlli.py` 0 problemi; `criteri.py` 15 criteri verdi e rossi con i guasti (nuovi: 13 testata da tastiera, 14 tema senza lampo, 15 scheda del gioco senza righe grezze); 87 test; WordPress spento: tutto online; LCP della home con l'hero 2,4-2,6 s su telefono e rete lenta simulati.
+
+## Scelte (18/10/2026)
+- Barra delle file: **A, sfumata** Ciano, Viola, Acido, trascinabile.
+- Articolo: **B**, linea viola accanto ai titoli h2 e bagliore della scheda del gioco **che pulsa** (anche sulle pagine dei tag).

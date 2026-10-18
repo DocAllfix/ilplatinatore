@@ -14,7 +14,6 @@ import { aggiungiAncore, dividiCorpo, estraiChecklist } from "@/lib/guida/checkl
 import { PillolaProgressione } from "@/components/guida/barra";
 import { BarraLettura } from "@/components/barra-lettura";
 import { TornaSu } from "@/components/torna-su";
-import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
 import { ChecklistGruppo, NotaEAzzera } from "@/components/guida/checklist";
 import { TabellaCollezionabili } from "@/components/guida/collezionabili";
 import { Correlato } from "@/components/guida/correlato";
@@ -129,18 +128,8 @@ export default async function PaginaArticolo({ params }: Parametri) {
   const idsProgressione = oggetti.length ? oggetti.map((o) => o.id) : idsTrofei;
 
   return (
-    // Prova del piano 07, ?v=a|b: A titoli h2 in viola e bagliore che ruota, B linea viola e bagliore
-    // che pulsa (regole in globals.css)
-    <article id="lab" data-v="a">
-      <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]){display:none}`}</style>
-      <SelettoreVarianti
-        sezione="Stile"
-        posizione="alto"
-        varianti={[
-          { id: "a", nome: "Viola, ruota" },
-          { id: "b", nome: "Linea, pulsa" },
-        ]}
-      />
+    // Piano 07 chiuso: linea viola sui titoli e bagliore che pulsa (scelte del proprietario)
+    <article>
       <div id="inizio-articolo" />
       {/* Piano 04 chiuso: barra di lettura A «Linea»; «Torna all'inizio» resta su tutti gli articoli */}
       <BarraLettura />
@@ -193,12 +182,7 @@ export default async function PaginaArticolo({ params }: Parametri) {
       {/* Il gioco a fine articolo, come scheda col bagliore (piano 07); gli altri tag come etichette */}
       {giochi.map((g) => (
         <div key={g.slug} className="mt-10">
-          <div data-variant="a">
-            <SchedaGioco nome={g.nome} slug={g.slug} dati={g.dati} bagliore="ruota" />
-          </div>
-          <div data-variant="b">
-            <SchedaGioco nome={g.nome} slug={g.slug} dati={g.dati} bagliore="pulsa" />
-          </div>
+          <SchedaGioco nome={g.nome} slug={g.slug} dati={g.dati} />
         </div>
       ))}
       {altriTag.length > 0 && (

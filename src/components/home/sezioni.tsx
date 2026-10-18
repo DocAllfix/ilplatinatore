@@ -14,7 +14,7 @@ import { FilaScorrevole } from "./fila-scorrevole";
 /** Una fila di locandine; con `apertura` la prima e' larga il doppio, alta come le altre. */
 function Fila({ voci, prima, apertura, sezione, riferimento }: { voci: Articolo[]; prima: boolean; apertura: boolean; sezione: string; riferimento: number }) {
   return (
-    <FilaScorrevole quante={voci.length}>
+    <FilaScorrevole>
       {voci.map((a, i) => {
         const grande = apertura && i === 0;
         return (

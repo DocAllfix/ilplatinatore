@@ -1,6 +1,6 @@
 // La scheda del gioco (piano 07, richiesta del proprietario): a fine articolo al posto
 // dell'etichetta in testa, e in cima alla pagina del tag. Contornata da un bagliore che alterna i
-// colori della palette: A «ruota» (il bordo gira), B «pulsa» (il colore cambia). Con movimento
+// colori della palette (scelta del proprietario: «pulsa», il colore del bordo cambia). Con movimento
 // ridotto il bagliore resta fermo. I dati arrivano dalla descrizione del tag (lib/scheda-gioco.ts).
 
 import { ArrowRightIcon, CalendarBlankIcon, ClockIcon, StarIcon, TagIcon } from "@phosphor-icons/react/ssr";
@@ -63,17 +63,15 @@ export function SchedaGioco({
   slug,
   dati,
   grande = false,
-  bagliore = "ruota",
 }: {
   nome: string;
   slug: string;
   dati: Dati | null;
   /** in cima alla pagina del tag: titolo piu' grande, niente link a se stessa */
   grande?: boolean;
-  bagliore?: "ruota" | "pulsa";
 }) {
   return (
-    <aside aria-label={`Scheda di ${nome}`} className={bagliore === "ruota" ? "bagliore-ruota" : "bagliore-pulsa"}>
+    <aside aria-label={`Scheda di ${nome}`} className="bagliore-pulsa">
       <div className="rounded-[14px] bg-superficie p-4 sm:p-5">
         <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.06em] text-viola-testo">
           <TagIcon weight="bold" className="size-3.5" aria-hidden="true" />

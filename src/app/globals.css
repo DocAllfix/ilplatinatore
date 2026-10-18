@@ -124,12 +124,10 @@ body {
 .contenuto > * + * { margin-top: 1rem; }
 .contenuto h2 { font-size: 1.5rem; font-weight: 700; line-height: 1.25; margin-top: 2.25rem; scroll-margin-top: 1rem; }
 .contenuto h3 { font-size: 1.1875rem; font-weight: 600; line-height: 1.3; margin-top: 1.5rem; scroll-margin-top: 1rem; }
-/* Prova del piano 07 (#lab sull'articolo): A titolo in Viola testo, B linea viola a sinistra */
-#lab[data-v="a"] .contenuto h2 { color: var(--viola-testo); }
-#lab[data-v="b"] .contenuto h2 { border-left: 4px solid var(--viola); padding-left: 0.75rem; }
-/* Prova del piano 07 (#lab sull'articolo): A titolo in Viola testo, B linea viola a sinistra */
-#lab[data-v="a"] .contenuto h2 { color: var(--viola-testo); }
-#lab[data-v="b"] .contenuto h2 { border-left: 4px solid var(--viola); padding-left: 0.75rem; }
+/* Piano 07, scelta del proprietario: la linea viola accanto ai titoli h2 */
+.contenuto h2 { border-left: 4px solid var(--viola); padding-left: 0.75rem; }
+/* Piano 07, scelta del proprietario: la linea viola accanto ai titoli h2 */
+.contenuto h2 { border-left: 4px solid var(--viola); padding-left: 0.75rem; }
 .contenuto h4 { font-weight: 600; margin-top: 1.25rem; }
 .contenuto a { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
 .contenuto strong { font-weight: 600; }
@@ -158,27 +156,8 @@ body {
   to { transform: scale(1); }
 }
 
-/* Il bagliore della scheda del gioco (piano 07), due varianti in prova. Con movimento ridotto la
-   regola globale ferma le animazioni: resta un bordo a tre colori fermo. */
-.bagliore-ruota {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  border-radius: 1rem;
-  padding: 2px;
-  box-shadow: 0 0 26px oklch(62% 0.2 290 / 0.35);
-}
-.bagliore-ruota::before {
-  content: "";
-  position: absolute;
-  inset: -60%;
-  z-index: -1;
-  background: conic-gradient(var(--ciano), var(--viola), var(--acido), var(--ciano));
-  animation: gira 6s linear infinite;
-}
-@keyframes gira {
-  to { transform: rotate(1turn); }
-}
+/* Il bagliore della scheda del gioco (piano 07, scelta del proprietario: «pulsa»): il bordo cambia
+   colore fra Ciano, Viola e Acido. Con movimento ridotto la regola globale lo ferma. */
 .bagliore-pulsa {
   border: 2px solid var(--ciano);
   border-radius: 1rem;
