@@ -15,7 +15,7 @@ Prezzi indicativi, da verificare al momento dell'acquisto.
 | Apache limitato a 12 processi | il CMS mette le richieste in coda invece di bloccarsi |
 | Immagini servite da Caddy dal disco, mai errori conservati, indirizzi con versione | immagini online con WordPress spento |
 | Niente precaricamento dei link, immagini delle file solo quando servono | prima apertura da telefono da 10,3 s a 2,6 s |
-| Sorveglianza ogni 10 minuti su GitHub Actions (`.github/workflows/sorveglianza.yml`) | email se sito, immagini o CMS non rispondono; vista anche rossa |
+| Sorveglianza su GitHub Actions (`sorveglianza.yml`, `dopo-pubblicazione.yml`, `mattina.yml`) | email se sito, immagini o CMS non rispondono; vista anche rossa. Attenzione: GitHub non rispetta l'orario dei lavori pianificati (la sorveglianza «ogni 10 minuti» gira ogni qualche ora), per questo il monitor esterno (punto 1) resta necessario |
 
 ## Da fare subito
 

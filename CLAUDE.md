@@ -138,3 +138,22 @@ Poi il commit «Fase N completata».
 - **Piano di stabilità ed efficienza**: `docs/piano-stabilita.md` (monitor, server CAX21, allarme dei backup, Redis, riscaldamento dopo le pubblicazioni; al passaggio DNS su Cloudflare e immagini su R2). Sorveglianza ogni 10 minuti già attiva su GitHub Actions.
 - **PageSpeed** (18/10/2026, home dell'anteprima): 91 su telefono, 100 su computer.
 - **Debiti**: LCP della guida al limite (immagini di WordPress senza formati moderni, Fase 6); misure d'uso senza trasporto (Fase 5); chiave di Search Console passata via WhatsApp, da ruotare a fine lavoro. Breaking, Hot take ed «Esplora per gioco» vanno nella home completa (Fase 4).
+
+#### Fase 4, Estensione (completata il 18/10/2026, con debiti dichiarati)
+- **Fatto**:
+  - **56 hub** (tag-gioco con almeno 5 articoli, elenco approvato dall'utente; esclusi Novità, PlayStation 5, Xbox, Warhammer 40000), spunta «È un gioco» sul CMS di lavoro; guida al Platino trovata dal titolo quando il campo è vuoto (20 hub su 56).
+  - Home: sezione **«Esplora per gioco»** (regola `esplora-giochi` in Strumenti > Sezioni della home); gli altri moduli del PDF 09 non richiesti dall'utente.
+  - **Anteprima delle bozze**: il pulsante «Anteprima» di WordPress apre la bozza sul sito (modalità bozza di Next, utente CMS dedicato `anteprima-sito` con ruolo Editor, segreti su Vercel `CMS_PREVIEW_TOKEN`, `CMS_USER`, `CMS_APP_PASSWORD`); senza cookie la bozza non esiste (404).
+  - **Controlli con allarme** su GitHub Actions: `dopo-pubblicazione.yml` (a ogni push aspetta che il sito serva la versione, meta `platinatore-versione`, poi `scripts/qa/sorveglia.sh`), `mattina.yml` (ogni mattina `controlli.py` e `criteri.py`), `sorveglianza.yml`. Email al proprietario del repository se qualcosa fallisce.
+- **Cancello**:
+  - tutti i 56 hub verificati uno per uno (200, un h1, percorso presente);
+  - pubblicazione, modifica, cambio di slug e cestino provati via REST, la stessa strada dell'editor: visibili sul sito in 2, 11, 6 e 5 s; articolo di prova eliminato;
+  - un difetto vero fermato dal controllo del mattino (criterio superato dopo gli hub) e un guasto messo apposta nella sorveglianza: lavoro rosso ed email.
+- **Regole nate**:
+  - Vercel non avvisa GitHub delle pubblicazioni: il controllo dopo la pubblicazione aspetta la versione scritta nella pagina.
+  - I lavori pianificati di GitHub non sono puntuali (la sorveglianza «ogni 10 minuti» gira ogni qualche ora): l'allarme vero e veloce richiede un monitor esterno.
+  - L'anteprima delle bozze non usa mai la password di prova: utente dedicato, revocabile.
+- **Debiti**:
+  - prova con **wpvibe** rimandata dall'utente: il CMS di lavoro contiene il collegamento copiato del sito vero, attivarlo così potrebbe staccare quello su Aruba (da fare come secondo sito nel pannello wpvibe, o al passaggio);
+  - **allarme sul telefono**: serve l'account UptimeRobot o Better Stack;
+  - il token dell'anteprima viaggia nell'indirizzo del pulsante «Anteprima» (schema del riferimento): resta solo nel primo indirizzo, poi il redirect lo toglie.
