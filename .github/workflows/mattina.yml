@@ -1,0 +1,45 @@
+# Controlli completi ogni mattina (Fase 4): accessibilita', scorrimento, bersagli e noindex
+# (controlli.py) e i criteri del PDF (criteri.py) sul sito di prova. Se qualcosa fallisce, GitHub
+# manda un'email al proprietario del repository. Avvio anche a mano.
+
+name: Controlli del mattino
+
+on:
+  schedule:
+    - cron: "30 4 * * *" # 6:30 a Roma (ora legale)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  controlla:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      QA_CHANNEL: chromium
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Strumenti
+        run: |
+          npm install --no-save --no-audit --no-fund axe-core@4.10.2
+          pip install playwright==1.48.0
+          python -m playwright install --with-deps chromium
+      - name: Accessibilita' e struttura
+        run: python -I scripts/qa/controlli.py https://ilplatinatore.vercel.app
+      - name: Criteri del PDF
+        if: always()
+        run: python -I scripts/qa/criteri.py https://ilplatinatore.vercel.app
+      - name: Rapporti
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapporti-${{ github.run_id }}
+          path: scripts/qa/out/
+          retention-days: 14

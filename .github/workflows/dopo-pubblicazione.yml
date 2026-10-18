@@ -1,0 +1,24 @@
+# Controlli dopo ogni pubblicazione (Fase 4): quando Vercel finisce di pubblicare il sito di prova,
+# GitHub riceve l'evento della pubblicazione e lancia i controlli veloci. Se uno fallisce, il lavoro
+# fallisce e GitHub manda un'email al proprietario del repository.
+
+name: Dopo la pubblicazione
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+jobs:
+  controlla:
+    # solo le pubblicazioni riuscite del sito di prova (produzione del progetto Vercel)
+    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Attesa che la pubblicazione sia servita ovunque
+        run: sleep 30
+      - name: Sito, immagini e CMS
+        run: bash scripts/qa/sorveglia.sh
