@@ -8,7 +8,7 @@ import { BottoneAcido } from "@/components/bottone-acido";
 import { CartaArticolo } from "@/components/carta-articolo";
 import type { Articolo } from "@/lib/cms/tipi";
 import type { SezioneDati } from "@/lib/home-dati";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import type { VoceGioco } from "@/lib/home-dati";
 import { CartaSfida } from "./carta-sfida";
 import { FilaScorrevole } from "./fila-scorrevole";

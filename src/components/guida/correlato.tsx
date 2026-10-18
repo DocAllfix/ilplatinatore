@@ -2,7 +2,7 @@
 // del piano 03: C «Con immagine» (17/10/2026).
 
 import { SignpostIcon, WarningIcon } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import type { Articolo } from "@/lib/cms/tipi";
 import type { Correlato as Dati } from "@/lib/guida/collezionabili";
 

@@ -8,7 +8,7 @@
 // cambia niente rispetto a oggi.
 
 import { CrosshairIcon, MagnifyingGlassIcon, MoonIcon, SunIcon } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 
 const VOCI = [

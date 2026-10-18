@@ -6,7 +6,7 @@
 // La soluzione si vede sempre a fine partita, senza obbligo di aprire un articolo.
 
 import { ArrowDownIcon, ArrowRightIcon, ArrowUpIcon, CheckIcon, ShareNetworkIcon, XIcon } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import { useState, useSyncExternalStore } from "react";
 import type { DatiSfida, Sfida, SfidaClassico, SfidaGioco, SfidaTrofeo } from "@/lib/sfida-dati";
 import {

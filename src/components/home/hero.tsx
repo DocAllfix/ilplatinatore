@@ -8,7 +8,7 @@
 // si scorre di lato.
 
 import { PauseIcon, PlayIcon } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 export type VoceHero = {

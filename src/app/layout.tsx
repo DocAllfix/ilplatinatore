@@ -2,8 +2,11 @@ import type { Metadata, Viewport } from "next";
 import { MisureClic } from "@/components/misure-clic";
 import { Testata } from "@/components/testata/testata";
 import { RichiamoSfida } from "@/components/sfida/richiamo";
+import { PubblicitaScript } from "@/components/pubblicita-script";
+import { SpazioHB } from "@/components/annunci";
+import { INTERSTITIAL, MAGIC_LEFT } from "@/lib/annunci";
 import { Jost } from "next/font/google";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import "./globals.css";
 import { robots } from "@/lib/cms/metadati";
 
@@ -42,6 +45,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-5">{children}</main>
         <MisureClic />
         <RichiamoSfida />
+        {/* Fase 5: i due formati di HB presenti su tutte le pagine, come oggi */}
+        <SpazioHB id={INTERSTITIAL.id} nome={INTERSTITIAL.nome} />
+        <SpazioHB id={MAGIC_LEFT.id} nome={MAGIC_LEFT.nome} />
+        <PubblicitaScript />
         <footer className="border-t border-linea">
           <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-sm text-tenue">
             <span>© Il Platinatore</span>

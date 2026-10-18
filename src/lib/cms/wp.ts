@@ -202,6 +202,13 @@ export async function tagDegliUltimi(dopo: Date): Promise<number[][]> {
   return out;
 }
 
+/** Il testo di ads.txt (mu-plugin, sezione 9). Il CMS che non risponde e' un errore: resta la versione buona. */
+export async function testoAdsTxt(): Promise<string> {
+  const r = await chiamata<{ testo?: unknown }>("/platinatore/v1/ads-txt");
+  if (typeof r?.dati?.testo !== "string") throw new Error("ads.txt: il CMS non ha risposto");
+  return r.dati.testo;
+}
+
 /** Elenco dei classici della sfida (mu-plugin, sezione 7). Vuoto se il CMS non risponde. */
 export async function classiciSfida(): Promise<
   Array<{ nome: string; anno: number; piattaforme: string[]; sviluppatore: string; genere: string; serie: string }>

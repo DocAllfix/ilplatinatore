@@ -3,7 +3,7 @@
 // anche se piu' piccole e discrete»). Immagine piena, titolo sopra la sfumatura, Guida o News.
 
 import { FireIcon } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import { dataLeggibile } from "@/components/archivio";
 import type { Articolo } from "@/lib/cms/tipi";
 

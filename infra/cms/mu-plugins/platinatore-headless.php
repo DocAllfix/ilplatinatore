@@ -556,5 +556,25 @@ add_action('admin_menu', function () {
     });
 });
 
+/* ---------------------------------------------------------------------------------------
+ * 9. ADS.TXT (Fase 5)
+ *
+ * Oggi ads.txt lo gestisce Advanced Ads nelle sue impostazioni (opzione advanced_ads_ads_txt,
+ * campo «custom»). Advanced Ads sul CMS headless resta spento (inietterebbe la pubblicita' nella
+ * REST): il testo si legge da qui e il sito lo serve su /ads.txt, aggiornabile senza pubblicare.
+ * ------------------------------------------------------------------------------------- */
+
+add_action('rest_api_init', function () {
+    register_rest_route('platinatore/v1', '/ads-txt', array(
+        'methods'             => 'GET',
+        'permission_callback' => '__return_true',
+        'callback'            => function () {
+            $o = get_option('advanced_ads_ads_txt', array());
+            $testo = is_array($o) && isset($o['custom']) ? (string) $o['custom'] : '';
+            return rest_ensure_response(array('testo' => $testo));
+        },
+    ));
+});
+
 // NB dal riferimento: l'elenco delle rotte REST NON va filtrato a mano (`rest_endpoints`): un
 // filtro cosi' ha mandato in errore fatale tutta la REST API.

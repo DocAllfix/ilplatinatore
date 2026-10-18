@@ -3,7 +3,7 @@
 // Le guide del gioco per tipo di aiuto, con il filtro a pulsanti (primo filtro chiesto dal PDF 04).
 
 import { CaretDownIcon } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import { useState } from "react";
 import { IconaAiuto } from "./icone";
 import { senzaGioco, type Aiuto } from "@/lib/hub";

@@ -2,7 +2,7 @@
 // Tutti i dati arrivano dal CMS (lib/hub-dati.ts).
 
 import { ArrowRightIcon, NewspaperIcon } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import { dataLeggibile } from "@/components/archivio";
 import { BloccoAcido, Mancabili, Tacche } from "@/components/guida/scheda";
 import type { Articolo } from "@/lib/cms/tipi";

@@ -1,7 +1,7 @@
 // Testata della guida: briciole, gioco, titolo, firma e data di aggiornamento (ancora: Eurogamer).
 // La variante C mette il titolo sulla copertina.
 
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import { dataLeggibile } from "@/components/archivio";
 import type { Articolo } from "@/lib/cms/tipi";
 

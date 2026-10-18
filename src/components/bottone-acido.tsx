@@ -3,7 +3,7 @@
 // bianco sull'Acido non si legge (1,1:1): la scritta resta Notte (16:1).
 
 import { ArrowLeftIcon, ArrowRightIcon } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 
 export function BottoneAcido({ href, children, verso = "avanti" }: { href: string; children: React.ReactNode; verso?: "avanti" | "indietro" }) {
   return (

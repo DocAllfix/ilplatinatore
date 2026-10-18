@@ -3,7 +3,7 @@
 // La card della sfida in home: invito, numero, e lo stato se il lettore ha gia' giocato oggi.
 
 import { ArrowRightIcon, CheckIcon, PuzzlePieceIcon } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import { ImmagineSgranata } from "@/components/sfida/immagine-sgranata";
 import { usePartita } from "@/components/sfida/partita";
 import { REGOLE } from "@/lib/sfida";

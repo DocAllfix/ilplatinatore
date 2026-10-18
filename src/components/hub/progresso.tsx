@@ -5,7 +5,7 @@
 // arriva la prima volta nessun riquadro vuoto.
 
 import { ArrowRightIcon, CheckIcon } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import { useSyncExternalStore } from "react";
 import { archivio } from "@/components/guida/spunte";
 import { senzaGioco } from "@/lib/hub";

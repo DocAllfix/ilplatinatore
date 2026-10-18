@@ -3,12 +3,13 @@
 // stesso nome di parametro.
 
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import { draftMode } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { SchedaSovrapposta } from "@/components/guida/scheda";
 import { TestataCopertina, TestataGuida } from "@/components/guida/testata";
-import { SpazioPubblicitario } from "@/components/pubblicita";
+import { HeaderBanner, SpazioHB } from "@/components/annunci";
+import { FLOOR_AD, inserisciAnnunci, NEL_TESTO } from "@/lib/annunci";
 import { estraiScheda } from "@/lib/guida/scheda";
 import { collocaGruppi, schedaDaCampi, trofeiDaCampi } from "@/lib/guida/campi";
 import { aggiungiAncore, dividiCorpo, estraiChecklist } from "@/lib/guida/checklist";
@@ -100,7 +101,8 @@ export default async function PaginaArticolo({ params }: Parametri) {
       (x): x is readonly [string, NonNullable<(typeof x)[1]>] => Boolean(x[1]),
     ),
   );
-  const pezzi = dividiCorpo(html);
+  // Fase 5: gli spazi di HB dopo il 1°, 3°, 4°, 5° e 7° paragrafo, come Advanced Ads oggi
+  const pezzi = dividiCorpo(inserisciAnnunci(html));
   const termini = await Promise.all(a.tag.map((t) => terminePerSlug("tags", t.slug)));
   const giochi: Array<{ slug: string; nome: string; dati: ReturnType<typeof schedaDaDescrizione> }> = [];
   const altriTag: typeof a.tag = [];
@@ -126,6 +128,10 @@ export default async function PaginaArticolo({ params }: Parametri) {
     ...pezzi.map((p, i) => {
       if ("html" in p) return <div key={i} className="contenuto" dangerouslySetInnerHTML={{ __html: p.html }} />;
       if ("gruppo" in p) return <div key={i}>{(posti.get(p.gruppo) ?? []).map(gruppoConNota)}</div>;
+      if ("annuncio" in p) {
+        const an = NEL_TESTO.find((x) => x.id === p.annuncio);
+        return an ? <SpazioHB key={i} id={an.id} nome={an.nome} /> : null;
+      }
       const c = collocati.find((x) => x.id === p.correlato);
       const dest = destinazioni.get(p.correlato);
       if (!c || !dest) return null;
@@ -166,7 +172,7 @@ export default async function PaginaArticolo({ params }: Parametri) {
       )}
       <div id="fine-scheda" />
 
-      <SpazioPubblicitario />
+      <HeaderBanner />
 
       {!scheda && a.immagine && (
         // eslint-disable-next-line @next/next/no-img-element
@@ -196,6 +202,8 @@ export default async function PaginaArticolo({ params }: Parametri) {
         )}
       </div>
 
+      {/* Fase 5: Floor Ad dopo il contenuto (HB lo fissa in basso), come oggi */}
+      <SpazioHB id={FLOOR_AD.id} nome={FLOOR_AD.nome} />
       {/* Il gioco a fine articolo, come scheda col bagliore (piano 07); gli altri tag come etichette */}
       {giochi.map((g) => (
         <div key={g.slug} className="mt-10">

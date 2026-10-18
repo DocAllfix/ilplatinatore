@@ -4,7 +4,7 @@
 // ridotto il bagliore resta fermo. I dati arrivano dalla descrizione del tag (lib/scheda-gioco.ts).
 
 import { ArrowRightIcon, CalendarBlankIcon, ClockIcon, StarIcon, TagIcon } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 import type { SchedaGioco as Dati } from "@/lib/scheda-gioco";
 
 function Dato({ icona, etichetta, valore }: { icona: React.ReactNode; etichetta: string; valore?: string }) {

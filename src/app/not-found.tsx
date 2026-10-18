@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/collegamento";
 
 export const metadata: Metadata = { title: "Pagina non trovata - 🎮 Il Platinatore" };
 
