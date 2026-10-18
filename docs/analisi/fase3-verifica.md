@@ -46,9 +46,19 @@ Limiti dichiarati:
 - La misura in locale oscilla (la guida fra 2,4 e 3,0 s nella stessa ora), come già visto su Axialoop.
 - L'INP non si misura in laboratorio: il TBT ne è solo un indizio. L'obiettivo vero (LCP < 2,5 s, CLS < 0,1, INP < 200 ms) si verifica con i dati reali di Chrome dopo il passaggio.
 
+## PageSpeed Insights (18/10/2026)
+
+Misurato dall'utente su pagespeed.web.dev (l'API gratuita senza chiave restituisce sempre «quota superata»), sulla home dell'anteprima, dopo il piano 07 (hero, testata nuova, sfida da ogni pagina):
+
+| Dispositivo | Prestazioni |
+|---|---|
+| Telefono | **91** |
+| Computer | **100** |
+
+Conferma le misure di Lighthouse in locale. L'INP e i valori dei lettori veri si misurano dopo il passaggio (Fase 7-8).
+
 ## Debiti aperti
 
-- PageSpeed Insights sull'anteprima da ripetere (quota).
 - LCP della guida al limite: l'immagine di copertina è servita nelle misure di WordPress, senza AVIF/WebP ridimensionati. Da valutare in Fase 6 (ottimizzazione delle immagini).
 - Le misure d'uso non lasciano ancora la pagina (Fase 5).
 - Il criterio 12 dipende da un dato segnato spoiler: va riprovato quando la redazione ne segna uno.
