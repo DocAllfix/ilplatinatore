@@ -111,7 +111,7 @@ function Griglia4({ s, linee = false }: { s: Scheda; linee?: boolean }) {
       {s.difficolta && (
         <Dato etichetta="Difficoltà" className={cella}>
             <span className="cifre text-[1.625rem] font-bold leading-none">
-              {s.difficolta.voto}
+              {String(s.difficolta.voto).replace(".", ",")}
               <span className="text-base font-medium text-tenue">/{s.difficolta.massimo}</span>
             </span>
             <span className="mt-2 block">

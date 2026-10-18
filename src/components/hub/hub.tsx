@@ -105,7 +105,7 @@ function Completamento({ d }: { d: DatiHub }) {
             <dt className="text-[0.8125rem] font-semibold uppercase tracking-[0.04em] text-tenue">Difficoltà</dt>
             <dd className="mt-1">
               <span className="cifre text-[1.5rem] font-bold leading-none">
-                {s.difficolta.voto}
+                {String(s.difficolta.voto).replace(".", ",")}
                 <span className="text-base font-medium text-tenue">/{s.difficolta.massimo}</span>
               </span>
               <span className="mt-1.5 block">
