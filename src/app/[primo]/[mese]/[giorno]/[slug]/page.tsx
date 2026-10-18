@@ -4,6 +4,7 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import { draftMode } from "next/headers";
 import { notFound, permanentRedirect } from "next/navigation";
 import { SchedaSovrapposta } from "@/components/guida/scheda";
 import { TestataCopertina, TestataGuida } from "@/components/guida/testata";
@@ -20,7 +21,7 @@ import { Correlato } from "@/components/guida/correlato";
 import { collezionabiliDaRighe, collocaCorrelati, correlatiDaCampi, estraiTabelleOggetti, righeDaCampi } from "@/lib/guida/collezionabili";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { jsonLd } from "@/lib/cms/seo";
-import { articoloPerSlug, indirizzoAttuale, terminePerSlug, tuttiGliArticoli } from "@/lib/cms/wp";
+import { articoloPerId, articoloPerSlug, indirizzoAttuale, terminePerSlug, tuttiGliArticoli } from "@/lib/cms/wp";
 import { SchedaGioco } from "@/components/gioco/scheda-gioco";
 import { schedaDaDescrizione } from "@/lib/scheda-gioco";
 
@@ -48,11 +49,18 @@ async function risolvi(params: Parametri["params"]) {
   if (!/^\d{4}$/.test(primo) || !/^\d{2}$/.test(mese) || !/^\d{2}$/.test(giorno)) notFound();
 
   const slugNormale = decodeURIComponent(slug).toLowerCase();
+  // Anteprima di una bozza (rotta /api/preview/): solo per chi ha il cookie della modalita' bozza.
+  // Si legge la versione non pubblicata e non si fa nessun redirect.
+  if ((await draftMode()).isEnabled) {
+    const perId = slugNormale.match(/^anteprima-(\d+)$/);
+    const bozza = perId ? await articoloPerId(Number(perId[1]), { bozza: true }) : await articoloPerSlug(slugNormale, { bozza: true });
+    if (bozza) return { ...bozza, anteprima: true };
+  }
   const dati = await articoloPerSlug(slugNormale);
   if (dati) {
     // data o maiuscole diverse dall'indirizzo vero: si porta il lettore (e Google) su quello
     if (dati.articolo.percorso !== richiesto) permanentRedirect(dati.articolo.percorso);
-    return dati;
+    return { ...dati, anteprima: false };
   }
   // slug o data cambiati: WordPress li ricorda, il mu-plugin ce lo dice
   const attuale = await indirizzoAttuale(slugNormale, `${primo}-${mese}-${giorno}`);
@@ -66,7 +74,7 @@ export async function generateMetadata({ params }: Parametri): Promise<Metadata>
 }
 
 export default async function PaginaArticolo({ params }: Parametri) {
-  const { articolo: a, seo } = await risolvi(params);
+  const { articolo: a, seo, anteprima } = await risolvi(params);
   // Prima i campi strutturati del CMS (scritti dalla redazione o da wpvibe), poi le tabelle del
   // testo come ripiego. Le tabelle si tolgono comunque dal corpo, per non mostrare i dati due volte.
   const { scheda: schedaTabella, corpo: senzaScheda } = estraiScheda(a.contenuto);
@@ -130,6 +138,15 @@ export default async function PaginaArticolo({ params }: Parametri) {
   return (
     // Piano 07 chiuso: linea viola sui titoli e bagliore che pulsa (scelte del proprietario)
     <article>
+      {anteprima && (
+        // solo per chi scrive: la bozza non e' pubblicata
+        <p className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border-2 border-avviso px-4 py-2 text-sm font-semibold text-avviso">
+          Anteprima della bozza: non è ancora pubblicata.
+          <a href={`/api/preview/esci/?verso=${encodeURIComponent(a.percorso)}`} className="inline-flex min-h-11 items-center underline underline-offset-4">
+            Esci dall&apos;anteprima
+          </a>
+        </p>
+      )}
       <div id="inizio-articolo" />
       {/* Piano 04 chiuso: barra di lettura A «Linea»; «Torna all'inizio» resta su tutti gli articoli */}
       <BarraLettura />

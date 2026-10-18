@@ -81,3 +81,15 @@ describe("copertinaHub", () => {
     expect(copertinaHub(null, [senza])).toBeUndefined();
   });
 });
+
+describe("guidaPlatinoDalTitolo", () => {
+  it("riconosce le guide al Platino dai titoli veri del sito, e non le guide a un trofeo singolo", async () => {
+    const { guidaPlatinoDalTitolo } = await import("./hub");
+    const a = (titolo: string, data = "2026-10-01") => ({ titolo, data });
+    expect(guidaPlatinoDalTitolo([a("Hades II: guida al platino, consigli, durata e trofei da ottenere")])?.titolo).toContain("Hades II");
+    expect(guidaPlatinoDalTitolo([a("Crimson Desert: la lista di tutti i trofei, durata e passaggi per il platino")])).not.toBeNull();
+    expect(guidaPlatinoDalTitolo([a("Nioh 3: guida ai trofei, tutti i passaggi per ottenere il platino")])).not.toBeNull();
+    expect(guidaPlatinoDalTitolo([a("Ghost of Tsushima: come ottenere il trofeo Buona caduta")])).toBeNull();
+    expect(guidaPlatinoDalTitolo([a("guida al platino vecchia", "2025-01-01"), a("guida al platino nuova", "2026-01-01")])?.titolo).toBe("guida al platino nuova");
+  });
+});

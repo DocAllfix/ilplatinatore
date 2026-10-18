@@ -8,7 +8,7 @@ import { collezionabiliDaCampi } from "./guida/collezionabili";
 import { schedaDaCampi, trofeiDaCampi } from "./guida/campi";
 import { estraiChecklist } from "./guida/checklist";
 import { estraiScheda, type Scheda } from "./guida/scheda";
-import { copertinaHub, giocoDaMeta, perAiuto, type Gioco } from "./hub";
+import { copertinaHub, giocoDaMeta, guidaPlatinoDalTitolo, perAiuto, type Gioco } from "./hub";
 import { schedaDaDescrizione, type SchedaGioco } from "./scheda-gioco";
 
 /** Un articolo con spunte: l'hub legge dal browser quante ne ha fatte il lettore. */
@@ -40,10 +40,11 @@ export async function datiHub(slug: string): Promise<DatiHub | null> {
   const gioco = giocoDaMeta(t?.meta);
   if (!t || !gioco) return null;
 
-  const [articoli, completa] = await Promise.all([
-    articoliDelTag(t.id),
-    gioco.guidaPlatino ? articoloPerSlug(gioco.guidaPlatino) : Promise.resolve(null),
-  ]);
+  const articoli = await articoliDelTag(t.id);
+  // la guida al Platino: quella del campo; se manca, quella trovata dal titolo (scelta dell'utente,
+  // 18/10/2026: con 56 hub nessuno compilerebbe il campo a mano)
+  const slugPlatino = gioco.guidaPlatino ?? guidaPlatinoDalTitolo(articoli)?.slug;
+  const completa = slugPlatino ? await articoloPerSlug(slugPlatino) : null;
   const platino = completa?.articolo ?? null;
 
   // stessa precedenza della pagina dell'articolo: prima i campi, poi le tabelle del testo

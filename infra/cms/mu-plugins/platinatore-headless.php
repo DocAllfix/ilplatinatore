@@ -499,13 +499,13 @@ add_action('admin_menu', function () {
  *   Titolo | regola | parametro
  * Regole: piu-letti (Search Console, 28 giorni) · giochi-momento (giorni) · tag-sezione (chiave,
  * es. classico o indie: i giochi segnati sul tag) · titolo (parole separate da virgola) ·
- * categoria (slug) · sfida. Il sito le legge da una rotta REST pubblica.
+ * categoria (slug) · sfida · esplora-giochi (quanti). Il sito le legge da una rotta REST pubblica.
  * ------------------------------------------------------------------------------------- */
 
 function platinatore_sezioni_home()
 {
     $righe = preg_split('/\r?\n/', (string) get_option('platinatore_sezioni_home', ''));
-    $regole = array('piu-letti', 'giochi-momento', 'tag-sezione', 'titolo', 'categoria', 'sfida');
+    $regole = array('piu-letti', 'giochi-momento', 'tag-sezione', 'titolo', 'categoria', 'sfida', 'esplora-giochi');
     $out = array();
     foreach ($righe as $riga) {
         $c = array_map('trim', explode('|', $riga));
@@ -546,7 +546,8 @@ add_action('admin_menu', function () {
         echo '<li><code>giochi-momento | 30</code>: gli articoli dei giochi con più uscite negli ultimi 30 giorni.</li>';
         echo '<li><code>tag-sezione | indie</code>: gli articoli dei giochi che hanno «indie» nel campo Sezioni della home del tag.</li>';
         echo '<li><code>titolo | enigma, soluzione</code>: gli articoli con una di queste parole nel titolo.</li>';
-        echo '<li><code>categoria | news</code>: gli articoli della categoria. <code>sfida</code>: la sfida del giorno.</li></ul>';
+        echo '<li><code>categoria | news</code>: gli articoli della categoria. <code>sfida</code>: la sfida del giorno.</li>';
+        echo '<li><code>esplora-giochi | 12</code>: le schede dei giochi con hub, verso le loro pagine.</li></ul>';
         echo '<form method="post">';
         wp_nonce_field('platinatore_home');
         echo '<textarea name="platinatore_sezioni_home" rows="14" class="large-text code">' . esc_textarea(get_option('platinatore_sezioni_home', '')) . '</textarea>';

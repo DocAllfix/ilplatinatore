@@ -13,7 +13,11 @@ const PER_SEZIONE = 24;
 const IN_FILA = 12;
 
 export type SfidaInBreve = { numero: number; giorno: number; formato: keyof typeof NOMI_FORMATO; nome: string; invito: string; immagine?: Articolo["immagine"] };
+/** Una scheda di «Esplora per gioco» (PDF 09): il gioco, quanti articoli, l'immagine della sua guida piu' recente. */
+export type VoceGioco = { slug: string; nome: string; conta: number; immagine?: Articolo["immagine"] };
+
 export type SezioneDati =
+  | { tipo: "giochi"; titolo: string; voci: VoceGioco[] }
   | { tipo: "articoli"; titolo: string; criterio: string; voci: Articolo[]; tutti?: { testo: string; href: string } }
   | { tipo: "sfida"; titolo: string; sfida: SfidaInBreve };
 
@@ -72,6 +76,22 @@ async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeo
     return voci.length
       ? { tipo: "articoli", titolo: s.titolo, voci, criterio: "Dall'ultimo aggiornato.", tutti: { testo: `Tutte: ${c.name}`, href: `/category/${c.slug}/` } }
       : null;
+  }
+
+  if (s.regola === "esplora-giochi") {
+    // i giochi con l'hub, dal piu' coperto; l'immagine e' quella del loro articolo piu' recente
+    const quanti = Number(s.parametro) || 12;
+    const giochi = tag
+      .filter((t) => meta(t, "pl_gioco") === "1" && t.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, quanti);
+    if (!giochi.length) return null;
+    const ultimi = await Promise.all(giochi.map((t) => articoliModificati(`tags=${t.id}`, 1)));
+    return {
+      tipo: "giochi",
+      titolo: s.titolo,
+      voci: giochi.map((t, i) => ({ slug: t.slug, nome: t.name, conta: t.count, immagine: ultimi[i][0]?.immagine })),
+    };
   }
 
   if (s.regola === "sfida") {

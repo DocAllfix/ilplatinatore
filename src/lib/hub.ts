@@ -102,3 +102,15 @@ export function copertinaHub<I, A extends { immagine?: I; data: string }>(platin
   if (platino?.immagine) return platino.immagine;
   return [...guide].filter((g) => g.immagine).sort((x, y) => y.data.localeCompare(x.data))[0]?.immagine;
 }
+
+/**
+ * La guida al Platino riconosciuta dal titolo («guida al platino», «tutti i trofei», «lista dei
+ * trofei»); prima quelle che si dicono «guida al platino», poi la piu' recente; null se non c'e'.
+ * Vale solo quando il campo del tag e' vuoto.
+ */
+export function guidaPlatinoDalTitolo<A extends { titolo: string; data: string }>(articoli: A[]): A | null {
+  const rx = /guida al platino|\bplatino\b.*\btrofei\b|\btrofei\b.*\bplatino\b|tutti i (?:\d+ )?trofei|lista (?:di tutti |dei |completa dei )?trofei/i;
+  const punti = (a: A) => (/guida al platino/i.test(a.titolo) ? 1 : 0);
+  const trovate = articoli.filter((a) => rx.test(a.titolo)).sort((x, y) => punti(y) - punti(x) || y.data.localeCompare(x.data));
+  return trovate[0] ?? null;
+}

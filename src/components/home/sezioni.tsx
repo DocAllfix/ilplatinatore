@@ -8,6 +8,8 @@ import { BottoneAcido } from "@/components/bottone-acido";
 import { CartaArticolo } from "@/components/carta-articolo";
 import type { Articolo } from "@/lib/cms/tipi";
 import type { SezioneDati } from "@/lib/home-dati";
+import Link from "next/link";
+import type { VoceGioco } from "@/lib/home-dati";
 import { CartaSfida } from "./carta-sfida";
 import { FilaScorrevole } from "./fila-scorrevole";
 
@@ -33,6 +35,42 @@ function Fila({ voci, prima, apertura, sezione, riferimento }: { voci: Articolo[
   );
 }
 
+/** «Esplora per gioco» (PDF 09): mini-schede dei giochi verso i loro hub. */
+function FilaGiochi({ voci }: { voci: VoceGioco[] }) {
+  return (
+    <FilaScorrevole>
+      {voci.map((g, i) => (
+        <li key={g.slug} data-scheda className="w-[min(9rem,38vw)] shrink-0 snap-start">
+          <Link
+            prefetch={false}
+            href={`/tag/${g.slug}/`}
+            data-misura="home_sezione"
+            data-misura-dettaglio="Esplora per gioco"
+            className="group relative isolate flex aspect-square flex-col justify-end overflow-hidden rounded-xl border border-linea p-2.5 shadow-[0_6px_18px_oklch(0%_0_0/0.28)] transition-[border-color,transform] duration-150 active:scale-[0.98] [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:border-viola"
+          >
+            {g.immagine ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                {...(i < 3 ? { src: g.immagine.src, srcSet: g.immagine.srcset } : { "data-src": g.immagine.src, "data-srcset": g.immagine.srcset, "data-carico": "vicino" })}
+                sizes="150px"
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="absolute inset-0 -z-10 size-full bg-superficie-alta object-cover"
+              />
+            ) : (
+              <span className="absolute inset-0 -z-10 bg-superficie-alta" />
+            )}
+            <span className="absolute inset-0 -z-10 bg-gradient-to-t from-notte via-notte/70 to-transparent" aria-hidden="true" />
+            <span className="line-clamp-2 text-sm font-bold leading-tight text-platino">{g.nome}</span>
+            <span className="cifre mt-0.5 text-[0.6875rem] text-platino/80">{g.conta === 1 ? "1 articolo" : `${g.conta} articoli`}</span>
+          </Link>
+        </li>
+      ))}
+    </FilaScorrevole>
+  );
+}
+
 export function Sezioni({ sezioni, riferimento }: { sezioni: SezioneDati[]; riferimento: number }) {
   return (
     <div className="flex flex-col gap-10">
@@ -48,6 +86,8 @@ export function Sezioni({ sezioni, riferimento }: { sezioni: SezioneDati[]; rife
           </div>
           {s.tipo === "sfida" ? (
             <CartaSfida s={s.sfida} />
+          ) : s.tipo === "giochi" ? (
+            <FilaGiochi voci={s.voci} />
           ) : (
             // una sezione si' e una no apre con la scheda grande
             <Fila voci={s.voci} prima={i === 0} apertura={i % 2 === 0} sezione={s.titolo} riferimento={riferimento} />

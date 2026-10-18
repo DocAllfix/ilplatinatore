@@ -158,7 +158,7 @@ export async function tuttiITermini(tassonomia: "categories" | "tags"): Promise<
   return out.map((t) => ({ ...t, name: decodificaEntita(t.name) }));
 }
 
-export type SezioneHome = { titolo: string; regola: "piu-letti" | "giochi-momento" | "tag-sezione" | "titolo" | "categoria" | "sfida"; parametro: string };
+export type SezioneHome = { titolo: string; regola: "piu-letti" | "giochi-momento" | "tag-sezione" | "titolo" | "categoria" | "sfida" | "esplora-giochi"; parametro: string };
 
 /** Le sezioni della home (mu-plugin, sezione 8), nell'ordine della redazione. */
 export async function sezioniHome(): Promise<SezioneHome[]> {
