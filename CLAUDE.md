@@ -119,9 +119,9 @@ Poi il commit «Fase N completata».
   - piano 06, home a sezioni sul modello games.gg (cambiata dal proprietario rispetto ai tre moduli del PDF 10): dieci file che si riempiono da sole per regola (Strumenti > Sezioni della home), locandine con una scheda grande ogni due sezioni; «Più letti» da Search Console, collegata il 17/10/2026 (proprietà `https://www.ilplatinatore.it/`, account di servizio in sola lettura; senza dati, ripiego dichiarato in pagina).
 - **Cancello**: le varianti scelte dall'utente e dal proprietario sono online sull'anteprima; tutti i componenti leggono dati veri del CMS di lavoro (campi `pl_*`, campi del tag, opzioni in Strumenti), nessun dato scritto nel codice.
 
-#### Fase 3, Verifica del prototipo (in attesa di approvazione)
+#### Fase 3, Verifica del prototipo (completata, approvata dall'utente il 18/10/2026)
 - **Fatto**: suite `scripts/qa/criteri.py` con i 12 criteri del PDF, ognuno con il suo guasto (`--rompi`); misure d'uso come eventi nella pagina (`src/lib/misure.ts`). Rapporto in `docs/analisi/fase3-verifica.md`.
-- **Cancello**: 12 criteri verdi nel modo normale e rossi con i guasti; `controlli.py` a 0 problemi. Manca l'approvazione dell'utente.
+- **Cancello**: criteri del PDF (15 dopo il piano 07) verdi nel modo normale e rossi con i guasti; `controlli.py` a 0 problemi; PageSpeed della home 91 su telefono e 100 su computer; approvazione dell'utente.
 - **Regole nate**:
   - Un guasto messo prima che React prenda la pagina viene cancellato da React: i guasti nel DOM si inseriscono dopo il caricamento, o il controllo sembra rotto quando non lo è.
   - Nelle file orizzontali le immagini fuori schermo si caricano comunque: oltre la quarta partono solo quando si tocca la fila.

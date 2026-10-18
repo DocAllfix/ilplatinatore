@@ -65,4 +65,4 @@ Conferma le misure di Lighthouse in locale. L'INP e i valori dei lettori veri si
 
 ## Cancello
 
-Tutti i criteri provati e visti rossi. Manca **l'approvazione dell'utente**.
+Tutti i criteri provati e visti rossi; PageSpeed 91 su telefono e 100 su computer. **Approvata dall'utente il 18/10/2026.**
