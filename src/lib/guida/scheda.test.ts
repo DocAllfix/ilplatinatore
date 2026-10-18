@@ -53,3 +53,16 @@ describe("scheda riassuntiva dalla tabella della guida", () => {
     expect(r.scheda?.trofei).toBeUndefined();
   });
 });
+
+describe("soloOre (richiesta del proprietario, 18/10/2026)", () => {
+  it("nel blocco giallo restano solo le ore, la spiegazione va a parte", async () => {
+    const { soloOre } = await import("./scheda");
+    expect(soloOre("60-80 ore (A seconda della fortuna con la generazione procedurale e del farming di risorse).")).toEqual({
+      ore: "60-80 ore",
+      resto: "A seconda della fortuna con la generazione procedurale e del farming di risorse.",
+    });
+    expect(soloOre("15-25 ore")).toEqual({ ore: "15-25 ore" });
+    expect(soloOre("Circa 40 ore")).toEqual({ ore: "40 ore", resto: "Circa" });
+    expect(soloOre("Non indicato")).toEqual({ ore: "Non indicato" });
+  });
+});

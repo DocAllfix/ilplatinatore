@@ -57,6 +57,21 @@ function eRiassuntiva(voci: VoceScheda[]): boolean {
   return (difficolta && tempo) || (trofei && (difficolta || tempo));
 }
 
+/** Dal tempo per il Platino tiene solo le ore («60-80 ore»); il resto, se c'e', torna a parte. */
+export function soloOre(valore: string): { ore: string; resto?: string } {
+  const m = valore.match(/(\d+(?:[.,]\d+)?(?:\s*-\s*\d+(?:[.,]\d+)?)?)\s*(?:ore|h)\b/i);
+  if (!m || m.index === undefined) return { ore: valore };
+  const ore = `${m[1].replace(/\s*-\s*/, "-")} ore`;
+  const resto = (valore.slice(0, m.index) + " " + valore.slice(m.index + m[0].length))
+    .replace(/[()]/g, " ")
+    .replace(/^[\s,.;:–-]+|[\s,;:–-]+$/g, "")
+    .replace(/\s+/g, " ")
+    .replace(/\s+([.,;:!?])/g, "$1")
+    .trim();
+  if (resto.length < 4) return { ore };
+  return { ore, resto: resto.charAt(0).toUpperCase() + resto.slice(1) };
+}
+
 export function schedaDaVoci(voci: VoceScheda[]): Scheda {
   const s: Scheda = { altre: [] };
   const trofei: NonNullable<Scheda["trofei"]> = {};
@@ -67,7 +82,13 @@ export function schedaDaVoci(voci: VoceScheda[]): Scheda {
       const m = v.valore.match(/(\d+(?:[.,]\d+)?)\s*\/\s*(\d+)/);
       if (m) s.difficolta = { voto: Number(m[1].replace(",", ".")), massimo: Number(m[2]) };
       else s.altre.push(v);
-    } else if (/^(tempo|durata)/.test(e)) s.tempo = v.valore;
+    } else if (/^(tempo|durata)/.test(e)) {
+      // Nel blocco giallo solo le ore (richiesta del proprietario, 18/10/2026): «60-80 ore (A seconda
+      // della fortuna...)» diventa «60-80 ore», e la spiegazione passa nella nota sotto la scheda.
+      const ore = soloOre(v.valore);
+      s.tempo = ore.ore;
+      if (ore.resto && !s.nota) s.nota = ore.resto;
+    }
     else if (e.startsWith("partite")) s.partite = v.valore;
     else if (e.includes("mancabil")) {
       const n = numero(v.valore) ?? 0;
