@@ -157,3 +157,22 @@ Poi il commit «Fase N completata».
   - prova con **wpvibe** rimandata dall'utente: il CMS di lavoro contiene il collegamento copiato del sito vero, attivarlo così potrebbe staccare quello su Aruba (da fare come secondo sito nel pannello wpvibe, o al passaggio);
   - **allarme sul telefono**: serve l'account UptimeRobot o Better Stack;
   - il token dell'anteprima viaggia nell'indirizzo del pulsante «Anteprima» (schema del riferimento): resta solo nel primo indirizzo, poi il redirect lo toglie.
+
+#### Fase 5, Pubblicità, consenso, analytics (completata il 18/10/2026; il collaudo degli annunci veri si fa al passaggio, scelta dell'utente)
+- **Fatto**:
+  - i **9 spazi di HB Agency** con lo stesso markup del sito di oggi (`src/lib/annunci.ts`, `src/components/annunci.tsx`): Header Banner con altezza riservata (100 px da telefono, 250 da computer), 5 spazi nel testo dopo il 1°, 3°, 4°, 5° e 7° paragrafo, Floor Ad dopo l'articolo, Magic Left e Interstitial su ogni pagina;
+  - lo **script di HB** (che porta anche il banner del consenso TCF) e **GA4 `GT-NS4PBCN4`** partono solo su `www.ilplatinatore.it` / `ilplatinatore.it`; GA4 solo dopo il consenso (finalità 1 TCF) e riceve le misure d'uso degli strumenti;
+  - **navigazione a caricamento completo** (`src/components/collegamento.tsx` al posto di `next/link`): lo script di HB non ha un'API per le pagine cambiate lato client, e HB ha confermato che con lo stesso indirizzo lo script vale così com'è;
+  - **`/ads.txt` identico** al file di oggi, letto dal CMS (mu-plugin, sezione 9, opzione di Advanced Ads), rigenerato ogni ora.
+- **Cancello** (sull'anteprima):
+  - md5 di `/ads.txt` uguale a quello del sito vero (`9ea4cc6b…`), `text/plain`, noindex;
+  - nessuna richiesta verso HB, CloudFront o Google aprendo home e articolo (Chrome, telefono emulato);
+  - un clic su un articolo ricarica la pagina intera; CLS dell'articolo 0;
+  - i 9 id `hbagency_space_*` presenti nell'HTML dell'articolo; `controlli.py` 0 problemi, `criteri.py` verde e rosso con `--rompi`, 92 test.
+- **Regole nate**:
+  - gli script di terzi legati al dominio (pubblicità, statistiche) si accendono per nome di dominio in pagina, mai per variabile d'ambiente: l'anteprima resta pulita anche se qualcuno copia le variabili;
+  - un file che deve restare identico (ads.txt) si confronta byte per byte, a-capo compresi, non a occhio.
+- **Debiti** (tutti al passaggio, con HB):
+  - impressioni viste dalla concessionaria, annunci rinnovati fra tre pagine, banner del consenso mai coperto (il pulsante della sfida e il «torna su» stanno in basso a destra, il Floor Ad in basso: da guardare con gli annunci veri);
+  - **CSP**: oggi assente; si mette in sola segnalazione (report-only) al passaggio, con le origini reali che HB carica, poi si stringe;
+  - nessun contatore aggregato delle misure d'uso senza consenso: senza GA4 restano solo nel `dataLayer`.
