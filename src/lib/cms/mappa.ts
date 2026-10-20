@@ -65,6 +65,7 @@ function immagine(post: PostWP, cms: string, pubblico: string): Immagine | undef
     larghezza: m.media_details?.width,
     altezza: m.media_details?.height,
     alt: decodificaEntita(m.alt_text ?? ""),
+    didascalia: decodificaEntita((m.caption?.rendered ?? "").replace(/<[^>]+>/g, "")) || undefined,
   };
 }
 
@@ -76,6 +77,8 @@ export function mappaVoce(post: PostWP): VoceArticolo {
     titolo: decodificaEntita(post.title?.rendered),
     data: utc(post.date_gmt) ?? "",
     modificato: utc(post.modified_gmt),
+    categorie: post.categories,
+    tag: post.tags,
   };
 }
 

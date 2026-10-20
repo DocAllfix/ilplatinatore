@@ -66,3 +66,16 @@ describe("soloOre (richiesta del proprietario, 18/10/2026)", () => {
     expect(soloOre("Non indicato")).toEqual({ ore: "Non indicato" });
   });
 });
+
+describe("spiegazioni di difficolta' e durata (parita' del 20/10/2026)", () => {
+  it("nel blocco restano voto e ore, le spiegazioni finiscono nella nota", () => {
+    const r = estraiScheda(
+      sanificaHtml(
+        `<table><tr><td>Difficoltà</td><td>6.5/10 (Fortemente dipendente dalle vostre abilità nei roguelite)</td></tr><tr><td>Tempo per il Platino</td><td>60 – 80 ore (A seconda della fortuna)</td></tr><tr><td>Trofei totali</td><td>49</td></tr></table>`,
+      ),
+    );
+    expect(r.scheda?.difficolta).toEqual({ voto: 6.5, massimo: 10 });
+    expect(r.scheda?.tempo).toBe("60-80 ore");
+    expect(r.scheda?.nota).toBe("Fortemente dipendente dalle vostre abilità nei roguelite. A seconda della fortuna.");
+  });
+});

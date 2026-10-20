@@ -68,7 +68,7 @@ const EMBED = "_embed=author,wp:featuredmedia,wp:term";
 
 /** Tutti gli articoli pubblicati in forma leggera: per generateStaticParams, sitemap, feed. */
 export async function tuttiGliArticoli(): Promise<VoceArticolo[]> {
-  const campi = "_fields=id,slug,date,date_gmt,modified_gmt,title";
+  const campi = "_fields=id,slug,date,date_gmt,modified_gmt,title,categories,tags";
   const prima = await chiamata<PostWP[]>(`/wp/v2/posts?status=publish&per_page=100&page=1&${campi}`);
   if (!prima) throw new Error("Il CMS non restituisce l'elenco degli articoli.");
   const tutti = [...prima.dati];

@@ -7,7 +7,8 @@ import { GrigliaArticoli, PaginaArchivio, Paginazione } from "./archivio";
 import { SchedaGioco } from "./gioco/scheda-gioco";
 import { SchemaYoast } from "./schema-yoast";
 import { descrizioneTag, schedaDaDescrizione } from "@/lib/scheda-gioco";
-import { metadatiDaSeo, seoPaginata } from "@/lib/cms/metadati";
+import { immagineSchema, metadatiDaSeo, seoPaginata } from "@/lib/cms/metadati";
+import { conImmaginePrincipale } from "@/lib/cms/seo";
 import { numeroPagina } from "@/lib/cms/pagina";
 import { paginaArticoli, seoTermine, terminePerSlug, tuttiGliAutori } from "@/lib/cms/wp";
 import type { Seo } from "@/lib/cms/tipi";
@@ -35,13 +36,17 @@ function filtroDi(tipo: Tipo, id?: number) {
   return tipo === "category" ? { categoria: id } : tipo === "tag" ? { tag: id } : { autore: id };
 }
 
-/** Yoast della pagina 1 (allegato alla REST del termine), ricalcolato per la pagina N come fa Yoast. */
+/**
+ * Yoast della pagina 1 (allegato alla REST del termine), ricalcolato per la pagina N come fa Yoast;
+ * nello schema l'immagine principale e' quella del primo articolo della pagina.
+ */
 async function seoArchivio(tipo: Tipo, slug: string, pagina: number): Promise<Seo | null> {
-  const seo = await seoTermine(tipo, slug);
-  if (!seo || pagina === 1) return seo;
+  const seo1 = await seoTermine(tipo, slug);
+  if (!seo1) return null;
   const t = await termine(tipo, slug);
   const r = await paginaArticoli({ pagina, ...filtroDi(tipo, t?.id) });
-  return seoPaginata(seo, pagina, r?.pagine ?? 1, r?.articoli[0]);
+  const seo = seoPaginata(seo1, pagina, r?.pagine ?? 1);
+  return { ...seo, schema: conImmaginePrincipale(seo.schema, seo.canonical ?? "", immagineSchema(r?.articoli[0])) };
 }
 
 export async function metadatiTermine(tipo: Tipo, slug: string, n?: string): Promise<Metadata> {

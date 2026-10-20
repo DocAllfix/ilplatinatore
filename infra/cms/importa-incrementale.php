@@ -111,6 +111,12 @@ WP_CLI::log('immagini nuove: ' . count($pacchetto['media_nuovi']));
 $fatti = array('creati' => 0, 'aggiornati' => 0);
 foreach ($pacchetto['articoli'] as $a) {
     $esiste = get_post($a['id']);
+    if (!empty($a['solo_data']) && $esiste) {
+        $wpdb->update($wpdb->posts, array('post_modified' => $a['modifica'], 'post_modified_gmt' => $a['modifica_gmt']), array('ID' => $a['id']));
+        clean_post_cache($a['id']);
+        $fatti['aggiornati']++;
+        continue;
+    }
     $dati = array(
         'post_type'      => $a['tipo'],
         'post_title'     => $a['titolo'],

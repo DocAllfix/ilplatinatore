@@ -25,6 +25,7 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -45,7 +46,25 @@ def _tag(url, hn):
     return "/tag/" in url
 
 
+def _sempre(url, hn):
+    return True
+
+
+def _noindex(url, hn):
+    return "?s=" in url or re.search(r"\.it/\d{4}/(\d{1,2}/)?(\d{1,2}/)?(page/\d+/)?$", url) is not None
+
+
 VOLUTE = [
+    (_sempre, {"stato:308"},
+     "308 al posto di 301, stessa destinazione: per Google sono equivalenti (entrambi permanenti)"),
+    (lambda u, h: u.endswith("/embed/") or u.endswith("/comments/feed/"), {"stato", "rimando"},
+     "Fase 1: /embed/ rimanda all'articolo e /comments/feed/ al feed (il sito non ha commenti)"),
+    (_noindex, {"schema", "og:title", "og:type", "og:url", "og:description"},
+     "ricerca e archivi per data: pagine noindex, schema e metadati social non riprodotti"),
+    (lambda u, h: u.endswith("/author-sitemap.xml") or u.endswith("/sitemap_index.xml"), {"sitemap:lastmod:autore"},
+     "lastmod dell'autore: Yoast usa la data del profilo, che la REST non espone"),
+    (lambda u, h: u.endswith("/privacy-policy/"), {"og:description"},
+     "privacy: Yoast accorcia il riassunto solo nella pagina, la REST lo da' intero"),
     (_hub, {"titolo", "og:title", "descrizione", "og:description", "schema"},
      "hub del gioco (piano 04, Fase 0 punto 5): titolo e descrizione nuovi, schema con il gioco e l'elenco delle guide"),
     (_tag, {"descrizione", "og:description"},
@@ -121,10 +140,19 @@ def paragrafi(h):
 
 
 def corpo_vivo(h):
-    """Il corpo dell'articolo nel tema di oggi: dal riquadro dell'articolo ai correlati."""
+    """Il corpo dell'articolo nel tema di oggi: dal riquadro dell'articolo ai correlati.
+
+    Senza la tabella riassuntiva del Platino e il suo titolo: sul sito nuovo diventano la scheda in
+    testa (piano 01), con i valori riformattati («6,5/10», ore sole e spiegazioni nella nota).
+    """
     i = h.find('class="bs-blog-post single')
     j = h.find("bs-related-post-info", i if i >= 0 else 0)
-    return h[i:j] if i >= 0 and j > i else ""
+    corpo = h[i:j] if i >= 0 and j > i else ""
+    def via(m):
+        prima = re.search(r"<t[hd][^>]*>([\s\S]*?)</t[hd]>", m.group(0))
+        return "" if prima and re.match(r"\s*(informazion|requisit)", testo(prima.group(1))) else m.group(0)
+    corpo = re.sub(r"(?:<h[23][^>]*>(?:(?!</h[23]>)[\s\S])*</h[23]>\s*)?(?:<figure[^>]*>\s*)?<table[\s\S]*?</table>", via, corpo)
+    return corpo
 
 
 def campi(h, nuovo):
@@ -192,7 +220,9 @@ def _confronta(url, tipo, nuovo_base):
     sn, ln, hn = scarica(nuovo_base + percorso)
     norm = lambda s: s.replace(nuovo_base, VIVO) if isinstance(s, str) else s
     diff = {}
-    if sv != sn:
+    if {sv, sn} == {301, 308}:
+        diff["stato:308"] = (sv, sn)
+    elif sv != sn:
         diff["stato"] = (sv, sn)
     if sv in (301, 302, 307, 308) or sn in (301, 302, 307, 308):
         dv = (lv or "").replace(VIVO, "")
@@ -207,10 +237,18 @@ def _confronta(url, tipo, nuovo_base):
                 diff["sitemap:indirizzi"] = (len(locv), len(locn), sorted(set(l for l, _ in locv) ^ set(l for l, _ in locn))[:5])
             dv, dn = dict(locv), dict(locn)
             date = [l for l in dv if l in dn and dv[l] != dn[l]]
+            autore = [l for l in date if "/author" in l]
+            date = [l for l in date if l not in autore]
+            if autore:
+                diff["sitemap:lastmod:autore"] = [(l, dv[l], dn[l]) for l in autore]
             if date:
                 diff["sitemap:lastmod"] = (len(date), [(l, dv[l], dn[l]) for l in date[:3]])
         elif "<html" in hv.lower():
             cv, cn = campi(hv, False), campi(norm(hn), True)
+            # «Δ» e «%CE%94» sono lo stesso indirizzo
+            for c in (cv, cn):
+                if c.get("og:image"):
+                    c["og:image"] = urllib.parse.unquote(c["og:image"])
             for k in cv:
                 if cv[k] != cn[k]:
                     diff[k] = (cv[k], cn[k])

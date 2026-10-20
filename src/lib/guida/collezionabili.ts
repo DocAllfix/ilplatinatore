@@ -107,6 +107,9 @@ const PRIMA_COLONNA = /^(oggett|arm[ai]|element|collezionabil|da trovare|da sblo
  * (o Arma, Elemento, Collezionabile...) diventano la tabella dei mancanti in testa all'articolo, come
  * gia' le tabelle «Trofeo» diventano la checklist. Colonne riconosciute: Tipo, Area/Zona/Dove,
  * Prerequisito/Requisito/Sblocco, Sezione. Le tabelle si tolgono dal corpo, per non mostrarle due volte.
+ * Una tabella con anche UNA colonna non riconosciuta resta nel testo com'e': trasformarla perderebbe
+ * quella colonna (parita' del 20/10/2026: «Elemento di gioco / Cosa succede dopo...» di Crimson Desert
+ * perdeva la spiegazione).
  */
 export function estraiTabelleOggetti(html: string): { righe: RigaOggetto[]; corpo: string } {
   const out: RigaOggetto[] = [];
@@ -122,6 +125,8 @@ export function estraiTabelleOggetti(html: string): { righe: RigaOggetto[]; corp
     const cArea = col(/^(area|zona|dove|luogo|mappa|capitolo|livello)/);
     const cPre = col(/^(prerequisit|requisit|sblocco|come si sblocca|condizion)/);
     const cSez = col(/^(sezione|soluzione|guida)/);
+    const note = new Set([cTipo, cArea, cPre, cSez].filter((i) => i > 0));
+    if (intest.slice(1).some((_, i) => !note.has(i + 1))) return blocco;
     const prima = out.length;
     for (const r of righeHtml.slice(1)) {
       const c = celle(r);

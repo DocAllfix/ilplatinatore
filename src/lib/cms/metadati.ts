@@ -7,7 +7,7 @@
 import type { Metadata } from "next";
 import { noindex } from "./config";
 import { decodificaEntita } from "./mappa";
-import { schemaPaginato } from "./seo";
+import { schemaPaginato, type ImmagineSchema } from "./seo";
 import type { Articolo, Seo } from "./tipi";
 
 const ROBOTS_OGGI: Metadata["robots"] = {
@@ -47,28 +47,29 @@ export function titoloPaginato(titolo: string, n: number, totale: number): strin
 }
 
 /**
- * La stessa Seo per la pagina N di un archivio: titolo, canonical e schema della pagina stessa.
- * `primo` e' il primo articolo della pagina: la sua immagine e' l'immagine principale nello schema.
+ * La stessa Seo per la pagina N di un archivio, con le regole di Yoast di oggi: titolo «Pagina N di
+ * M», canonical e schema della pagina stessa, og:url fermo sulla pagina 1. Nella home anche og:title
+ * resta quello della pagina 1 (`ogTitoloFisso`).
  */
-export function seoPaginata(seo: Seo, n: number, totale: number, primo?: Articolo): Seo {
+export function seoPaginata(seo: Seo, n: number, totale: number, opts: { ogTitoloFisso?: boolean } = {}): Seo {
   if (n <= 1) return seo;
   const titolo = seo.title ? titoloPaginato(seo.title, n, totale) : undefined;
   const canonical = `${seo.canonical}page/${n}/`;
-  const img = primo?.immagine;
   return {
     ...seo,
     title: titolo,
-    ogTitle: seo.ogTitle ? titoloPaginato(seo.ogTitle, n, totale) : titolo,
+    ogTitle: opts.ogTitoloFisso ? (seo.ogTitle ?? seo.title) : seo.ogTitle ? titoloPaginato(seo.ogTitle, n, totale) : titolo,
     canonical,
-    schema: seo.schema && seo.canonical
-      ? schemaPaginato(seo.schema, seo.canonical, canonical, titolo ?? "", img && {
-          url: img.src.replace(/\?.*$/, ""),
-          larghezza: img.larghezza,
-          altezza: img.altezza,
-          didascalia: img.alt || undefined,
-        })
-      : seo.schema,
+    ogUrl: seo.canonical,
+    schema: seo.schema && seo.canonical ? schemaPaginato(seo.schema, seo.canonical, canonical, titolo ?? "") : seo.schema,
   };
+}
+
+/** L'immagine in evidenza di un articolo come la vuole lo schema di Yoast: originale, senza versione. */
+export function immagineSchema(a: Articolo | undefined): ImmagineSchema | undefined {
+  const img = a?.immagine;
+  if (!img) return undefined;
+  return { url: img.src.replace(/\?.*$/, ""), larghezza: img.larghezza, altezza: img.altezza, didascalia: img.didascalia || img.alt || undefined };
 }
 
 // Yoast passa i testi con le entita' di HTML («SMG &amp; Pump»); Next le scrive a sua volta: senza
@@ -84,10 +85,10 @@ export function metadatiDaSeo(seo: Seo, opts: { titoloRiserva?: string; indicizz
     openGraph: {
       title: t(seo.ogTitle ?? seo.title),
       description: t(seo.ogDescription ?? seo.description),
-      url: seo.canonical,
+      url: seo.ogUrl ?? seo.canonical,
       siteName: t(seo.ogSiteName),
       locale: "it_IT",
-      type: seo.ogType === "article" ? "article" : "website",
+      type: seo.ogType === "article" ? "article" : seo.ogType === "profile" ? "profile" : "website",
       ...(seo.publishedTime ? { publishedTime: seo.publishedTime } : {}),
       ...(seo.modifiedTime ? { modifiedTime: seo.modifiedTime } : {}),
       images: seo.ogImage ? [{ url: seo.ogImage.url, width: seo.ogImage.width, height: seo.ogImage.height }] : undefined,

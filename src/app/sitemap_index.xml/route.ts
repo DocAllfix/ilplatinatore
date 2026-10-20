@@ -1,23 +1,21 @@
 import { sitoPubblico } from "@/lib/cms/config";
 import { indice, ultimo } from "@/lib/cms/sitemap";
-import { PER_SITEMAP } from "@/lib/cms/sitemap";
-import { vociArticoli } from "@/lib/cms/sitemap-articoli";
+import { fileArticoli, lastmod, ultimaPerTermine } from "@/lib/cms/sitemap-articoli";
+import { tutteLePagine } from "@/lib/cms/wp";
 
 export const revalidate = 3600;
 
+// lastmod di ogni file come Yoast: la data piu' recente fra le sue voci. L'autore non ce l'ha: Yoast
+// usa la data di aggiornamento del profilo, che la REST non espone (differenza dichiarata).
 export async function GET() {
   const pub = sitoPubblico();
-  const voci = await vociArticoli();
-  const file = [];
-  for (let n = 1; (n - 1) * PER_SITEMAP < voci.length; n++) {
-    const fetta = voci.slice((n - 1) * PER_SITEMAP, n * PER_SITEMAP);
-    file.push({ loc: `${pub}/post-sitemap${n === 1 ? "" : n}.xml`, lastmod: ultimo(fetta) });
-  }
+  const [file, pagine, categorie, tag] = await Promise.all([fileArticoli(), tutteLePagine(), ultimaPerTermine("categorie"), ultimaPerTermine("tag")]);
+  const massimo = (m: Map<number, string>) => [...m.values()].sort().at(-1);
   return indice([
-    ...file,
-    { loc: `${pub}/page-sitemap.xml` },
-    { loc: `${pub}/category-sitemap.xml` },
-    { loc: `${pub}/post_tag-sitemap.xml` },
+    ...file.map((f, i) => ({ loc: `${pub}/post-sitemap${i === 0 ? "" : i + 1}.xml`, lastmod: ultimo(f) })),
+    { loc: `${pub}/page-sitemap.xml`, lastmod: pagine.map((p) => lastmod(p.modified_gmt ? `${p.modified_gmt}Z` : undefined)).filter(Boolean).sort().at(-1) },
+    { loc: `${pub}/category-sitemap.xml`, lastmod: massimo(categorie) },
+    { loc: `${pub}/post_tag-sitemap.xml`, lastmod: massimo(tag) },
     { loc: `${pub}/author-sitemap.xml` },
   ]);
 }

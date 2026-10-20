@@ -77,17 +77,10 @@ const DELLA_PAGINA = new Set(["CollectionPage", "ProfilePage", "ImageObject", "B
 /**
  * Lo schema di Yoast per la pagina N di un archivio, ricavato da quello della pagina 1 (sul CMS
  * headless `get_head` risponde 404 per /page/N/). Come fa Yoast oggi: cambiano solo i nodi della
- * pagina (indirizzo, @id di pagina, breadcrumb e immagine principale), il nome diventa il titolo
- * «Pagina N di M» e l'immagine e' quella del primo articolo della pagina. WebSite e Organization
- * restano uguali.
+ * pagina (indirizzo, @id di pagina, breadcrumb e immagine principale) e il nome diventa il titolo
+ * «Pagina N di M». WebSite e Organization restano uguali. L'immagine la mette conImmaginePrincipale.
  */
-export function schemaPaginato(
-  schema: unknown,
-  url1: string,
-  urlN: string,
-  nome: string,
-  immagine?: { url: string; larghezza?: number; altezza?: number; didascalia?: string },
-): unknown {
+export function schemaPaginato(schema: unknown, url1: string, urlN: string, nome: string): unknown {
   const grafo = (schema as { "@graph"?: Nodo[] } | undefined)?.["@graph"];
   if (!Array.isArray(grafo)) return schema;
   const nuovi = grafo.map((n) => {
@@ -96,20 +89,47 @@ export function schemaPaginato(
     let s = JSON.stringify(n).split(`"${url1}"`).join(`"${urlN}"`);
     for (const frammento of ["#primaryimage", "#breadcrumb"]) s = s.split(`"${url1}${frammento}"`).join(`"${urlN}${frammento}"`);
     const nodo = JSON.parse(s) as Nodo;
-    if (tipi.includes("CollectionPage") || tipi.includes("ProfilePage")) {
-      nodo.name = nome;
-      if (immagine && nodo.thumbnailUrl) nodo.thumbnailUrl = immagine.url;
-    }
-    if (tipi.includes("ImageObject") && immagine) {
-      nodo.url = immagine.url;
-      nodo.contentUrl = immagine.url;
-      if (immagine.larghezza) nodo.width = immagine.larghezza;
-      if (immagine.altezza) nodo.height = immagine.altezza;
-      if (immagine.didascalia) nodo.caption = immagine.didascalia;
-    }
+    if (tipi.includes("CollectionPage") || tipi.includes("ProfilePage")) nodo.name = nome;
     return nodo;
   });
   return { ...(schema as Nodo), "@graph": nuovi };
+}
+
+export type ImmagineSchema = { url: string; larghezza?: number; altezza?: number; didascalia?: string };
+
+/**
+ * L'immagine principale di un archivio (categoria, tag, autore), come la scrive Yoast oggi: l'immagine
+ * in evidenza del primo articolo della pagina, originale, con didascalia (o testo alternativo). Sul
+ * CMS headless Yoast non la calcola negli archivi. Sostituisce quella che c'e' gia'.
+ */
+export function conImmaginePrincipale(schema: unknown, urlPagina: string, img: ImmagineSchema | undefined): unknown {
+  const grafo = (schema as { "@graph"?: Nodo[] } | undefined)?.["@graph"];
+  if (!Array.isArray(grafo) || !img) return schema;
+  const id = `${urlPagina}#primaryimage`;
+  const tipiDi = (n: Nodo) => ([] as unknown[]).concat(n["@type"]).map(String);
+  const senza = grafo.filter((n) => !tipiDi(n).includes("ImageObject"));
+  const i = senza.findIndex((n) => tipiDi(n).some((t) => t === "CollectionPage" || t === "ProfilePage"));
+  if (i < 0) return schema;
+  const { breadcrumb, inLanguage, ...resto } = senza[i];
+  const pagina: Nodo = {
+    ...resto,
+    primaryImageOfPage: { "@id": id },
+    image: { "@id": id },
+    thumbnailUrl: img.url,
+    ...(breadcrumb ? { breadcrumb } : {}),
+    ...(inLanguage ? { inLanguage } : {}),
+  };
+  const immagine: Nodo = {
+    "@type": "ImageObject",
+    inLanguage: "it-IT",
+    "@id": id,
+    url: img.url,
+    contentUrl: img.url,
+    ...(img.larghezza ? { width: img.larghezza } : {}),
+    ...(img.altezza ? { height: img.altezza } : {}),
+    ...(img.didascalia ? { caption: img.didascalia } : {}),
+  };
+  return { ...(schema as Nodo), "@graph": [...senza.slice(0, i), pagina, immagine, ...senza.slice(i + 1)] };
 }
 
 /**

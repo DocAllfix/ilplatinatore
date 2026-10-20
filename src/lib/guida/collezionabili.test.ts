@@ -93,6 +93,13 @@ describe("articoli-elenco (piano 07)", () => {
     expect(corpo).not.toContain("TR51");
     expect(corpo).toContain("<th>Nome</th>");
   });
+  it("una tabella con una colonna non riconosciuta resta nel testo com'e' (niente perdite)", () => {
+    const html =
+      "<table><thead><tr><td><strong>Elemento di Gioco</strong></td><td><strong>Cosa succede dopo aver usato il Manufatto</strong></td></tr></thead><tbody><tr><td>Punti Abilità (SP)</td><td>Vengono rimborsati al 100%.</td></tr></tbody></table>";
+    const { righe, corpo } = estraiTabelleOggetti(html);
+    expect(righe).toEqual([]);
+    expect(corpo).toBe(html);
+  });
   it("una tabella «Trofeo» non e' una lista di oggetti", () => {
     expect(estraiTabelleOggetti("<table><tr><th>Trofeo</th></tr><tr><td>x</td></tr></table>").righe).toEqual([]);
   });

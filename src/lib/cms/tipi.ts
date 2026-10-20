@@ -25,7 +25,7 @@ export type Articolo = {
   meta?: Record<string, unknown>;
 };
 
-export type Immagine = { src: string; srcset?: string; larghezza?: number; altezza?: number; alt: string };
+export type Immagine = { src: string; srcset?: string; larghezza?: number; altezza?: number; alt: string; didascalia?: string };
 
 /** Voce leggera per elenchi, sitemap e generateStaticParams. */
 export type VoceArticolo = {
@@ -35,6 +35,9 @@ export type VoceArticolo = {
   titolo: string;
   data: string;
   modificato?: string;
+  /** id di categorie e tag: per la data delle sitemap dei termini */
+  categorie?: number[];
+  tag?: number[];
 };
 
 export type Seo = {
@@ -46,6 +49,8 @@ export type Seo = {
   ogType?: string;
   ogImage?: { url: string; width?: number; height?: number };
   ogSiteName?: string;
+  /** og:url, se diverso dal canonical (pagine N degli archivi: Yoast lascia la pagina 1) */
+  ogUrl?: string;
   twitterCard?: string;
   publishedTime?: string;
   modifiedTime?: string;
@@ -58,6 +63,7 @@ export type Seo = {
 export type MediaWP = {
   source_url?: string;
   alt_text?: string;
+  caption?: { rendered?: string };
   media_details?: {
     width?: number;
     height?: number;
@@ -72,6 +78,8 @@ export type PostWP = {
   slug: string;
   /** data LOCALE, senza fuso: e' quella che finisce nell'indirizzo */
   date: string;
+  categories?: number[];
+  tags?: number[];
   date_gmt?: string;
   modified_gmt?: string;
   link?: string;

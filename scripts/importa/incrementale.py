@@ -230,6 +230,10 @@ def main():
                 diff = [d for d in differenze(a, lato_h[i]) if d != "meta:_yoast_wpseo_estimated-reading-time-minutes"]
                 if diff:
                     piano.append(("aggiorna", a, diff))
+                elif a["modifica_gmt"] != lato_h[i]["modifica_gmt"] and a["stato"] == "publish":
+                    # stesso contenuto, data diversa: i campi del prototipo (pl_*) compilati sul CMS di
+                    # lavoro hanno spostato la data; si riallinea solo quella (sitemap, article:modified_time)
+                    piano.append(("aggiorna", {**a, "solo_data": True}, ["solo la data di modifica"]))
         solo_cms += [(tipo, i, h["slug"], h["stato"]) for i, h in lato_h.items() if i not in lato_a]
         print(f"    {risorsa}: Aruba {len(lato_a)}, CMS {len(lato_h)}")
     crea = [a for azione, a, _ in piano if azione == "crea"]

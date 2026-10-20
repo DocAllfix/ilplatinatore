@@ -3,7 +3,7 @@ import { noindex } from "./config";
 import { decodificaEntita, percorsoArticolo } from "./mappa";
 import { numeroPagina } from "./pagina";
 import { sanificaHtml } from "./sanitize";
-import { jsonLd, riportaInProfondita, riportaSuPubblico, schemaPaginato } from "./seo";
+import { conImmaginePrincipale, jsonLd, riportaInProfondita, riportaSuPubblico, schemaPaginato } from "./seo";
 
 const CMS = "https://cms.ilplatinatore.it";
 const PUB = "https://www.ilplatinatore.it";
@@ -146,11 +146,11 @@ describe("schema delle pagine N degli archivi", () => {
 
   it("cambia solo i nodi della pagina, come Yoast", () => {
     const uN = `${u1}page/2/`;
-    const g = (schemaPaginato(pagina1, u1, uN, "Guide Archivi - Pagina 2 di 166 - 🎮 Il Platinatore", { url: `${S}/wp-content/uploads/b.jpg` }) as typeof pagina1)["@graph"] as Array<Record<string, unknown>>;
-    expect(g[0]).toMatchObject({ "@id": uN, url: uN, name: "Guide Archivi - Pagina 2 di 166 - 🎮 Il Platinatore", thumbnailUrl: `${S}/wp-content/uploads/b.jpg` });
+    const g = (schemaPaginato(pagina1, u1, uN, "Guide Archivi - Pagina 2 di 166 - 🎮 Il Platinatore") as typeof pagina1)["@graph"] as Array<Record<string, unknown>>;
+    expect(g[0]).toMatchObject({ "@id": uN, url: uN, name: "Guide Archivi - Pagina 2 di 166 - 🎮 Il Platinatore" });
     expect(g[0].isPartOf).toEqual({ "@id": `${S}/#website` });
     expect(g[0].breadcrumb).toEqual({ "@id": `${uN}#breadcrumb` });
-    expect(g[1]).toMatchObject({ "@id": `${uN}#primaryimage`, url: `${S}/wp-content/uploads/b.jpg` });
+    expect(g[1]).toMatchObject({ "@id": `${uN}#primaryimage` });
     expect(g[2]["@id"]).toBe(`${uN}#breadcrumb`);
     expect(g[3]).toEqual(pagina1["@graph"][3]);
   });
@@ -160,5 +160,17 @@ describe("schema delle pagine N degli archivi", () => {
     const g = (schemaPaginato(home, `${S}/`, `${S}/page/2/`, "x") as typeof home)["@graph"];
     expect(g[0]).toMatchObject({ "@id": `${S}/page/2/`, url: `${S}/page/2/`, isPartOf: { "@id": `${S}/#website` } });
     expect(g[1]).toEqual(home["@graph"][1]);
+  });
+
+  it("aggiunge l'immagine principale dell'archivio come Yoast, una volta sola", () => {
+    const senza = { "@graph": [{ "@type": "CollectionPage", "@id": u1, url: u1, breadcrumb: { "@id": `${u1}#breadcrumb` }, inLanguage: "it-IT" }, { "@type": "WebSite" }] };
+    const img = { url: `${S}/wp-content/uploads/x.jpg`, larghezza: 1536, altezza: 864, didascalia: "Didascalia" };
+    const g = (conImmaginePrincipale(senza, u1, img) as typeof senza)["@graph"] as Array<Record<string, unknown>>;
+    expect(g.map((n) => n["@type"])).toEqual(["CollectionPage", "ImageObject", "WebSite"]);
+    expect(Object.keys(g[0])).toEqual(["@type", "@id", "url", "primaryImageOfPage", "image", "thumbnailUrl", "breadcrumb", "inLanguage"]);
+    expect(g[1]).toEqual({ "@type": "ImageObject", inLanguage: "it-IT", "@id": `${u1}#primaryimage`, url: img.url, contentUrl: img.url, width: 1536, height: 864, caption: "Didascalia" });
+    const due = (conImmaginePrincipale(conImmaginePrincipale(senza, u1, img), u1, img) as typeof senza)["@graph"];
+    expect(due.filter((n) => n["@type"] === "ImageObject")).toHaveLength(1);
+    expect(conImmaginePrincipale(senza, u1, undefined)).toBe(senza);
   });
 });

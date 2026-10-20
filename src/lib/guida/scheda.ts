@@ -75,19 +75,24 @@ export function soloOre(valore: string): { ore: string; resto?: string } {
 export function schedaDaVoci(voci: VoceScheda[]): Scheda {
   const s: Scheda = { altre: [] };
   const trofei: NonNullable<Scheda["trofei"]> = {};
+  // le spiegazioni tolte dal blocco (difficolta' e durata) finiscono nella nota: nulla si perde
+  const note: string[] = [];
   for (const v of voci) {
     const e = v.etichetta.toLowerCase();
     if (e === "requisito" || e === "dettaglio") continue; // intestazione
     if (e.startsWith("difficoltà stimata") || e === "difficoltà") {
       const m = v.valore.match(/(\d+(?:[.,]\d+)?)\s*\/\s*(\d+)/);
-      if (m) s.difficolta = { voto: Number(m[1].replace(",", ".")), massimo: Number(m[2]) };
-      else s.altre.push(v);
+      if (m) {
+        s.difficolta = { voto: Number(m[1].replace(",", ".")), massimo: Number(m[2]) };
+        const resto = v.valore.replace(m[0], "").trim().replace(/^[(\s–-]+|[)\s]+$/g, "").trim();
+        if (resto) note.push(resto.charAt(0).toUpperCase() + resto.slice(1));
+      } else s.altre.push(v);
     } else if (/^(tempo|durata)/.test(e)) {
       // Nel blocco giallo solo le ore (richiesta del proprietario, 18/10/2026): «60-80 ore (A seconda
       // della fortuna...)» diventa «60-80 ore», e la spiegazione passa nella nota sotto la scheda.
       const ore = soloOre(v.valore);
       s.tempo = ore.ore;
-      if (ore.resto && !s.nota) s.nota = ore.resto;
+      if (ore.resto) note.push(ore.resto);
     }
     else if (e.startsWith("partite")) s.partite = v.valore;
     else if (e.includes("mancabil")) {
@@ -103,6 +108,7 @@ export function schedaDaVoci(voci: VoceScheda[]): Scheda {
     else s.altre.push(v);
   }
   if (Object.keys(trofei).length) s.trofei = trofei;
+  if (note.length && !s.nota) s.nota = note.map((n) => (/[.!?]$/.test(n) ? n : `${n}.`)).join(" ");
   return s;
 }
 

@@ -17,7 +17,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/page/[n]">): Promise<Metadata> {
   const pagina = numeroPagina((await params).n) ?? 1;
   const r = await paginaArticoli({ pagina });
-  return metadatiDaSeo(seoPaginata(await seoHome(), pagina, r?.pagine ?? 1, r?.articoli[0]));
+  return metadatiDaSeo(seoPaginata(await seoHome(), pagina, r?.pagine ?? 1, { ogTitoloFisso: true }));
 }
 
 export default async function PaginaHome({ params }: PageProps<"/page/[n]">) {
@@ -27,7 +27,7 @@ export default async function PaginaHome({ params }: PageProps<"/page/[n]">) {
   if (pagina === 1) permanentRedirect("/");
   const r = await paginaArticoli({ pagina });
   if (!r) notFound();
-  const seo = seoPaginata(await seoHome(), pagina, r.pagine, r.articoli[0]);
+  const seo = seoPaginata(await seoHome(), pagina, r.pagine, { ogTitoloFisso: true });
   return (
     <>
       <SchemaYoast schema={seo.schema} />
