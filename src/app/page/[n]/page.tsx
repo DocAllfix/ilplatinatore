@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { PaginaArchivio } from "@/components/archivio";
+import { SchemaYoast } from "@/components/schema-yoast";
 import { metadatiDaSeo, seoPaginata } from "@/lib/cms/metadati";
 import { numeroPagina } from "@/lib/cms/pagina";
 import { paginaArticoli, seoHome } from "@/lib/cms/wp";
@@ -16,7 +17,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/page/[n]">): Promise<Metadata> {
   const pagina = numeroPagina((await params).n) ?? 1;
   const r = await paginaArticoli({ pagina });
-  return metadatiDaSeo(seoPaginata(await seoHome(), pagina, r?.pagine ?? 1));
+  return metadatiDaSeo(seoPaginata(await seoHome(), pagina, r?.pagine ?? 1, r?.articoli[0]));
 }
 
 export default async function PaginaHome({ params }: PageProps<"/page/[n]">) {
@@ -26,5 +27,11 @@ export default async function PaginaHome({ params }: PageProps<"/page/[n]">) {
   if (pagina === 1) permanentRedirect("/");
   const r = await paginaArticoli({ pagina });
   if (!r) notFound();
-  return <PaginaArchivio titolo="Ultimi articoli" articoli={r.articoli} base="/" pagina={pagina} pagine={r.pagine} />;
+  const seo = seoPaginata(await seoHome(), pagina, r.pagine, r.articoli[0]);
+  return (
+    <>
+      <SchemaYoast schema={seo.schema} />
+      <PaginaArchivio titolo="Ultimi articoli" articoli={r.articoli} base="/" pagina={pagina} pagine={r.pagine} />
+    </>
+  );
 }

@@ -71,6 +71,47 @@ export function seoDaYoast(
   };
 }
 
+type Nodo = Record<string, unknown>;
+const DELLA_PAGINA = new Set(["CollectionPage", "ProfilePage", "ImageObject", "BreadcrumbList"]);
+
+/**
+ * Lo schema di Yoast per la pagina N di un archivio, ricavato da quello della pagina 1 (sul CMS
+ * headless `get_head` risponde 404 per /page/N/). Come fa Yoast oggi: cambiano solo i nodi della
+ * pagina (indirizzo, @id di pagina, breadcrumb e immagine principale), il nome diventa il titolo
+ * «Pagina N di M» e l'immagine e' quella del primo articolo della pagina. WebSite e Organization
+ * restano uguali.
+ */
+export function schemaPaginato(
+  schema: unknown,
+  url1: string,
+  urlN: string,
+  nome: string,
+  immagine?: { url: string; larghezza?: number; altezza?: number; didascalia?: string },
+): unknown {
+  const grafo = (schema as { "@graph"?: Nodo[] } | undefined)?.["@graph"];
+  if (!Array.isArray(grafo)) return schema;
+  const nuovi = grafo.map((n) => {
+    const tipi = ([] as unknown[]).concat(n["@type"]).map(String);
+    if (!tipi.some((t) => DELLA_PAGINA.has(t))) return n;
+    let s = JSON.stringify(n).split(`"${url1}"`).join(`"${urlN}"`);
+    for (const frammento of ["#primaryimage", "#breadcrumb"]) s = s.split(`"${url1}${frammento}"`).join(`"${urlN}${frammento}"`);
+    const nodo = JSON.parse(s) as Nodo;
+    if (tipi.includes("CollectionPage") || tipi.includes("ProfilePage")) {
+      nodo.name = nome;
+      if (immagine && nodo.thumbnailUrl) nodo.thumbnailUrl = immagine.url;
+    }
+    if (tipi.includes("ImageObject") && immagine) {
+      nodo.url = immagine.url;
+      nodo.contentUrl = immagine.url;
+      if (immagine.larghezza) nodo.width = immagine.larghezza;
+      if (immagine.altezza) nodo.height = immagine.altezza;
+      if (immagine.didascalia) nodo.caption = immagine.didascalia;
+    }
+    return nodo;
+  });
+  return { ...(schema as Nodo), "@graph": nuovi };
+}
+
 /**
  * Serializza dati strutturati per <script type="application/ld+json">. JSON.stringify non scappa
  * `<`: un titolo con `</script>` chiuderebbe il tag. Si scappano anche `>` e U+2028/U+2029.

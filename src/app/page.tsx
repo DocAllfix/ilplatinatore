@@ -10,6 +10,7 @@ import { BottoneAcido } from "@/components/bottone-acido";
 import { Sezioni } from "@/components/home/sezioni";
 import { Hero, type VoceHero } from "@/components/home/hero";
 import { eNews } from "@/components/carta-articolo";
+import { SchemaYoast } from "@/components/schema-yoast";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { paginaArticoli, seoHome } from "@/lib/cms/wp";
 import { datiHome } from "@/lib/home-dati";
@@ -21,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-  const { hero, sezioni } = await datiHome(new Date());
+  const [{ hero, sezioni }, seo] = await Promise.all([datiHome(new Date()), seoHome()]);
   const voci: VoceHero[] = hero.map((a) => ({
     id: a.id,
     titolo: a.titolo,
@@ -33,12 +34,18 @@ export default async function Home() {
   if (!sezioni.length) {
     const r = await paginaArticoli({ pagina: 1 });
     if (!r) notFound();
-    return <PaginaArchivio titolo="Ultimi articoli" articoli={r.articoli} base="/" pagina={1} pagine={r.pagine} />;
+    return (
+      <>
+        <SchemaYoast schema={seo.schema} />
+        <PaginaArchivio titolo="Ultimi articoli" articoli={r.articoli} base="/" pagina={1} pagine={r.pagine} />
+      </>
+    );
   }
   return (
     // Piano 06 chiuso: locandine della B con una scheda grande ogni due sezioni; piano 07 chiuso:
     // indicatore delle file sfumato (scelte del proprietario)
     <>
+      <SchemaYoast schema={seo.schema} />
       <h1 className="sr-only">Il Platinatore: guide ai trofei, collezionabili e news sui videogiochi</h1>
       <Hero voci={voci} />
       <Sezioni sezioni={sezioni} riferimento={hero[0] ? new Date(hero[0].data).getTime() : 0} />

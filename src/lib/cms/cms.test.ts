@@ -3,7 +3,7 @@ import { noindex } from "./config";
 import { decodificaEntita, percorsoArticolo } from "./mappa";
 import { numeroPagina } from "./pagina";
 import { sanificaHtml } from "./sanitize";
-import { jsonLd, riportaInProfondita, riportaSuPubblico } from "./seo";
+import { jsonLd, riportaInProfondita, riportaSuPubblico, schemaPaginato } from "./seo";
 
 const CMS = "https://cms.ilplatinatore.it";
 const PUB = "https://www.ilplatinatore.it";
@@ -119,5 +119,46 @@ describe("conVersione", () => {
     expect(out).toContain(`a.avif${v} 1200w`);
     expect(out).toContain('doc.pdf"');
     expect(conVersione(out)).toBe(out);
+  });
+});
+
+describe("schema delle pagine N degli archivi", () => {
+  const S = "https://www.ilplatinatore.it";
+  const u1 = `${S}/category/guide/`;
+  const pagina1 = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": u1,
+        url: u1,
+        name: "Guide Archivi - 🎮 Il Platinatore",
+        isPartOf: { "@id": `${S}/#website` },
+        primaryImageOfPage: { "@id": `${u1}#primaryimage` },
+        breadcrumb: { "@id": `${u1}#breadcrumb` },
+        thumbnailUrl: `${S}/wp-content/uploads/a.jpg`,
+      },
+      { "@type": "ImageObject", "@id": `${u1}#primaryimage`, url: `${S}/wp-content/uploads/a.jpg`, contentUrl: `${S}/wp-content/uploads/a.jpg` },
+      { "@type": "BreadcrumbList", "@id": `${u1}#breadcrumb`, itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: `${S}/` }] },
+      { "@type": "WebSite", "@id": `${S}/#website`, url: `${S}/` },
+    ],
+  };
+
+  it("cambia solo i nodi della pagina, come Yoast", () => {
+    const uN = `${u1}page/2/`;
+    const g = (schemaPaginato(pagina1, u1, uN, "Guide Archivi - Pagina 2 di 166 - 🎮 Il Platinatore", { url: `${S}/wp-content/uploads/b.jpg` }) as typeof pagina1)["@graph"] as Array<Record<string, unknown>>;
+    expect(g[0]).toMatchObject({ "@id": uN, url: uN, name: "Guide Archivi - Pagina 2 di 166 - 🎮 Il Platinatore", thumbnailUrl: `${S}/wp-content/uploads/b.jpg` });
+    expect(g[0].isPartOf).toEqual({ "@id": `${S}/#website` });
+    expect(g[0].breadcrumb).toEqual({ "@id": `${uN}#breadcrumb` });
+    expect(g[1]).toMatchObject({ "@id": `${uN}#primaryimage`, url: `${S}/wp-content/uploads/b.jpg` });
+    expect(g[2]["@id"]).toBe(`${uN}#breadcrumb`);
+    expect(g[3]).toEqual(pagina1["@graph"][3]);
+  });
+
+  it("nella home non tocca il sito ne' l'organizzazione", () => {
+    const home = { "@graph": [{ "@type": "CollectionPage", "@id": `${S}/`, url: `${S}/`, isPartOf: { "@id": `${S}/#website` } }, { "@type": "WebSite", "@id": `${S}/#website`, url: `${S}/` }] };
+    const g = (schemaPaginato(home, `${S}/`, `${S}/page/2/`, "x") as typeof home)["@graph"];
+    expect(g[0]).toMatchObject({ "@id": `${S}/page/2/`, url: `${S}/page/2/`, isPartOf: { "@id": `${S}/#website` } });
+    expect(g[1]).toEqual(home["@graph"][1]);
   });
 });

@@ -4,7 +4,7 @@
 import type { Metadata } from "next";
 import { LaSfida } from "@/components/sfida/sfida";
 import { sitoPubblico } from "@/lib/cms/config";
-import { robots } from "@/lib/cms/metadati";
+import { robotsConDopo } from "@/lib/cms/metadati";
 import { giornoRoma } from "@/lib/sfida";
 import { datiSfida } from "@/lib/sfida-dati";
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: { absolute: "La sfida del giorno: riconosci il gioco - 🎮 Il Platinatore" },
   description: "Ogni giorno una sfida nuova: riconosci il gioco dall'immagine, indovina il trofeo o il classico dagli indizi. Cinque tentativi, soluzione sempre in chiaro.",
   alternates: { canonical: `${sitoPubblico().replace(/\/$/, "")}/sfida/` },
-  robots: robots(true),
+  ...robotsConDopo(true),
 };
 
 export default async function PaginaSfida() {

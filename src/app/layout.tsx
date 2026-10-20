@@ -8,7 +8,7 @@ import { INTERSTITIAL, MAGIC_LEFT } from "@/lib/annunci";
 import { Jost } from "next/font/google";
 import Link from "@/components/collegamento";
 import "./globals.css";
-import { robots } from "@/lib/cms/metadati";
+import { robotsConDopo } from "@/lib/cms/metadati";
 
 // Nessuna pagina pubblica legge la richiesta (headers, cookies): renderebbe dinamico tutto il sito,
 // e il primo articolo pubblicato dopo il build risponderebbe 500 (trappola del riferimento).
@@ -18,7 +18,7 @@ import { robots } from "@/lib/cms/metadati";
 const jost = Jost({ subsets: ["latin", "latin-ext"], variable: "--font-jost", display: "swap" });
 
 export const metadata: Metadata = {
-  robots: robots(),
+  ...robotsConDopo(),
 };
 
 export const viewport: Viewport = {

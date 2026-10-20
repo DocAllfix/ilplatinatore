@@ -5,10 +5,12 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { GrigliaArticoli, PaginaArchivio, Paginazione } from "./archivio";
 import { SchedaGioco } from "./gioco/scheda-gioco";
+import { SchemaYoast } from "./schema-yoast";
 import { descrizioneTag, schedaDaDescrizione } from "@/lib/scheda-gioco";
 import { metadatiDaSeo, seoPaginata } from "@/lib/cms/metadati";
 import { numeroPagina } from "@/lib/cms/pagina";
 import { paginaArticoli, seoTermine, terminePerSlug, tuttiGliAutori } from "@/lib/cms/wp";
+import type { Seo } from "@/lib/cms/tipi";
 
 export type Tipo = "category" | "tag" | "author";
 
@@ -29,20 +31,30 @@ function base(tipo: Tipo, slug: string) {
   return `/${tipo}/${slug}/`;
 }
 
-export async function metadatiTermine(tipo: Tipo, slug: string, n?: string): Promise<Metadata> {
+function filtroDi(tipo: Tipo, id?: number) {
+  return tipo === "category" ? { categoria: id } : tipo === "tag" ? { tag: id } : { autore: id };
+}
+
+/** Yoast della pagina 1 (allegato alla REST del termine), ricalcolato per la pagina N come fa Yoast. */
+async function seoArchivio(tipo: Tipo, slug: string, pagina: number): Promise<Seo | null> {
   const seo = await seoTermine(tipo, slug);
-  if (!seo) return {};
+  if (!seo || pagina === 1) return seo;
+  const t = await termine(tipo, slug);
+  const r = await paginaArticoli({ pagina, ...filtroDi(tipo, t?.id) });
+  return seoPaginata(seo, pagina, r?.pagine ?? 1, r?.articoli[0]);
+}
+
+export async function metadatiTermine(tipo: Tipo, slug: string, n?: string): Promise<Metadata> {
   const pagina = n === undefined ? 1 : (numeroPagina(n) ?? 1);
+  const seo = await seoArchivio(tipo, slug, pagina);
+  if (!seo) return {};
   const t = await termine(tipo, slug);
   // tag: la descrizione contiene le righe della scheda del gioco, non un testo per Google (piano 07)
   if (tipo === "tag" && t) {
     const d = descrizioneTag(t.nome, schedaDaDescrizione(t.descrizione));
     Object.assign(seo, { description: d, ogDescription: d });
   }
-  if (pagina === 1) return metadatiDaSeo(seo);
-  const filtro = tipo === "category" ? { categoria: t?.id } : tipo === "tag" ? { tag: t?.id } : { autore: t?.id };
-  const r = await paginaArticoli({ pagina, ...filtro });
-  return metadatiDaSeo(seoPaginata(seo, pagina, r?.pagine ?? 1));
+  return metadatiDaSeo(seo);
 }
 
 export async function ArchivioTermine({ tipo, slug, n }: { tipo: Tipo; slug: string; n?: string }) {
@@ -52,8 +64,9 @@ export async function ArchivioTermine({ tipo, slug, n }: { tipo: Tipo; slug: str
 
   const t = await termine(tipo, slug);
   if (!t) notFound();
-  const filtro = tipo === "category" ? { categoria: t.id } : tipo === "tag" ? { tag: t.id } : { autore: t.id };
-  const r = await paginaArticoli({ pagina, ...filtro });
+  const filtro = filtroDi(tipo, t.id);
+  const [r, seo] = await Promise.all([paginaArticoli({ pagina, ...filtro }), seoArchivio(tipo, slug, pagina)]);
+  const schema = <SchemaYoast schema={seo?.schema} />;
   // un tag senza articoli esiste (oggi risponde 200 con l'archivio vuoto): si mostra vuoto
   if (!r && pagina > 1) notFound();
   const scheda = tipo === "tag" ? schedaDaDescrizione(t.descrizione) : null;
@@ -61,6 +74,7 @@ export async function ArchivioTermine({ tipo, slug, n }: { tipo: Tipo; slug: str
     // la pagina di un gioco (piano 07): prima la scheda, poi tutti gli articoli a schede
     return (
       <>
+        {schema}
         <SchedaGioco nome={t.nome} slug={slug} dati={scheda} grande />
         <h2 className="mt-10 text-[1.375rem] font-bold leading-tight">Tutti gli articoli su {t.nome}</h2>
         <div className="mt-4">
@@ -71,14 +85,17 @@ export async function ArchivioTermine({ tipo, slug, n }: { tipo: Tipo; slug: str
     );
   }
   return (
-    <PaginaArchivio
-      titolo={t.nome}
-      // la descrizione dei tag diventa la scheda del gioco (piano 07): mai mostrata cosi' com'e'
-      descrizione={tipo === "category" ? t.descrizione : undefined}
-      articoli={r?.articoli ?? []}
-      base={base(tipo, slug)}
-      pagina={pagina}
-      pagine={r?.pagine ?? 1}
-    />
+    <>
+      {schema}
+      <PaginaArchivio
+        titolo={t.nome}
+        // la descrizione dei tag diventa la scheda del gioco (piano 07): mai mostrata cosi' com'e'
+        descrizione={tipo === "category" ? t.descrizione : undefined}
+        articoli={r?.articoli ?? []}
+        base={base(tipo, slug)}
+        pagina={pagina}
+        pagine={r?.pagine ?? 1}
+      />
+    </>
   );
 }

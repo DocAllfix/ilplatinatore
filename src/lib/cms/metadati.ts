@@ -6,7 +6,9 @@
 
 import type { Metadata } from "next";
 import { noindex } from "./config";
-import type { Seo } from "./tipi";
+import { decodificaEntita } from "./mappa";
+import { schemaPaginato } from "./seo";
+import type { Articolo, Seo } from "./tipi";
 
 const ROBOTS_OGGI: Metadata["robots"] = {
   index: true,
@@ -22,6 +24,16 @@ export function robots(indicizzabile = true): Metadata["robots"] {
 }
 
 /**
+ * robots della pagina, piu' (solo sull'anteprima in noindex) quello che dira' dopo il passaggio,
+ * nella stessa forma di Yoast: lo confronta il controllo di parita' (scripts/qa/parita.py).
+ */
+export function robotsConDopo(indicizzabile = true): Pick<Metadata, "robots" | "other"> {
+  if (!noindex()) return { robots: robots(indicizzabile) };
+  const dopo = indicizzabile ? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" : "noindex, follow";
+  return { robots: robots(indicizzabile), other: { "platinatore-robots-dopo": dopo } };
+}
+
+/**
  * Il titolo di una pagina d'archivio successiva alla prima, con la regola di Yoast di oggi:
  * « - Pagina N di M» prima dell'ultimo « -», oppure in fondo se non c'e'.
  *   «🎮 Il Platinatore -»                       → «🎮 Il Platinatore - Pagina 2 di 175 -»
@@ -34,29 +46,46 @@ export function titoloPaginato(titolo: string, n: number, totale: number): strin
   return i === -1 ? `${titolo}${inserto}` : `${titolo.slice(0, i)}${inserto}${titolo.slice(i)}`;
 }
 
-/** La stessa Seo per la pagina N di un archivio: titolo e canonical della pagina stessa. */
-export function seoPaginata(seo: Seo, n: number, totale: number): Seo {
+/**
+ * La stessa Seo per la pagina N di un archivio: titolo, canonical e schema della pagina stessa.
+ * `primo` e' il primo articolo della pagina: la sua immagine e' l'immagine principale nello schema.
+ */
+export function seoPaginata(seo: Seo, n: number, totale: number, primo?: Articolo): Seo {
   if (n <= 1) return seo;
   const titolo = seo.title ? titoloPaginato(seo.title, n, totale) : undefined;
+  const canonical = `${seo.canonical}page/${n}/`;
+  const img = primo?.immagine;
   return {
     ...seo,
     title: titolo,
     ogTitle: seo.ogTitle ? titoloPaginato(seo.ogTitle, n, totale) : titolo,
-    canonical: `${seo.canonical}page/${n}/`,
+    canonical,
+    schema: seo.schema && seo.canonical
+      ? schemaPaginato(seo.schema, seo.canonical, canonical, titolo ?? "", img && {
+          url: img.src.replace(/\?.*$/, ""),
+          larghezza: img.larghezza,
+          altezza: img.altezza,
+          didascalia: img.alt || undefined,
+        })
+      : seo.schema,
   };
 }
 
+// Yoast passa i testi con le entita' di HTML («SMG &amp; Pump»); Next le scrive a sua volta: senza
+// decodificarle qui, la pagina mostrerebbe «&amp;» (trovato dalla parita' il 20/10/2026).
+const t = (s: string | undefined) => (s === undefined ? undefined : decodificaEntita(s));
+
 export function metadatiDaSeo(seo: Seo, opts: { titoloRiserva?: string; indicizzabile?: boolean } = {}): Metadata {
   return {
-    title: { absolute: seo.title ?? opts.titoloRiserva ?? "" },
-    description: seo.description,
+    title: { absolute: t(seo.title) ?? opts.titoloRiserva ?? "" },
+    description: t(seo.description),
     alternates: { canonical: seo.canonical },
-    robots: robots(opts.indicizzabile ?? true),
+    ...robotsConDopo(opts.indicizzabile ?? true),
     openGraph: {
-      title: seo.ogTitle ?? seo.title,
-      description: seo.ogDescription ?? seo.description,
+      title: t(seo.ogTitle ?? seo.title),
+      description: t(seo.ogDescription ?? seo.description),
       url: seo.canonical,
-      siteName: seo.ogSiteName,
+      siteName: t(seo.ogSiteName),
       locale: "it_IT",
       type: seo.ogType === "article" ? "article" : "website",
       ...(seo.publishedTime ? { publishedTime: seo.publishedTime } : {}),

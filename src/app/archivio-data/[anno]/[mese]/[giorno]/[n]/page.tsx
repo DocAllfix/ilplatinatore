@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PaginaArchivio } from "@/components/archivio";
 import { periodo } from "@/lib/archivio-data";
-import { robots, titoloPaginato } from "@/lib/cms/metadati";
+import { robotsConDopo, titoloPaginato } from "@/lib/cms/metadati";
 import { sitoPubblico } from "@/lib/cms/config";
 import { paginaArticoli } from "@/lib/cms/wp";
 
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Parametri): Promise<Metadata>
   const url = `${sitoPubblico()}${per.base}${pagina > 1 ? `page/${pagina}/` : ""}`;
   return {
     title: { absolute: titolo },
-    robots: robots(false),
+    ...robotsConDopo(false),
     openGraph: { title: titolo, url, siteName: "🎮 Il Platinatore", locale: "it_IT", type: "website" },
   };
 }

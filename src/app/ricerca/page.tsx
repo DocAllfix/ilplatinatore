@@ -4,13 +4,21 @@
 
 import type { Metadata } from "next";
 import { PaginaArchivio } from "@/components/archivio";
+import { robotsConDopo } from "@/lib/cms/metadati";
 import { paginaArticoli } from "@/lib/cms/wp";
 
-export const metadata: Metadata = { title: "Ricerca", robots: { index: false, follow: true } };
+function termineDa(q: string | string[] | undefined): string {
+  return (Array.isArray(q) ? q[0] : q)?.trim().slice(0, 100) ?? "";
+}
+
+// il titolo di Yoast di oggi: «Hai cercato <termine> - 🎮 Il Platinatore»
+export async function generateMetadata({ searchParams }: PageProps<"/ricerca">): Promise<Metadata> {
+  const termine = termineDa((await searchParams).s);
+  return { title: { absolute: `Hai cercato ${termine} - 🎮 Il Platinatore` }, ...robotsConDopo(false) };
+}
 
 export default async function Ricerca({ searchParams }: PageProps<"/ricerca">) {
-  const q = (await searchParams).s;
-  const termine = (Array.isArray(q) ? q[0] : q)?.trim().slice(0, 100) ?? "";
+  const termine = termineDa((await searchParams).s);
   const r = termine ? await paginaArticoli({ pagina: 1, ricerca: termine }) : null;
   return (
     <PaginaArchivio

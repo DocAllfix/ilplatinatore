@@ -283,10 +283,15 @@ export async function tutteLePagine(): Promise<PaginaWP[]> {
  * (Per gli archivi quella rotta risponde «pagina non trovata»: li prendiamo dai termini.)
  */
 export async function seoHome(): Promise<Seo> {
+  return seoPerPercorso("/");
+}
+
+/** Metadati di Yoast per un indirizzo del sito che `get_head` conosce (sul CMS headless non le pagine N). */
+async function seoPerPercorso(percorso: string): Promise<Seo> {
   const r = await chiamata<{ json?: Record<string, unknown> }>(
-    `/yoast/v1/get_head?url=${encodeURIComponent(`${cmsUrlContenuti()}/`)}`,
+    `/yoast/v1/get_head?url=${encodeURIComponent(`${cmsUrlContenuti()}${percorso}`)}`,
   );
-  return seoDaYoast(r?.dati?.json, { percorso: "/", ...ctx() });
+  return seoDaYoast(r?.dati?.json, { percorso, ...ctx() });
 }
 
 /** Metadati di un archivio di categoria, tag o autore: Yoast li allega gia' alla REST. */

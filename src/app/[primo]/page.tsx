@@ -4,6 +4,7 @@
 
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
+import { SchemaYoast } from "@/components/schema-yoast";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { decodificaEntita } from "@/lib/cms/mappa";
 import { riportaSuPubblico } from "@/lib/cms/seo";
@@ -36,10 +37,11 @@ export async function generateMetadata({ params }: PageProps<"/[primo]">): Promi
 }
 
 export default async function PaginaStatica({ params }: PageProps<"/[primo]">) {
-  const { pagina } = await risolvi((await params).primo);
+  const { pagina, seo } = await risolvi((await params).primo);
   const html = sanificaHtml(riportaSuPubblico(pagina.content?.rendered ?? "", cmsUrlContenuti(), sitoPubblico()));
   return (
     <article>
+      <SchemaYoast schema={seo.schema} />
       <h1 className="text-3xl font-bold">{decodificaEntita(pagina.title?.rendered)}</h1>
       <div className="contenuto mt-6" dangerouslySetInnerHTML={{ __html: html }} />
     </article>
