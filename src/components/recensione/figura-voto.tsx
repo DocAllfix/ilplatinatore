@@ -11,8 +11,8 @@ const FONDO = { alta: "bg-azione", media: "bg-ciano", bassa: "bg-viola" } as con
 const TESTO = { alta: "text-su-azione", media: "text-notte", bassa: "text-su-viola" } as const;
 
 const MISURE = {
-  grande: { box: "size-[5.5rem]", numero: "text-[2rem]", scala: "text-[0.6875rem]" },
-  piccola: { box: "size-12", numero: "text-[1.0625rem]", scala: "hidden" },
+  grande: { box: "size-[5.5rem]", numero: "text-[2rem]", rombo: "text-[1.625rem]", scala: "text-[0.6875rem]" },
+  piccola: { box: "size-12", numero: "text-[1.0625rem]", rombo: "text-[0.9375rem]", scala: "hidden" },
 } as const;
 
 export function FiguraVoto({ voto, forma = "a", misura = "grande" }: { voto: Voto; forma?: Forma; misura?: keyof typeof MISURE }) {
@@ -21,7 +21,8 @@ export function FiguraVoto({ voto, forma = "a", misura = "grande" }: { voto: Vot
   const colore = `${FONDO[f]} ${TESTO[f]}`;
   const numero = (
     <span className="flex flex-col items-center leading-none">
-      <span className={`cifre font-bold tracking-[-0.02em] ${m.numero}`}>{votoTesto(voto.valore)}</span>
+      {/* nel rombo lo spazio utile e' piu' stretto: il numero e' un po' piu' piccolo */}
+      <span className={`cifre font-bold tracking-[-0.02em] ${forma === "c" ? m.rombo : m.numero}`}>{votoTesto(voto.valore)}</span>
       <span className={`mt-0.5 font-semibold opacity-75 ${m.scala}`}>su {votoTesto(voto.scala)}</span>
     </span>
   );

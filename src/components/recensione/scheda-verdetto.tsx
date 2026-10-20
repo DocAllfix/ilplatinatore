@@ -4,7 +4,7 @@
 
 import { ArrowRightIcon } from "@phosphor-icons/react/ssr";
 import Link from "@/components/collegamento";
-import { fascia, votoTesto, type Voto } from "@/lib/recensione";
+import { fascia, type Voto } from "@/lib/recensione";
 import { FiguraVoto, type Forma } from "./figura-voto";
 
 const BARRA = { alta: "bg-azione", media: "bg-ciano", bassa: "bg-viola" } as const;
@@ -37,17 +37,13 @@ export function SchedaVerdetto({
           ))}
           <p className="sm:hidden">
             <span className="block text-xs font-semibold uppercase tracking-[0.06em] text-tenue">{titolo}</span>
-            <span className="cifre block text-lg font-bold leading-tight">
-              {votoTesto(voto.valore)} su {votoTesto(voto.scala)}
-            </span>
+            {gioco && <span className="block text-lg font-bold leading-tight text-balance">{gioco.nome}</span>}
           </p>
         </div>
         <div className="min-w-0">
           <p className="hidden sm:block">
             <span className="block text-xs font-semibold uppercase tracking-[0.06em] text-tenue">{titolo}</span>
-            <span className="cifre block text-lg font-bold leading-tight">
-              {votoTesto(voto.valore)} su {votoTesto(voto.scala)}
-            </span>
+            {gioco && <span className="block text-lg font-bold leading-tight text-balance">{gioco.nome}</span>}
           </p>
           <div className="contenuto mt-2 [&>p:last-child]:mb-0" dangerouslySetInnerHTML={{ __html: verdetto }} />
         </div>
@@ -59,7 +55,7 @@ export function SchedaVerdetto({
           data-misura="verdetto_hub"
           className="flex min-h-12 items-center justify-between gap-3 border-t border-linea py-3 pl-6 pr-5 font-semibold text-link transition-colors [@media(hover:hover)]:hover:bg-superficie-alta"
         >
-          <span className="min-w-0">Tutte le guide di {gioco.nome}: trofei, collezionabili e consigli</span>
+          <span className="min-w-0">Tutte le guide di {gioco.nome}</span>
           <ArrowRightIcon weight="bold" className="size-4 shrink-0" aria-hidden="true" />
         </Link>
       )}

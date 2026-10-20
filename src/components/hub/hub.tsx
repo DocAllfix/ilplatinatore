@@ -102,7 +102,7 @@ function Recensione({ d }: { d: DatiHub }) {
         <span className="min-w-0 flex-1">
           <span className="block text-xs font-semibold uppercase tracking-[0.06em] text-tenue">La nostra recensione</span>
           <span className="mt-0.5 block font-bold leading-snug text-balance [@media(hover:hover)]:group-hover:text-link">{r.articolo.titolo}</span>
-          {r.articolo.riassunto && <span className="mt-1 line-clamp-2 block text-sm text-tenue">{r.articolo.riassunto}</span>}
+          {r.articolo.riassunto && <span className="mt-1 line-clamp-2 text-sm text-tenue">{r.articolo.riassunto}</span>}
         </span>
         <ArrowRightIcon weight="bold" className="size-4 shrink-0 text-link" aria-hidden="true" />
       </Link>
