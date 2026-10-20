@@ -77,7 +77,14 @@ export function correlatiAutomatici(
   platino: { slug: string } | null,
 ): Correlato[] {
   const ordinate = [...(platino ? [platino] : []), ...guide.filter((g) => g.slug !== platino?.slug)];
-  const posti = idSezioni.filter((_, i) => i % 2 === 1).slice(0, 3);
+  // mai nell'ultima sezione, che chiude col verdetto: quel posto passa alla sezione prima
+  const ultima = idSezioni.length - 1;
+  const indici = new Set<number>();
+  for (let i = 1; i < idSezioni.length && indici.size < 3; i += 2) {
+    const j = i === ultima ? i - 1 : i;
+    if (j > 0 && !indici.has(j)) indici.add(j);
+  }
+  const posti = [...indici].sort((x, y) => x - y).map((i) => idSezioni[i]);
   return posti.slice(0, ordinate.length).map((dopo, i) => ({
     id: `automatico-${i + 1}`,
     tipo: i === 0 && platino ? "Guida al Platino" : "Leggi anche",

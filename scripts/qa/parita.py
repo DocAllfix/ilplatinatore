@@ -63,6 +63,8 @@ VOLUTE = [
      "ricerca e archivi per data: pagine noindex, schema e metadati social non riprodotti"),
     (lambda u, h: u.endswith("/author-sitemap.xml") or u.endswith("/sitemap_index.xml"), {"sitemap:lastmod:autore"},
      "lastmod dell'autore: Yoast usa la data del profilo, che la REST non espone"),
+    (lambda u, h: '"@type":"Review"' in h, {"schema"},
+     "recensioni: dati strutturati Review col voto in piu' (novita' del 20/10/2026, oggi su Aruba non ci sono)"),
     (lambda u, h: u.endswith("/privacy-policy/"), {"og:description"},
      "privacy: Yoast accorcia il riassunto solo nella pagina, la REST lo da' intero"),
     (_hub, {"titolo", "og:title", "descrizione", "og:description", "schema"},

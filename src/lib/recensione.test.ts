@@ -46,6 +46,10 @@ describe("voto", () => {
 });
 
 describe("correlati automatici", () => {
+  it("mai nell'ultima sezione (chiude col verdetto): il posto passa alla sezione prima", () => {
+    // Control Resonant: 4 sezioni, dopo la 2a e (invece che dopo la 4a, l'ultima) dopo la 3a
+    expect(correlatiAutomatici(["a", "b", "c", "d"], [{ slug: "x" }, { slug: "y" }], null).map((x) => x.dopo)).toEqual(["b", "c"]);
+  });
   it("uno ogni due sezioni, prima la guida al Platino, al massimo tre", () => {
     const c = correlatiAutomatici(["a", "b", "c", "d", "e", "f", "g", "h"], [{ slug: "x" }, { slug: "p" }, { slug: "y" }, { slug: "z" }], { slug: "p" });
     expect(c.map((x) => [x.dopo, x.articolo, x.tipo])).toEqual([
@@ -55,7 +59,8 @@ describe("correlati automatici", () => {
     ]);
   });
   it("con poche sezioni o poche guide se ne mettono meno", () => {
-    expect(correlatiAutomatici(["a", "b"], [{ slug: "x" }, { slug: "y" }], null).map((x) => x.articolo)).toEqual(["x"]);
+    expect(correlatiAutomatici(["a", "b", "c"], [{ slug: "x" }, { slug: "y" }], null).map((x) => x.articolo)).toEqual(["x"]);
+    expect(correlatiAutomatici(["a", "b"], [{ slug: "x" }], null)).toEqual([]);
     expect(correlatiAutomatici(["a"], [{ slug: "x" }], null)).toEqual([]);
   });
 });
