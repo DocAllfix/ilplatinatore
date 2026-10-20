@@ -30,8 +30,15 @@ describe("descrizione", () => {
 describe("senzaGioco", () => {
   it("toglie il nome del gioco e rimette la maiuscola", async () => {
     const { senzaGioco } = await import("./hub");
-    expect(senzaGioco("Valor Mortis: come sbloccare il viaggio rapido")).toBe("Come sbloccare il viaggio rapido");
-    expect(senzaGioco("Senza due punti")).toBe("Senza due punti");
+    expect(senzaGioco("Valor Mortis: come sbloccare il viaggio rapido", "Valor Mortis")).toBe("Come sbloccare il viaggio rapido");
+    expect(senzaGioco("Senza due punti", "Valor Mortis")).toBe("Senza due punti");
+    expect(senzaGioco("FC 27: come funziona il Laboratorio", "EA Sports FC 27")).toBe("Come funziona il Laboratorio");
+  });
+  it("lascia il titolo intero se prima dei due punti non c'e' il gioco (si perderebbe di che cosa parla)", async () => {
+    const { senzaGioco } = await import("./hub");
+    expect(senzaGioco("FC 27 Xavi Espart Future Stars SBC: soluzione, costo e conviene?", "EA Sports FC 27")).toBe(
+      "FC 27 Xavi Espart Future Stars SBC: soluzione, costo e conviene?",
+    );
   });
 });
 

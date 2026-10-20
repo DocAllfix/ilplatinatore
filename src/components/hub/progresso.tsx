@@ -8,7 +8,6 @@ import { ArrowRightIcon, CheckIcon } from "@phosphor-icons/react/ssr";
 import Link from "@/components/collegamento";
 import { useSyncExternalStore } from "react";
 import { archivio } from "@/components/guida/spunte";
-import { senzaGioco } from "@/lib/hub";
 import type { Tracciabile } from "@/lib/hub-dati";
 
 /** Quante spunte per ogni guida: un'istantanea che cambia solo quando cambia un archivio. */
@@ -45,7 +44,7 @@ export function Riprendi({ tracciabili, compatto = false }: { tracciabili: Tracc
                 className="group flex items-center gap-3 rounded-xl border border-linea bg-superficie p-3 transition-[border-color,transform] duration-150 active:scale-[0.99] [@media(hover:hover)]:hover:border-link"
               >
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold">{senzaGioco(t.titolo)}</span>
+                  <span className="block truncate text-sm font-semibold">{t.titolo}</span>
                   <span className="mt-1.5 flex items-center gap-2">
                     <span className="block h-1.5 flex-1 overflow-hidden rounded-full bg-linea" aria-hidden="true">
                       <span

@@ -6,7 +6,7 @@ import { CaretDownIcon } from "@phosphor-icons/react/ssr";
 import Link from "@/components/collegamento";
 import { useState } from "react";
 import { IconaAiuto } from "./icone";
-import { senzaGioco, type Aiuto } from "@/lib/hub";
+import type { Aiuto } from "@/lib/hub";
 
 export type VoceGuida = { id: number; titolo: string; percorso: string };
 export type Gruppo = { aiuto: Aiuto; guide: VoceGuida[] };
@@ -27,7 +27,7 @@ function Elenco({ g, tutte }: { g: Gruppo; tutte: boolean }) {
         {mostra.map((v) => (
           <li key={v.id} className="border-b border-linea">
             <Link prefetch={false} href={v.percorso} className="flex min-h-12 items-center py-2.5 leading-snug [@media(hover:hover)]:hover:text-link">
-              {senzaGioco(v.titolo)}
+              {v.titolo}
             </Link>
           </li>
         ))}

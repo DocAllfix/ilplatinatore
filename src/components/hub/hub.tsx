@@ -12,8 +12,9 @@ import { GuidePerTipo, type Gruppo } from "./elenco";
 import { IconaAiuto } from "./icone";
 import { Riprendi } from "./progresso";
 
-const leggeri = (gruppi: DatiHub["gruppi"]): Gruppo[] =>
-  gruppi.map((g) => ({ aiuto: g.aiuto, guide: g.guide.map((a) => ({ id: a.id, titolo: a.titolo, percorso: a.percorso })) }));
+// i titoli arrivano gia' senza il nome del gioco: elenco e progresso li mostrano cosi' come sono
+const leggeri = (gruppi: DatiHub["gruppi"], gioco: string): Gruppo[] =>
+  gruppi.map((g) => ({ aiuto: g.aiuto, guide: g.guide.map((a) => ({ id: a.id, titolo: senzaGioco(a.titolo, gioco), percorso: a.percorso })) }));
 
 function dataUscita(iso: string) {
   return new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
@@ -138,7 +139,7 @@ function Completamento({ d }: { d: DatiHub }) {
   );
 }
 
-function CartaPlatino({ a }: { a: Articolo }) {
+function CartaPlatino({ a, gioco }: { a: Articolo; gioco: string }) {
   return (
     <Link prefetch={false}
       href={a.percorso}
@@ -157,7 +158,7 @@ function CartaPlatino({ a }: { a: Articolo }) {
           <IconaAiuto aiuto="Trofei" className="size-4" />
           Guida al Platino
         </span>
-        <span className="mt-1 block font-bold leading-snug text-balance [@media(hover:hover)]:group-hover:text-link">{senzaGioco(a.titolo)}</span>
+        <span className="mt-1 block font-bold leading-snug text-balance [@media(hover:hover)]:group-hover:text-link">{senzaGioco(a.titolo, gioco)}</span>
       </span>
     </Link>
   );
@@ -174,7 +175,7 @@ function IniziaQui({ d }: { d: DatiHub }) {
             className="group flex min-h-14 items-center gap-3 rounded-xl border border-linea bg-superficie p-3 transition-[border-color,transform] duration-150 active:scale-[0.99] [@media(hover:hover)]:hover:border-link"
           >
             <span className="cifre flex size-8 shrink-0 items-center justify-center rounded-full bg-viola text-sm font-bold text-su-viola">{i + 1}</span>
-            <span className="min-w-0 flex-1 font-semibold leading-snug">{senzaGioco(a.titolo)}</span>
+            <span className="min-w-0 flex-1 font-semibold leading-snug">{senzaGioco(a.titolo, d.nome)}</span>
             <ArrowRightIcon weight="bold" className="size-4 shrink-0 text-link" aria-hidden="true" />
           </Link>
         </li>
@@ -232,16 +233,16 @@ export function Hub({ d }: { d: DatiHub }) {
   const gruppo = (a: string) => d.gruppi.find((g) => g.aiuto === a)?.guide ?? [];
   const passi = [
     d.iniziaQui.length > 0 && { titolo: "Inizia qui", testo: "Le basi per non farti travolgere nelle prime ore.", corpo: <IniziaQui d={d} /> },
-    d.platino && { titolo: "Punta al Platino", testo: "La roadmap completa, con il trofeo da non perdere.", corpo: <CartaPlatino a={d.platino} /> },
+    d.platino && { titolo: "Punta al Platino", testo: "La roadmap completa, con il trofeo da non perdere.", corpo: <CartaPlatino a={d.platino} gioco={d.nome} /> },
     gruppo("Collezionabili").length > 0 && {
       titolo: "Raccogli tutto",
       testo: "Capitolo per capitolo, con le tabelle dei mancanti.",
-      corpo: <ElencoBreve guide={gruppo("Collezionabili")} />,
+      corpo: <ElencoBreve guide={gruppo("Collezionabili")} gioco={d.nome} />,
     },
     gruppo("Trofei").length > 0 && {
       titolo: "Pulizia finale",
       testo: "Gli ultimi trofei e cosa fare dopo i titoli di coda.",
-      corpo: <ElencoBreve guide={gruppo("Trofei")} />,
+      corpo: <ElencoBreve guide={gruppo("Trofei")} gioco={d.nome} />,
     },
   ].filter(Boolean) as Array<{ titolo: string; testo: string; corpo: React.ReactNode }>;
 
@@ -250,7 +251,7 @@ export function Hub({ d }: { d: DatiHub }) {
       <Testata d={d} />
       <Presentazione d={d} />
       <Completamento d={d} />
-      <Riprendi tracciabili={d.tracciabili} />
+      <Riprendi tracciabili={d.tracciabili.map((t) => ({ ...t, titolo: senzaGioco(t.titolo, d.nome) }))} />
       <section aria-label="Il percorso consigliato" className="mt-8">
         <Etichetta>Il percorso consigliato</Etichetta>
         <ol className="mt-4">
@@ -271,7 +272,7 @@ export function Hub({ d }: { d: DatiHub }) {
         <h2 className="mb-4 text-[1.5rem] font-bold">
           Tutte le guide
         </h2>
-        <GuidePerTipo gruppi={leggeri(d.gruppi)} />
+        <GuidePerTipo gruppi={leggeri(d.gruppi, d.nome)} />
       </section>
       <Notizie d={d} />
       <Piede d={d} />
@@ -279,13 +280,13 @@ export function Hub({ d }: { d: DatiHub }) {
   );
 }
 
-function ElencoBreve({ guide }: { guide: Articolo[] }) {
+function ElencoBreve({ guide, gioco }: { guide: Articolo[]; gioco: string }) {
   return (
     <ul className="border-t border-linea">
       {guide.map((a) => (
         <li key={a.id} className="border-b border-linea">
           <Link prefetch={false} href={a.percorso} className="flex min-h-12 items-center py-2 leading-snug [@media(hover:hover)]:hover:text-link">
-            {senzaGioco(a.titolo)}
+            {senzaGioco(a.titolo, gioco)}
           </Link>
         </li>
       ))}

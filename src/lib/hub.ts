@@ -1,7 +1,7 @@
 // Hub del gioco (PDF 04, piano 04): dati facoltativi del gioco dai campi del tag (mu-plugin, sezione 6).
 // Le sezioni dell'hub e quali tag sono hub li decide il registro (src/lib/registro-hub.ts). Funzioni pure.
 
-import { descrizioneDaSezioni } from "./registro-hub";
+import { descrizioneDaSezioni, normale } from "./registro-hub";
 
 type Meta = Record<string, unknown> | undefined;
 
@@ -55,10 +55,19 @@ export function descrizioneHub(g: Gioco, nome: string, argomenti: string[]): str
   return `${base.slice(0, 155).replace(/\s+\S*$/, "")}…`;
 }
 
-/** Il nome del gioco davanti ai due punti si ripete in ogni titolo: nell'hub si toglie. */
-export function senzaGioco(t: string): string {
-  const resto = t.replace(/^[^:]{2,40}:\s*/, "");
-  return resto.charAt(0).toLocaleUpperCase("it-IT") + resto.slice(1);
+/**
+ * Il nome del gioco davanti ai due punti si ripete in ogni titolo: nell'hub si toglie. SOLO se
+ * quello davanti ai due punti e' il nome del gioco (o una sua parte, «FC 27» di «EA Sports FC 27»):
+ * in «FC 27 Xavi Espart Future Stars SBC: soluzione, costo e conviene?» la parte prima dei due punti
+ * dice di che cosa parla l'articolo, e toglierla lasciava «Soluzione, costo e conviene?» (20/10/2026).
+ */
+export function senzaGioco(t: string, gioco: string): string {
+  const m = t.match(/^([^:]{2,60}):\s*(.+)$/);
+  if (!m) return t;
+  const prima = normale(m[1].trim());
+  const nome = normale(gioco.trim());
+  if (!nome || !(prima === nome || nome.includes(prima))) return t;
+  return m[2].charAt(0).toLocaleUpperCase("it-IT") + m[2].slice(1);
 }
 
 /**
