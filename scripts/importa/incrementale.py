@@ -307,29 +307,35 @@ def main():
     with tarfile.open(archivio, "w:gz") as tar:
         if locale.exists():
             tar.add(locale, arcname="uploads")
-    dir_server = f"{CARTELLA_SERVER}/import/incrementale"
+    # cartella di lavoro propria: import/ resta leggibile solo da root (contiene il database intero),
+    # e wp-cli gira come www-data. Si monta solo per il comando e si cancella alla fine.
+    dir_server = f"{CARTELLA_SERVER}/incrementale"
     ssh(f"rm -rf {dir_server} && mkdir -p {dir_server}")
     for sorgente, nome in ((archivio, "uploads.tar.gz"), (pacchetto_file, "pacchetto.json"),
                            (RADICE / "infra" / "cms" / "importa-incrementale.php", "importa-incrementale.php")):
         subprocess.run(["scp", "-q", str(sorgente), f"{SERVER}:{dir_server}/{nome}"], check=True)
     print(ssh(
-        f"cd {CARTELLA_SERVER} && tar -xzf import/incrementale/uploads.tar.gz -C import/incrementale && "
-        f"if [ -d import/incrementale/uploads ]; then docker run --rm -v \"$(basename $PWD)_wp-data\":/w "
-        f"-v \"$PWD/import/incrementale/uploads\":/u:ro alpine sh -c 'cp -an /u/. /w/wp-content/uploads/ && "
-        f"chown -R 33:33 /w/wp-content/uploads' && echo '    file copiati'; fi"
+        f"cd {CARTELLA_SERVER} && tar -xzf incrementale/uploads.tar.gz -C incrementale && chmod -R a+rX incrementale && "
+        f"if [ -d incrementale/uploads ]; then docker run --rm -v \"$(basename $PWD)_wp-data\":/w "
+        f"-v \"$PWD/incrementale/uploads\":/u:ro alpine sh -c '"
+        # file per file e senza sovrascrivere: il `cp -an` di busybox salta le cartelle che esistono
+        # gia' e risponde 0 senza aver copiato niente (20/10/2026)
+        f"cd /u && find . -type f | while read f; do d=/w/wp-content/uploads/$f; [ -e \"$d\" ] || "
+        f"{{ mkdir -p \"$(dirname \"$d\")\" && cp -p \"$f\" \"$d\" && chown 33:33 \"$d\" && echo \"$f\"; }}; done "
+        f"| wc -l | sed \"s/^/    file copiati: /\"'; fi"
     ))
 
     print("[5] scrittura sul CMS")
     print(ssh(
-        f"cd {CARTELLA_SERVER} && docker compose --profile strumenti run --rm -T cli "
-        f"wp eval-file /import/incrementale/importa-incrementale.php /import/incrementale/pacchetto.json 2>&1"
+        f"cd {CARTELLA_SERVER} && docker compose --profile strumenti run --rm -T -v {dir_server}:/incrementale:ro cli "
+        f"wp eval-file /incrementale/importa-incrementale.php /incrementale/pacchetto.json 2>&1"
     ))
     if cestina and solo_cms:
         ids = " ".join(str(i) for t, i, _, _ in solo_cms)
         print(ssh(f"cd {CARTELLA_SERVER} && docker compose --profile strumenti run --rm -T cli wp post delete {ids} 2>&1"))
     # il pacchetto contiene anche le bozze: non resta sul server
     ssh(f"rm -rf {dir_server}")
-    print("Fatto. Rilancia senza --applica: deve dire 0 da creare e 0 da aggiornare.")
+    print("Fatto. Rilancia senza --applica: deve dire 0 da creare, 0 da aggiornare e 0 file mancanti.")
     return 0
 
 

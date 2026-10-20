@@ -35,7 +35,22 @@ VIVO = "https://www.ilplatinatore.it"
 UA = "Mozilla/5.0 (platinatore-parita)"
 
 # differenze volute: campo -> ragione (vale per tutti gli indirizzi)
-VOLUTE: dict[str, str] = {}
+# Differenze VOLUTE, decise con l'utente: (regola sull'indirizzo e sulla pagina nuova, campi, ragione).
+# Una differenza non coperta da una regola e' un problema.
+def _hub(url, hn):
+    return "/tag/" in url and '"VideoGame"' in hn
+
+
+def _tag(url, hn):
+    return "/tag/" in url
+
+
+VOLUTE = [
+    (_hub, {"titolo", "og:title", "descrizione", "og:description", "schema"},
+     "hub del gioco (piano 04, Fase 0 punto 5): titolo e descrizione nuovi, schema con il gioco e l'elenco delle guide"),
+    (_tag, {"descrizione", "og:description"},
+     "pagine dei tag (piano 07): descrizione per Google generata dalla scheda del gioco, oggi assente"),
+]
 
 
 class SenzaRimandi(urllib.request.HTTPRedirectHandler):
@@ -159,6 +174,19 @@ def indirizzi():
 
 
 def confronta(url, tipo, nuovo_base):
+    esito = _confronta(url, tipo, nuovo_base)
+    esito["volute"] = {}
+    for regola, campi_voluti, ragione in VOLUTE:
+        if regola(url, esito.get("_hn", "")):
+            for k in list(esito["diff"]):
+                if k in campi_voluti:
+                    esito["volute"][k] = ragione
+                    del esito["diff"][k]
+    esito.pop("_hn", None)
+    return esito
+
+
+def _confronta(url, tipo, nuovo_base):
     percorso = url[len(VIVO):] or "/"
     sv, lv, hv = scarica(url)
     sn, ln, hn = scarica(nuovo_base + percorso)
@@ -193,7 +221,7 @@ def confronta(url, tipo, nuovo_base):
                     trovati = sum(1 for p in pv if p in tn)
                     if trovati / len(pv) < 0.95:
                         diff["testo"] = (f"{trovati}/{len(pv)} paragrafi ritrovati", [p[:90] for p in pv if p not in tn][:2])
-    return {"url": url, "tipo": tipo, "diff": diff}
+    return {"url": url, "tipo": tipo, "diff": diff, "_hn": hn}
 
 
 def main():
@@ -209,13 +237,14 @@ def main():
     # il sito su Aruba e' un hosting condiviso: poche richieste alla volta
     with ThreadPoolExecutor(4) as ex:
         esiti = list(ex.map(lambda v: confronta(v[0], v[1], nuovo), voci))
+    volute = {}
     for e in esiti:
-        e["volute"] = {k: VOLUTE[k] for k in e["diff"] if k in VOLUTE}
-        e["diff"] = {k: v for k, v in e["diff"].items() if k not in VOLUTE}
-    if VOLUTE:
-        print("Differenze volute (non contano):")
-        for k, ragione in VOLUTE.items():
-            print(f"  {k}: {ragione}")
+        for k, ragione in e["volute"].items():
+            volute.setdefault(ragione, set()).add(e["url"])
+    if volute:
+        print("Differenze volute (dichiarate, non contano):")
+        for ragione, urls in volute.items():
+            print(f"  {len(urls):5} indirizzi: {ragione}")
         print()
     problemi = [e for e in esiti if e["diff"]]
     per_campo = {}

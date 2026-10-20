@@ -103,8 +103,8 @@ Poi il commit «Fase N completata».
   - Cache di sviluppo di Next rotta («HMR hash mismatch», pagine che si ricaricano da sole): si ferma il server sulla propria porta e si cancella `.next`.
 - **Debiti aperti**:
   - allarme «uomo morto» dei backup predisposto ma senza `HEALTHCHECK_URL` (serve un account healthchecks.io dall'utente);
-  - DNS di `cms.ilplatinatore.it` non ancora propagato: si usa l'host provvisorio `49-13-164-162.sslip.io` (da togliere);
-  - mancano archivi per data, `ads.txt`, `llms.txt`, rotta di anteprima, elenco dei 410; immagini nella sitemap; redirect 308 invece di 301;
+  - ~~DNS di `cms.ilplatinatore.it` non ancora propagato~~: risolto, il record c'è e funziona (verificato il 20/10/2026); `CMS_URL` su Vercel e la sorveglianza spostati da `sslip.io` a `cms.ilplatinatore.it`, il nome provvisorio resta solo nel Caddyfile, da togliere al passaggio;
+  - ~~archivi per data, `ads.txt`, `llms.txt`, rotta di anteprima~~ (fatti nelle Fasi 4-6); restano elenco dei 410, immagini nella sitemap, redirect 308 invece di 301;
   - wpvibe spento sul CMS di lavoro, da provare al passaggio; password di prova `collaudo-rest` da revocare;
   - importazione incrementale da Aruba ancora da fare (Fase 6).
 

@@ -3,7 +3,7 @@
  * Importazione incrementale da Aruba (Fase 6): applica sul CMS il pacchetto preparato da
  * scripts/importa/incrementale.py. Si lancia SOLO da quello script:
  *
- *   wp eval-file /import/incrementale/importa-incrementale.php /import/incrementale/pacchetto.json
+ *   wp eval-file /incrementale/importa-incrementale.php /incrementale/pacchetto.json
  *
  * Regole:
  * - gli ID di Aruba si conservano (link brevi /?p=, immagini in evidenza): import_id;
