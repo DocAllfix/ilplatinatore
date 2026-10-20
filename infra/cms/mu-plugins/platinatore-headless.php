@@ -505,7 +505,7 @@ add_action('admin_menu', function () {
 function platinatore_sezioni_home()
 {
     $righe = preg_split('/\r?\n/', (string) get_option('platinatore_sezioni_home', ''));
-    $regole = array('piu-letti', 'giochi-momento', 'tag-sezione', 'titolo', 'categoria', 'sfida', 'esplora-giochi');
+    $regole = array('piu-letti', 'giochi-momento', 'tag-sezione', 'titolo', 'categoria', 'sfida', 'esplora-giochi', 'recensioni');
     $out = array();
     foreach ($righe as $riga) {
         $c = array_map('trim', explode('|', $riga));
@@ -547,7 +547,8 @@ add_action('admin_menu', function () {
         echo '<li><code>tag-sezione | indie</code>: gli articoli dei giochi che hanno «indie» nel campo Sezioni della home del tag.</li>';
         echo '<li><code>titolo | enigma, soluzione</code>: gli articoli con una di queste parole nel titolo.</li>';
         echo '<li><code>categoria | news</code>: gli articoli della categoria. <code>sfida</code>: la sfida del giorno.</li>';
-        echo '<li><code>esplora-giochi | 12</code>: le schede dei giochi con hub, verso le loro pagine.</li></ul>';
+        echo '<li><code>esplora-giochi | 12</code>: le schede dei giochi con hub, verso le loro pagine.</li>';
+        echo '<li><code>recensioni | 8</code>: le recensioni in vetrina, la piu recente in grande col voto.</li></ul>';
         echo '<form method="post">';
         wp_nonce_field('platinatore_home');
         echo '<textarea name="platinatore_sezioni_home" rows="14" class="large-text code">' . esc_textarea(get_option('platinatore_sezioni_home', '')) . '</textarea>';
@@ -622,6 +623,71 @@ add_action('admin_menu', function () {
         echo '</form></div>';
     });
 });
+
+/* ---------------------------------------------------------------------------------------
+ * 11. RECENSIONI: IL VOTO (richiesta del proprietario, 20/10/2026)
+ *
+ * Lo shortcode [platinatore_voto valore="7.5" scala="10"] produce lo STESSO HTML del sito su Aruba
+ * (contenuto identico, verifica di parita'); il sito lo trasforma nella scheda del verdetto. A ogni
+ * salvataggio il voto si copia nei campi pl_voto e pl_voto_scala: schede, home e hub lo leggono
+ * dalla REST senza aprire il testo.
+ * ------------------------------------------------------------------------------------- */
+
+function platinatore_numero_voto($v)
+{
+    $v = str_replace(',', '.', trim((string) $v));
+    return is_numeric($v) ? (float) $v : null;
+}
+
+add_shortcode('platinatore_voto', function ($attributi) {
+    $a = shortcode_atts(array('valore' => '', 'scala' => '10'), $attributi);
+    $valore = platinatore_numero_voto($a['valore']);
+    $scala = platinatore_numero_voto($a['scala']);
+    if ($valore === null || !$scala) {
+        return '';
+    }
+    $testo = str_replace('.', ',', (string) $valore);
+    $testo_scala = str_replace('.', ',', (string) $scala);
+    return '<div class="platinatore-voto" role="img" aria-label="Voto ' . esc_attr($testo) . ' su ' . esc_attr($testo_scala) . '">'
+        . '<span class="platinatore-voto__numero">' . esc_html($testo) . '</span>'
+        . '<span class="platinatore-voto__scala">/' . esc_html($testo_scala) . '</span></div>';
+});
+
+add_action('init', function () {
+    foreach (array('pl_voto', 'pl_voto_scala') as $chiave) {
+        register_post_meta('post', $chiave, array(
+            'type'          => 'string',
+            'single'        => true,
+            'show_in_rest'  => true,
+            'auth_callback' => function () {
+                return current_user_can('edit_posts');
+            },
+        ));
+    }
+});
+
+/** Copia il voto dello shortcode nei campi; senza shortcode li toglie. */
+function platinatore_salva_voto($id)
+{
+    $post = get_post($id);
+    if (!$post || $post->post_type !== 'post' || wp_is_post_revision($id)) {
+        return;
+    }
+    if (preg_match('/\[platinatore_voto\s([^\]]*)\]/', $post->post_content, $m)) {
+        $a = shortcode_parse_atts($m[1]);
+        $valore = platinatore_numero_voto(isset($a['valore']) ? $a['valore'] : '');
+        $scala = platinatore_numero_voto(isset($a['scala']) ? $a['scala'] : '10');
+        if ($valore !== null && $scala) {
+            update_post_meta($id, 'pl_voto', (string) $valore);
+            update_post_meta($id, 'pl_voto_scala', (string) $scala);
+            return;
+        }
+    }
+    delete_post_meta($id, 'pl_voto');
+    delete_post_meta($id, 'pl_voto_scala');
+}
+// priorita' bassa: i campi sono pronti prima dell avviso al sito (rest_after_insert_post)
+add_action('save_post_post', 'platinatore_salva_voto', 5);
 
 // NB dal riferimento: l'elenco delle rotte REST NON va filtrato a mano (`rest_endpoints`): un
 // filtro cosi' ha mandato in errore fatale tutta la REST API.

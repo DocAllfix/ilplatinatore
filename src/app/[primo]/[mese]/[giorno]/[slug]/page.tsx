@@ -22,8 +22,13 @@ import { Correlato } from "@/components/guida/correlato";
 import { collezionabiliDaRighe, collocaCorrelati, correlatiDaCampi, estraiTabelleOggetti, righeDaCampi } from "@/lib/guida/collezionabili";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { jsonLd } from "@/lib/cms/seo";
-import { articoloPerId, articoloPerSlug, indirizzoAttuale, terminePerSlug, tuttiGliArticoli, registroHub } from "@/lib/cms/wp";
+import { articoliDelTag, articoloPerId, articoloPerSlug, indirizzoAttuale, terminePerSlug, tuttiGliArticoli, registroHub } from "@/lib/cms/wp";
 import { eHub } from "@/lib/registro-hub";
+import { guidaPlatinoDalTitolo } from "@/lib/hub";
+import { correlatiAutomatici, eRecensione, estraiVerdetto } from "@/lib/recensione";
+import { SchedaVerdetto } from "@/components/recensione/scheda-verdetto";
+import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
+import { sitoPubblico } from "@/lib/cms/config";
 import { SchedaGioco } from "@/components/gioco/scheda-gioco";
 import { schedaDaDescrizione } from "@/lib/scheda-gioco";
 
@@ -79,7 +84,9 @@ export default async function PaginaArticolo({ params }: Parametri) {
   const { articolo: a, seo, anteprima } = await risolvi(params);
   // Prima i campi strutturati del CMS (scritti dalla redazione o da wpvibe), poi le tabelle del
   // testo come ripiego. Le tabelle si tolgono comunque dal corpo, per non mostrare i dati due volte.
-  const { scheda: schedaTabella, corpo: senzaScheda } = estraiScheda(a.contenuto);
+  // recensioni: il voto e il verdetto finale diventano la scheda del verdetto (20/10/2026)
+  const { voto, titolo: titoloVerdetto, verdetto, corpo: senzaVerdetto } = estraiVerdetto(a.contenuto);
+  const { scheda: schedaTabella, corpo: senzaScheda } = estraiScheda(senzaVerdetto);
   const scheda = schedaDaCampi(a.meta) ?? schedaTabella;
   const { gruppi: gruppiTabelle, corpo: senzaTabelle } = estraiChecklist(senzaScheda);
   const gruppiCampi = trofeiDaCampi(a.meta);
@@ -96,7 +103,23 @@ export default async function PaginaArticolo({ params }: Parametri) {
   // prima il campo pl_collezionabili, poi le tabelle del testo come ripiego
   const righeCampi = righeDaCampi(a.meta);
   const oggetti = collezionabiliDaRighe(righeCampi.length ? righeCampi : righeTabelle, titoli);
-  const { html, collocati } = collocaCorrelati(conAncore, correlatiDaCampi(a.meta));
+  const [termini, registro] = await Promise.all([Promise.all(a.tag.map((t) => terminePerSlug("tags", t.slug))), registroHub()]);
+  // il gioco dell'articolo: il primo tag che non e' escluso dal registro
+  const iGioco = a.tag.findIndex((t, i) => termini[i] && eHub(t.slug, registro));
+  // correlati: quelli scelti a mano (campo pl_correlati); in una recensione senza scelte, automatici:
+  // una guida dello stesso gioco ogni due sezioni, prima quella al Platino (scelta dell'utente, 20/10/2026)
+  let correlati = correlatiDaCampi(a.meta);
+  if (!correlati.length && eRecensione(a) && iGioco >= 0) {
+    const notizia = (x: { categorie: Array<{ slug: string }> }) => x.categorie.some((c) => /^news$|notizi/i.test(c.slug));
+    const guide = (await articoliDelTag(termini[iGioco]!.id)).filter((x) => x.id !== a.id && !eRecensione(x) && !notizia(x));
+    const recenti = [...guide].sort((x, y) => (y.modificato ?? y.data).localeCompare(x.modificato ?? x.data));
+    correlati = correlatiAutomatici(
+      indice.map((v) => v.id),
+      recenti,
+      guidaPlatinoDalTitolo(guide),
+    );
+  }
+  const { html, collocati } = collocaCorrelati(conAncore, correlati);
   const destinazioni = new Map(
     (await Promise.all(collocati.map(async (c) => [c.id, (await articoloPerSlug(c.articolo))?.articolo] as const))).filter(
       (x): x is readonly [string, NonNullable<(typeof x)[1]>] => Boolean(x[1]),
@@ -104,7 +127,6 @@ export default async function PaginaArticolo({ params }: Parametri) {
   );
   // Fase 5: gli spazi di HB dopo il 1°, 3°, 4°, 5° e 7° paragrafo, come Advanced Ads oggi
   const pezzi = dividiCorpo(inserisciAnnunci(html));
-  const [termini, registro] = await Promise.all([Promise.all(a.tag.map((t) => terminePerSlug("tags", t.slug))), registroHub()]);
   const giochi: Array<{ slug: string; nome: string; dati: ReturnType<typeof schedaDaDescrizione> }> = [];
   const altriTag: typeof a.tag = [];
   a.tag.forEach((t, i) => {
@@ -133,6 +155,20 @@ export default async function PaginaArticolo({ params }: Parametri) {
         const an = NEL_TESTO.find((x) => x.id === p.annuncio);
         return an ? <SpazioHB key={i} id={an.id} nome={an.nome} /> : null;
       }
+      if ("verdetto" in p) {
+        if (!voto) return null;
+        return (
+          <SchedaVerdetto
+            key={i}
+            voto={voto}
+            titolo={titoloVerdetto}
+            verdetto={verdetto}
+            gioco={iGioco >= 0 ? { nome: a.tag[iGioco].nome, slug: a.tag[iGioco].slug } : undefined}
+            // in prova sull'anteprima le tre forme della figura (selettore in fondo alla pagina)
+            forme={["a", "b", "c"]}
+          />
+        );
+      }
       const c = collocati.find((x) => x.id === p.correlato);
       const dest = destinazioni.get(p.correlato);
       if (!c || !dest) return null;
@@ -144,7 +180,20 @@ export default async function PaginaArticolo({ params }: Parametri) {
 
   return (
     // Piano 07 chiuso: linea viola sui titoli e bagliore che pulsa (scelte del proprietario)
-    <article>
+    <article id={voto ? "lab" : undefined} data-v={voto ? "a" : undefined}>
+      {voto && (
+        <>
+          <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]),#lab[data-v="c"] [data-variant]:not([data-variant="c"]){display:none}`}</style>
+          <SelettoreVarianti
+            sezione="Voto"
+            varianti={[
+              { id: "a", nome: "A · Esagono" },
+              { id: "b", nome: "B · Lastra inclinata" },
+              { id: "c", nome: "C · Rombo" },
+            ]}
+          />
+        </>
+      )}
       {anteprima && (
         // solo per chi scrive: la bozza non e' pubblicata
         <p className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border-2 border-avviso px-4 py-2 text-sm font-semibold text-avviso">
@@ -161,6 +210,27 @@ export default async function PaginaArticolo({ params }: Parametri) {
       {seo.schema ? (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(seo.schema) }} />
       ) : null}
+      {voto && eRecensione(a) && iGioco >= 0 && (
+        // la recensione con il suo voto e il gioco recensito: oggi su Aruba non c'e' (novita' dichiarata)
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLd({
+              "@context": "https://schema.org",
+              "@type": "Review",
+              name: a.titolo,
+              url: seo.canonical ?? `${sitoPubblico()}${a.percorso}`,
+              datePublished: a.data,
+              ...(a.modificato ? { dateModified: a.modificato } : {}),
+              inLanguage: "it-IT",
+              ...(a.autore ? { author: { "@type": "Person", name: a.autore.nome, url: `${sitoPubblico()}/author/${a.autore.slug}/` } } : {}),
+              publisher: { "@type": "Organization", name: "Il Platinatore", url: `${sitoPubblico()}/` },
+              itemReviewed: { "@type": "VideoGame", name: a.tag[iGioco].nome, url: `${sitoPubblico()}/tag/${a.tag[iGioco].slug}/` },
+              reviewRating: { "@type": "Rating", ratingValue: voto.valore, bestRating: voto.scala, worstRating: 0 },
+            }),
+          }}
+        />
+      )}
 
       {scheda ? (
         // Scelta del piano 01, giro 2: variante B «Sovrapposta» (docs/brief/01-guida-testata-scheda.md)

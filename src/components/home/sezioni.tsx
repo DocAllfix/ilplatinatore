@@ -12,6 +12,7 @@ import Link from "@/components/collegamento";
 import type { VoceGioco } from "@/lib/home-dati";
 import { CartaSfida } from "./carta-sfida";
 import { FilaScorrevole } from "./fila-scorrevole";
+import { VetrinaRecensioni } from "./vetrina-recensioni";
 
 /** Una fila di locandine; con `apertura` la prima e' larga il doppio, alta come le altre. */
 function Fila({ voci, prima, apertura, sezione, riferimento }: { voci: Articolo[]; prima: boolean; apertura: boolean; sezione: string; riferimento: number }) {
@@ -78,7 +79,7 @@ export function Sezioni({ sezioni, riferimento }: { sezioni: SezioneDati[]; rife
         <section key={s.titolo} aria-label={s.titolo}>
           <div className="mb-3 flex items-center justify-between gap-3">
             <h2 className="min-w-0 text-[1.375rem] font-bold leading-tight">{s.titolo}</h2>
-            {s.tipo === "articoli" && s.tutti && (
+            {(s.tipo === "articoli" || s.tipo === "recensioni") && s.tutti && (
               <span className="max-w-[50%] shrink-0">
                 <BottoneAcido href={s.tutti.href}>{s.tutti.testo}</BottoneAcido>
               </span>
@@ -86,6 +87,8 @@ export function Sezioni({ sezioni, riferimento }: { sezioni: SezioneDati[]; rife
           </div>
           {s.tipo === "sfida" ? (
             <CartaSfida s={s.sfida} />
+          ) : s.tipo === "recensioni" ? (
+            <VetrinaRecensioni voci={s.voci} sezione={s.titolo} />
           ) : s.tipo === "giochi" ? (
             <FilaGiochi voci={s.voci} />
           ) : (

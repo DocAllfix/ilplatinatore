@@ -6,6 +6,8 @@ import { FireIcon } from "@phosphor-icons/react/ssr";
 import Link from "@/components/collegamento";
 import { dataLeggibile } from "@/components/archivio";
 import type { Articolo } from "@/lib/cms/tipi";
+import { FiguraVoto } from "@/components/recensione/figura-voto";
+import { eRecensione, votoDaMeta } from "@/lib/recensione";
 
 const NEWS = /^news$/i;
 export const eNews = (a: Articolo) => a.categorie.some((c) => NEWS.test(c.slug));
@@ -24,6 +26,11 @@ export const eUltimora = (a: Articolo, riferimento: number) => {
 
 /** Guida o News: due formati coerenti (PDF 01), si distinguono a colpo d'occhio. */
 function Tipo({ a, ultimora }: { a: Articolo; ultimora: boolean }) {
+  // le recensioni in Viola, il colore della voce del Platinatore, con testo Bianco (DESIGN.md)
+  if (eRecensione(a))
+    return (
+      <span className="shrink-0 rounded bg-viola px-1.5 py-0.5 text-[0.6875rem] font-bold uppercase tracking-[0.05em] text-su-viola">Recensione</span>
+    );
   if (ultimora)
     return (
       // sempre sull'immagine scurita: rosso chiaro fisso con scritta Notte (7:1) in tutti e due i temi
@@ -80,6 +87,7 @@ export function CartaArticolo({
   riferimento?: number;
 }) {
   const ultimora = riferimento !== undefined && eUltimora(a, riferimento);
+  const voto = eRecensione(a) ? votoDaMeta(a.meta) : null;
   return (
     <Link
       prefetch={false}
@@ -94,6 +102,12 @@ export function CartaArticolo({
     >
       <Img a={a} sizes={grande ? "360px" : piccola ? "(min-width: 768px) 240px, 46vw" : "180px"} carico={carico} />
       <span className="absolute inset-0 -z-10 bg-gradient-to-t from-notte via-notte/80 to-transparent" aria-hidden="true" />
+      {voto && (
+        // il voto della recensione in alto a destra, come una locandina premiata
+        <span className="absolute right-2 top-2">
+          <FiguraVoto voto={voto} misura="piccola" />
+        </span>
+      )}
       <span className="flex min-w-0 items-center gap-1.5">
         <Tipo a={a} ultimora={ultimora} />
         {a.tag[0] && <span className="truncate text-xs font-semibold text-platino/90">{a.tag[0].nome}</span>}

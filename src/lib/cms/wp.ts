@@ -129,7 +129,7 @@ export async function paginaArticoli(filtro: {
  * del gioco. Piu' pagine da 100 se il gioco ha molte guide.
  */
 export async function articoliDelTag(tag: number): Promise<Articolo[]> {
-  const campi = "_fields=id,slug,date,date_gmt,modified_gmt,title,meta,_links,_embedded";
+  const campi = "_fields=id,slug,date,date_gmt,modified_gmt,title,excerpt,meta,_links,_embedded";
   const url = (p: number) => `/wp/v2/posts?status=publish&tags=${tag}&per_page=100&page=${p}&_embed=wp:featuredmedia,wp:term&${campi}`;
   const prima = await chiamata<PostWP[]>(url(1));
   if (!prima) return [];
@@ -164,7 +164,7 @@ export async function tuttiITermini(tassonomia: "categories" | "tags"): Promise<
   return out.map((t) => ({ ...t, name: decodificaEntita(t.name) }));
 }
 
-export type SezioneHome = { titolo: string; regola: "piu-letti" | "giochi-momento" | "tag-sezione" | "titolo" | "categoria" | "sfida" | "esplora-giochi"; parametro: string };
+export type SezioneHome = { titolo: string; regola: "piu-letti" | "giochi-momento" | "tag-sezione" | "titolo" | "categoria" | "sfida" | "esplora-giochi" | "recensioni"; parametro: string };
 
 /** Le sezioni della home (mu-plugin, sezione 8), nell'ordine della redazione. */
 export async function sezioniHome(): Promise<SezioneHome[]> {
@@ -172,7 +172,7 @@ export async function sezioniHome(): Promise<SezioneHome[]> {
   return Array.isArray(r?.dati?.sezioni) ? r.dati.sezioni : [];
 }
 
-const LEGGERI = "_fields=id,slug,date,date_gmt,modified_gmt,title,meta,_links,_embedded&_embed=wp:featuredmedia,wp:term";
+const LEGGERI = "_fields=id,slug,date,date_gmt,modified_gmt,title,excerpt,meta,_links,_embedded&_embed=wp:featuredmedia,wp:term";
 
 /** Articoli per slug, leggeri, nell'ordine chiesto; quelli non pubblicati mancano. */
 export async function articoliPerSlug(slugs: string[]): Promise<Articolo[]> {
@@ -192,6 +192,12 @@ export async function ultimiPubblicati(quanti: number): Promise<Articolo[]> {
 /** Articoli leggeri secondo un filtro REST, dal piu' recentemente modificato. */
 export async function articoliModificati(filtro: string, quanti = 12): Promise<Articolo[]> {
   const r = await chiamata<PostWP[]>(`/wp/v2/posts?status=publish&orderby=modified&order=desc&per_page=${quanti}&${filtro}&${LEGGERI}`);
+  return (r?.dati ?? []).map((p) => mappaPost(p, ctx()));
+}
+
+/** Articoli leggeri secondo un filtro REST, dal piu' recentemente PUBBLICATO (le recensioni in home). */
+export async function articoliRecenti(filtro: string, quanti = 12): Promise<Articolo[]> {
+  const r = await chiamata<PostWP[]>(`/wp/v2/posts?status=publish&orderby=date&order=desc&per_page=${quanti}&${filtro}&${LEGGERI}`);
   return (r?.dati ?? []).map((p) => mappaPost(p, ctx()));
 }
 

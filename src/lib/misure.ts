@@ -19,6 +19,8 @@ export type NomeMisura =
   | "sfida_fine" // sfida finita, vinta o persa
   | "sfida_rimando" // dalla fine della sfida verso una guida o un hub
   | "home_sezione" // una scheda aperta da una sezione della home
+  | "verdetto_hub" // dalla scheda del verdetto di una recensione all'hub del gioco
+  | "recensione_hub" // dall'hub alla recensione del gioco
   | "lettura_completa"; // arrivati in fondo a un articolo
 
 export type Misura = { nome: NomeMisura; dati?: Record<string, string | number | boolean> };

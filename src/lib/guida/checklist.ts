@@ -101,15 +101,17 @@ export function estraiChecklist(html: string): { gruppi: Gruppo[]; corpo: string
   return { gruppi, corpo };
 }
 
-export type PezzoCorpo = { html: string } | { gruppo: string } | { correlato: string } | { annuncio: string };
+export type PezzoCorpo = { html: string } | { gruppo: string } | { correlato: string } | { annuncio: string } | { verdetto: string };
 
-/** Divide il corpo nei pezzi di HTML e nei segnaposto (checklist, correlati, annunci), nell'ordine in cui compaiono. */
+/** Divide il corpo nei pezzi di HTML e nei segnaposto (checklist, correlati, annunci, verdetto), nell'ordine in cui compaiono. */
 export function dividiCorpo(corpo: string): PezzoCorpo[] {
   const out: PezzoCorpo[] = [];
   let ultimo = 0;
-  for (const m of corpo.matchAll(/<!--(checklist|correlato|annuncio):([a-z0-9-]+)-->/g)) {
+  for (const m of corpo.matchAll(/<!--(checklist|correlato|annuncio|verdetto):([a-z0-9-]+)-->/g)) {
     if (m.index! > ultimo) out.push({ html: corpo.slice(ultimo, m.index) });
-    out.push(m[1] === "checklist" ? { gruppo: m[2] } : m[1] === "correlato" ? { correlato: m[2] } : { annuncio: m[2] });
+    out.push(
+      m[1] === "checklist" ? { gruppo: m[2] } : m[1] === "correlato" ? { correlato: m[2] } : m[1] === "verdetto" ? { verdetto: m[2] } : { annuncio: m[2] },
+    );
     ultimo = m.index! + m[0].length;
   }
   if (ultimo < corpo.length) out.push({ html: corpo.slice(ultimo) });

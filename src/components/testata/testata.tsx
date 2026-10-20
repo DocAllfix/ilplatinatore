@@ -11,9 +11,12 @@ import { CrosshairIcon, MagnifyingGlassIcon, MoonIcon, SunIcon } from "@phosphor
 import Link from "@/components/collegamento";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 
+// «Recensioni» in rilievo (richiesta del proprietario, 20/10/2026): pastiglia Viola, il colore della
+// voce del Platinatore, con testo Bianco (DESIGN.md)
 const VOCI = [
   { href: "/category/guide/", testo: "Guide" },
   { href: "/category/news/", testo: "News" },
+  { href: "/category/recensioni/", testo: "Recensioni", rilievo: true },
   { href: "/category/approfondimenti/", testo: "Approfondimenti" },
   { href: "/sfida/", testo: "Sfida del giorno" },
 ];
@@ -155,9 +158,17 @@ export function Testata() {
                   prefetch={false}
                   href={v.href}
                   onClick={() => setMenu(false)}
-                  className="flex min-h-11 items-center whitespace-nowrap rounded-full px-3 text-sm font-medium text-tenue transition-colors [@media(hover:hover)]:hover:bg-superficie-alta [@media(hover:hover)]:hover:text-testo"
+                  className={`flex min-h-11 items-center whitespace-nowrap rounded-full px-3 text-sm transition-colors ${
+                    v.rilievo
+                      ? "font-semibold text-testo"
+                      : "font-medium text-tenue [@media(hover:hover)]:hover:bg-superficie-alta [@media(hover:hover)]:hover:text-testo"
+                  }`}
                 >
-                  {v.testo}
+                  {v.rilievo ? (
+                    <span className="rounded-full bg-viola px-3 py-1 text-su-viola transition-transform duration-150 [@media(hover:hover)]:hover:-translate-y-px">{v.testo}</span>
+                  ) : (
+                    v.testo
+                  )}
                 </Link>
               </li>
             ))}

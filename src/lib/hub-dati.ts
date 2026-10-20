@@ -11,6 +11,7 @@ import { estraiChecklist } from "./guida/checklist";
 import { estraiScheda, type Scheda } from "./guida/scheda";
 import { copertinaHub, giocoDaMeta, guidaPlatinoDalTitolo, type Gioco } from "./hub";
 import { argomentiHub, eHub, perSezione } from "./registro-hub";
+import { eRecensione, votoDaMeta, type Voto } from "./recensione";
 import { schedaDaDescrizione, type SchedaGioco } from "./scheda-gioco";
 
 /** Un articolo con spunte: l'hub legge dal browser quante ne ha fatte il lettore. */
@@ -35,6 +36,8 @@ export type DatiHub = {
   aggiornato?: string;
   /** l'archivio in ordine di data ha una pagina 2 (la 1 e' l'hub) */
   archivio: boolean;
+  /** la recensione del gioco col suo voto, in testa all'hub (20/10/2026) */
+  recensione: { articolo: Articolo; voto: Voto } | null;
 };
 
 const NOTIZIE = /^news$|notizi/i;
@@ -63,7 +66,11 @@ export async function datiHub(slug: string): Promise<DatiHub | null> {
   }
 
   const notizie = articoli.filter((a) => a.categorie.some((c) => NOTIZIE.test(c.slug)));
-  const guide = articoli.filter((a) => !notizie.includes(a) && a.id !== platino?.id);
+  // la recensione piu' recente col voto va in testa all'hub, non fra le guide
+  const recensioni = articoli.filter((a) => eRecensione(a));
+  const conVoto = recensioni.map((a) => ({ articolo: a, voto: votoDaMeta(a.meta) })).find((x) => x.voto);
+  const recensione = conVoto ? { articolo: conVoto.articolo, voto: conVoto.voto! } : null;
+  const guide = articoli.filter((a) => !notizie.includes(a) && !recensioni.includes(a) && a.id !== platino?.id);
 
   const tracciabili: Tracciabile[] = [];
   if (platino && idsTrofei.length)
@@ -93,5 +100,6 @@ export async function datiHub(slug: string): Promise<DatiHub | null> {
     tracciabili,
     aggiornato,
     archivio: articoli.length > PER_PAGINA,
+    recensione,
   };
 }

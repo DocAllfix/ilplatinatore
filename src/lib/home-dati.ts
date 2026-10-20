@@ -2,7 +2,7 @@
 // Ogni sezione dichiara il suo criterio in pagina, come chiede il PDF (02).
 
 import type { Articolo } from "./cms/tipi";
-import { articoliModificati, articoliPerSlug, registroHub, sezioniHome, tagDegliUltimi, terminePerSlug, tuttiITermini, ultimiPubblicati, type SezioneHome } from "./cms/wp";
+import { articoliModificati, articoliPerSlug, articoliRecenti, registroHub, sezioniHome, tagDegliUltimi, terminePerSlug, tuttiITermini, ultimiPubblicati, type SezioneHome } from "./cms/wp";
 import { eHub, type Registro } from "./registro-hub";
 import { piuCliccati } from "./gsc";
 import { giochiDelMomento, paroleDa, perModifica, senzaRipetizioni, titoloContiene } from "./home";
@@ -20,7 +20,8 @@ export type VoceGioco = { slug: string; nome: string; conta: number; immagine?: 
 export type SezioneDati =
   | { tipo: "giochi"; titolo: string; voci: VoceGioco[] }
   | { tipo: "articoli"; titolo: string; criterio: string; voci: Articolo[]; tutti?: { testo: string; href: string } }
-  | { tipo: "sfida"; titolo: string; sfida: SfidaInBreve };
+  | { tipo: "sfida"; titolo: string; sfida: SfidaInBreve }
+  | { tipo: "recensioni"; titolo: string; voci: Articolo[]; tutti: { testo: string; href: string } };
 
 const dataBreve = (iso: string) =>
   new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
@@ -93,6 +94,14 @@ async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeo
       titolo: s.titolo,
       voci: giochi.map((t, i) => ({ slug: t.slug, nome: t.name, conta: t.count, immagine: ultimi[i][0]?.immagine })),
     };
+  }
+
+  if (s.regola === "recensioni") {
+    // le recensioni in vetrina (richiesta del proprietario, 20/10/2026): la piu' recente in grande
+    const c = await terminePerSlug("categories", "recensioni");
+    if (!c) return null;
+    const voci = await articoliRecenti(`categories=${c.id}`, Number(s.parametro) || 8);
+    return voci.length ? { tipo: "recensioni", titolo: s.titolo, voci, tutti: { testo: "Tutte le recensioni", href: "/category/recensioni/" } } : null;
   }
 
   if (s.regola === "sfida") {

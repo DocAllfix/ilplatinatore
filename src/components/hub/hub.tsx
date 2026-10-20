@@ -13,6 +13,11 @@ import { IconaAiuto } from "./icone";
 import { Riprendi } from "./progresso";
 
 // i titoli arrivano gia' senza il nome del gioco: elenco e progresso li mostrano cosi' come sono
+import { FiguraVoto } from "@/components/recensione/figura-voto";
+import { fascia } from "@/lib/recensione";
+
+const BARRA_VOTO = { alta: "bg-azione", media: "bg-ciano", bassa: "bg-viola" } as const;
+
 const leggeri = (gruppi: DatiHub["gruppi"], gioco: string): Gruppo[] =>
   gruppi.map((g) => ({ aiuto: g.aiuto, guide: g.guide.map((a) => ({ id: a.id, titolo: senzaGioco(a.titolo, gioco), percorso: a.percorso })) }));
 
@@ -74,6 +79,34 @@ function Testata({ d }: { d: DatiHub }) {
         )}
       </div>
     </header>
+  );
+}
+
+/**
+ * La recensione del gioco in testa all'hub (richiesta del proprietario, 20/10/2026): il voto nella
+ * sua figura, il titolo e il riassunto, verso la recensione.
+ */
+function Recensione({ d }: { d: DatiHub }) {
+  const r = d.recensione;
+  if (!r) return null;
+  return (
+    <section aria-label="La nostra recensione" className="mt-6">
+      <Link
+        prefetch={false}
+        href={r.articolo.percorso}
+        data-misura="recensione_hub"
+        className="group relative flex items-center gap-4 overflow-hidden rounded-xl border border-linea bg-superficie py-4 pl-5 pr-4 transition-[border-color,transform] duration-150 active:scale-[0.99] [@media(hover:hover)]:hover:border-link"
+      >
+        <span className={`absolute inset-y-0 left-0 w-1.5 ${BARRA_VOTO[fascia(r.voto)]}`} aria-hidden="true" />
+        <FiguraVoto voto={r.voto} misura="piccola" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs font-semibold uppercase tracking-[0.06em] text-tenue">La nostra recensione</span>
+          <span className="mt-0.5 block font-bold leading-snug text-balance [@media(hover:hover)]:group-hover:text-link">{r.articolo.titolo}</span>
+          {r.articolo.riassunto && <span className="mt-1 line-clamp-2 block text-sm text-tenue">{r.articolo.riassunto}</span>}
+        </span>
+        <ArrowRightIcon weight="bold" className="size-4 shrink-0 text-link" aria-hidden="true" />
+      </Link>
+    </section>
   );
 }
 
@@ -249,6 +282,7 @@ export function Hub({ d }: { d: DatiHub }) {
   return (
     <>
       <Testata d={d} />
+      <Recensione d={d} />
       <Presentazione d={d} />
       <Completamento d={d} />
       <Riprendi tracciabili={d.tracciabili.map((t) => ({ ...t, titolo: senzaGioco(t.titolo, d.nome) }))} />
