@@ -107,8 +107,13 @@ export async function paginaArticoli(filtro: {
   tag?: number;
   autore?: number;
   ricerca?: string;
+  /** limiti esclusivi sulla data di pubblicazione, ora del sito (archivi per data) */
+  dopo?: string;
+  prima?: string;
 }): Promise<{ articoli: Articolo[]; totale: number; pagine: number } | null> {
   const q = new URLSearchParams({ status: "publish", per_page: String(PER_PAGINA), page: String(filtro.pagina) });
+  if (filtro.dopo) q.set("after", filtro.dopo);
+  if (filtro.prima) q.set("before", filtro.prima);
   if (filtro.categoria) q.set("categories", String(filtro.categoria));
   if (filtro.tag) q.set("tags", String(filtro.tag));
   if (filtro.autore) q.set("author", String(filtro.autore));
@@ -207,6 +212,34 @@ export async function testoAdsTxt(): Promise<string> {
   const r = await chiamata<{ testo?: unknown }>("/platinatore/v1/ads-txt");
   if (typeof r?.dati?.testo !== "string") throw new Error("ads.txt: il CMS non ha risposto");
   return r.dati.testo;
+}
+
+/** Le voci di llms.txt con le regole di Yoast: 5 articoli piu' recenti, pagine, categorie e 5 tag per numero di articoli. */
+export async function vociLlms(): Promise<{
+  articoli: Array<{ titolo: string; percorso: string; descrizione: string }>;
+  pagine: Array<{ titolo: string; percorso: string }>;
+  categorie: Array<{ titolo: string; percorso: string }>;
+  tag: Array<{ titolo: string; percorso: string }>;
+}> {
+  const [a, p, c, t] = await Promise.all([
+    chiamata<Array<{ title?: { rendered?: string }; link: string; yoast_head_json?: { description?: string } }>>(
+      "/wp/v2/posts?status=publish&per_page=5&_fields=title,link,yoast_head_json.description",
+    ),
+    chiamata<Array<{ title?: { rendered?: string }; slug: string }>>("/wp/v2/pages?status=publish&per_page=100&_fields=title,slug"),
+    chiamata<Array<{ name: string; slug: string }>>("/wp/v2/categories?orderby=count&order=desc&hide_empty=true&per_page=100&_fields=name,slug"),
+    chiamata<Array<{ name: string; slug: string }>>("/wp/v2/tags?orderby=count&order=desc&per_page=5&_fields=name,slug"),
+  ]);
+  if (!a || !p || !c || !t) throw new Error("llms.txt: il CMS non ha risposto");
+  return {
+    articoli: a.dati.map((x) => ({
+      titolo: decodificaEntita(x.title?.rendered),
+      percorso: new URL(x.link).pathname,
+      descrizione: decodificaEntita(x.yoast_head_json?.description ?? ""),
+    })),
+    pagine: p.dati.map((x) => ({ titolo: decodificaEntita(x.title?.rendered), percorso: `/${x.slug}/` })),
+    categorie: c.dati.map((x) => ({ titolo: decodificaEntita(x.name), percorso: `/category/${x.slug}/` })),
+    tag: t.dati.map((x) => ({ titolo: decodificaEntita(x.name), percorso: `/tag/${x.slug}/` })),
+  };
 }
 
 /** Elenco dei classici della sfida (mu-plugin, sezione 7). Vuoto se il CMS non risponde. */

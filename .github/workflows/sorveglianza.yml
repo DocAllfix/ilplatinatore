@@ -28,7 +28,7 @@ jobs:
     timeout-minutes: 5
     env:
       SITO: https://ilplatinatore.vercel.app
-      CMS: https://49-13-164-162.sslip.io
+      CMS: https://cms.ilplatinatore.it
     steps:
       - uses: actions/checkout@v4
       - name: Sito, immagini e CMS

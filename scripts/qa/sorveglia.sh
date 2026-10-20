@@ -4,7 +4,7 @@
 # Uso: SITO=https://... CMS=https://... scripts/qa/sorveglia.sh [rompi]
 set -u
 SITO=${SITO:-https://ilplatinatore.vercel.app}
-CMS=${CMS:-https://49-13-164-162.sslip.io}
+CMS=${CMS:-https://cms.ilplatinatore.it}
 errori=0
 prova() { # descrizione, indirizzo, testo che deve esserci (facoltativo)
   corpo=$(curl -sS -m 20 -w '\n%{http_code} %{time_total}' "$2" 2>&1) || true
