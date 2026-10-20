@@ -126,7 +126,9 @@ export function estraiScheda(html: string): { scheda: Scheda | null; corpo: stri
     let inizio = i;
     // il titolo subito prima («… informazioni sul Platino») resterebbe vuoto: si toglie con la tabella
     const prima = html.slice(0, i);
-    const h = prima.match(/<h[23][^>]*>[\s\S]*?<\/h[23]>\s*$/i);
+    // solo il titolo SUBITO prima: il contenuto non attraversa altri titoli (con [\s\S]*? la ricerca
+    // partiva dal primo titolo dell'articolo e poteva togliere tutto il testo fino alla tabella)
+    const h = prima.match(/<h([23])[^>]*>(?:(?!<\/?h[1-6][\s>])[\s\S])*<\/h\1>\s*$/i);
     if (h) inizio = i - h[0].length;
     return { scheda, corpo: html.slice(0, inizio) + html.slice(i + blocco.length) };
   }

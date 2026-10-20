@@ -50,10 +50,13 @@ export function estraiVerdetto(html: string): { voto: Voto | null; titolo: strin
 
   let inizio = m.index;
   let titolo = "Il verdetto";
-  const prima = html.slice(0, inizio).match(/<h[23][^>]*>([\s\S]*?)<\/h[23]>\s*$/i);
-  if (prima && /verdett/i.test(testoDi(prima[1]))) {
+  // SOLO l'ultimo titolo, subito prima del voto: il contenuto del titolo non puo' attraversare altri
+  // tag di titolo (20/10/2026: con [\s\S]*? la ricerca partiva dal PRIMO titolo dell'articolo e il
+  // corpo intero, fino al voto, spariva dalla pagina)
+  const prima = html.slice(0, inizio).match(/<h([23])[^>]*>((?:(?!<\/?h[1-6][\s>])[\s\S])*)<\/h\1>\s*$/i);
+  if (prima && /verdett/i.test(testoDi(prima[2]))) {
     inizio -= prima[0].length;
-    titolo = testoDi(prima[1]);
+    titolo = testoDi(prima[2]);
   }
   let fine = m.index + m[0].length;
   const paragrafi: string[] = [];

@@ -79,3 +79,15 @@ describe("spiegazioni di difficolta' e durata (parita' del 20/10/2026)", () => {
     expect(r.scheda?.nota).toBe("Fortemente dipendente dalle vostre abilità nei roguelite. A seconda della fortuna.");
   });
 });
+
+describe("la tabella riassuntiva non porta via il testo prima di lei", () => {
+  it("si toglie solo il titolo subito prima della tabella", () => {
+    const html = sanificaHtml(
+      `<h2>Introduzione</h2><p>testo da tenere</p><h2>Informazioni sul platino</h2><table><tr><td>Difficoltà stimata</td><td>5/10</td></tr><tr><td>Tempo per il Platino</td><td>20 ore</td></tr><tr><td>Trofei totali</td><td>40</td></tr></table><p>dopo</p>`,
+    );
+    const r = estraiScheda(html);
+    expect(r.scheda).not.toBeNull();
+    expect(r.corpo).toContain("<h2>Introduzione</h2><p>testo da tenere</p>");
+    expect(r.corpo).not.toContain("Informazioni sul platino");
+  });
+});

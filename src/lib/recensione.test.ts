@@ -59,3 +59,13 @@ describe("correlati automatici", () => {
     expect(correlatiAutomatici(["a"], [{ slug: "x" }], null)).toEqual([]);
   });
 });
+
+describe("il corpo della recensione resta intero (20/10/2026)", () => {
+  it("con piu' titoli prima del verdetto si toglie solo il titolo «Verdetto»", () => {
+    const html = `<p>intro</p><h2>Storia</h2><p>a</p><h2>Combattimento</h2><p>b</p>${HTML}`;
+    const r = estraiVerdetto(html);
+    expect(r.corpo).toContain("<h2>Storia</h2><p>a</p><h2>Combattimento</h2><p>b</p>");
+    expect(r.corpo).not.toContain("<h3>Verdetto</h3>");
+    expect(r.titolo).toBe("Verdetto");
+  });
+});
