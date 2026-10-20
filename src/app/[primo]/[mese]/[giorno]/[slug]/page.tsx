@@ -27,7 +27,6 @@ import { eHub } from "@/lib/registro-hub";
 import { guidaPlatinoDalTitolo } from "@/lib/hub";
 import { correlatiAutomatici, eRecensione, estraiVerdetto } from "@/lib/recensione";
 import { SchedaVerdetto } from "@/components/recensione/scheda-verdetto";
-import { SelettoreVarianti } from "@/components/lab/selettore-varianti";
 import { sitoPubblico } from "@/lib/cms/config";
 import { SchedaGioco } from "@/components/gioco/scheda-gioco";
 import { schedaDaDescrizione } from "@/lib/scheda-gioco";
@@ -164,8 +163,6 @@ export default async function PaginaArticolo({ params }: Parametri) {
             titolo={titoloVerdetto}
             verdetto={verdetto}
             gioco={iGioco >= 0 ? { nome: a.tag[iGioco].nome, slug: a.tag[iGioco].slug } : undefined}
-            // in prova sull'anteprima le tre forme della figura (selettore in fondo alla pagina)
-            forme={["a", "b", "c"]}
           />
         );
       }
@@ -180,20 +177,7 @@ export default async function PaginaArticolo({ params }: Parametri) {
 
   return (
     // Piano 07 chiuso: linea viola sui titoli e bagliore che pulsa (scelte del proprietario)
-    <article id={voto ? "lab" : undefined} data-v={voto ? "a" : undefined}>
-      {voto && (
-        <>
-          <style>{`#lab[data-v="a"] [data-variant]:not([data-variant="a"]),#lab[data-v="b"] [data-variant]:not([data-variant="b"]),#lab[data-v="c"] [data-variant]:not([data-variant="c"]){display:none}`}</style>
-          <SelettoreVarianti
-            sezione="Voto"
-            varianti={[
-              { id: "a", nome: "A · Esagono" },
-              { id: "b", nome: "B · Lastra inclinata" },
-              { id: "c", nome: "C · Rombo" },
-            ]}
-          />
-        </>
-      )}
+    <article>
       {anteprima && (
         // solo per chi scrive: la bozza non e' pubblicata
         <p className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border-2 border-avviso px-4 py-2 text-sm font-semibold text-avviso">

@@ -166,6 +166,8 @@ Sfondo #F4F6FA, superficie #FFFFFF, bordo #D5DAE5, testo #0B0D12 (17,9:1), testo
 
 **The Owner's White Exception.** Il Bianco puro esiste solo come testo sopra il Viola, come nei post. Ovunque altro, Platino.
 
+**The Score Bands Exception.** Il voto delle recensioni (20/10/2026, scelta del proprietario) usa i tre accenti come fasce, non per il loro lavoro: dall'8 su 10 Acido (testo Notte), dal 6 Ciano (testo Notte), sotto il 6 Viola (testo Bianco). La barra laterale di ogni scheda che mostra un voto ha SEMPRE il colore della sua fascia. È l'unica eccezione alla Three Jobs Rule.
+
 ## 3. Typography
 
 **Font unico:** Jost (variabile, ospitato in locale, licenza OFL), con fallback di sistema. È il carattere del sito di oggi: i lettori lo riconoscono.
@@ -214,6 +216,11 @@ Righe in Piombo separate da Bordo; colonne stato, elemento, area, prerequisito, 
 
 ### Correlati contestuali (PDF 07)
 Riquadri «Prima di continuare», «Procedura dettagliata», «Prossimo obiettivo»: bordo completo da 1 px e un'icona iniziale, mai una striscia colorata sul lato. Ogni riquadro dice perché il collegamento serve.
+
+### Recensioni (20/10/2026)
+- **Figura del voto**: la lastra inclinata (-6°) del blocco del Platino, piena nel colore della fascia, numero con la virgola italiana e «su 10» sotto. Scelta del proprietario fra esagono, lastra e rombo: «richiama il sito».
+- **Scheda del verdetto**: barra laterale della fascia, figura, «Verdetto» e nome del gioco, il paragrafo del verdetto finale, in basso «Tutte le guide di …» verso l'hub.
+- **Etichetta «Recensione»** in Viola con testo Bianco; nel menu «Recensioni» è una pastiglia Viola, l'unica voce in rilievo.
 
 ### Etichette e tag
 Gioco in Viola pieno con testo Bianco; tipo di aiuto con bordo e testo Acciaio.

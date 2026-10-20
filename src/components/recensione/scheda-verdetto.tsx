@@ -4,37 +4,27 @@
 
 import { ArrowRightIcon } from "@phosphor-icons/react/ssr";
 import Link from "@/components/collegamento";
-import { fascia, type Voto } from "@/lib/recensione";
-import { FiguraVoto, type Forma } from "./figura-voto";
-
-const BARRA = { alta: "bg-azione", media: "bg-ciano", bassa: "bg-viola" } as const;
+import type { Voto } from "@/lib/recensione";
+import { BarraFascia, FiguraVoto } from "./figura-voto";
 
 export function SchedaVerdetto({
   voto,
   titolo,
   verdetto,
   gioco,
-  forme = ["a"],
 }: {
   voto: Voto;
   titolo: string;
   /** HTML gia' sanificato del paragrafo (o dei paragrafi) del verdetto finale */
   verdetto: string;
   gioco?: { nome: string; slug: string };
-  /** sull'anteprima tutte e tre le forme, una per variante; poi una sola */
-  forme?: Forma[];
 }) {
-  const f = fascia(voto);
   return (
     <aside aria-label={titolo} className="relative my-8 overflow-hidden rounded-xl border border-linea bg-superficie">
-      <span className={`absolute inset-y-0 left-0 w-1.5 ${BARRA[f]}`} aria-hidden="true" />
+      <BarraFascia voto={voto} />
       <div className="flex flex-col gap-4 py-5 pl-6 pr-5 sm:flex-row sm:items-start sm:gap-5">
         <div className="flex items-center gap-4 sm:flex-col sm:items-center sm:gap-2">
-          {forme.map((forma) => (
-            <span key={forma} data-variant={forme.length > 1 ? forma : undefined}>
-              <FiguraVoto voto={voto} forma={forma} />
-            </span>
-          ))}
+          <FiguraVoto voto={voto} />
           <p className="sm:hidden">
             <span className="block text-xs font-semibold uppercase tracking-[0.06em] text-tenue">{titolo}</span>
             {gioco && <span className="block text-lg font-bold leading-tight text-balance">{gioco.nome}</span>}

@@ -13,10 +13,7 @@ import { IconaAiuto } from "./icone";
 import { Riprendi } from "./progresso";
 
 // i titoli arrivano gia' senza il nome del gioco: elenco e progresso li mostrano cosi' come sono
-import { FiguraVoto } from "@/components/recensione/figura-voto";
-import { fascia } from "@/lib/recensione";
-
-const BARRA_VOTO = { alta: "bg-azione", media: "bg-ciano", bassa: "bg-viola" } as const;
+import { BarraFascia, FiguraVoto } from "@/components/recensione/figura-voto";
 
 const leggeri = (gruppi: DatiHub["gruppi"], gioco: string): Gruppo[] =>
   gruppi.map((g) => ({ aiuto: g.aiuto, guide: g.guide.map((a) => ({ id: a.id, titolo: senzaGioco(a.titolo, gioco), percorso: a.percorso })) }));
@@ -97,7 +94,7 @@ function Recensione({ d }: { d: DatiHub }) {
         data-misura="recensione_hub"
         className="group relative flex items-center gap-4 overflow-hidden rounded-xl border border-linea bg-superficie py-4 pl-5 pr-4 transition-[border-color,transform] duration-150 active:scale-[0.99] [@media(hover:hover)]:hover:border-link"
       >
-        <span className={`absolute inset-y-0 left-0 w-1.5 ${BARRA_VOTO[fascia(r.voto)]}`} aria-hidden="true" />
+        <BarraFascia voto={r.voto} />
         <FiguraVoto voto={r.voto} misura="piccola" />
         <span className="min-w-0 flex-1">
           <span className="block text-xs font-semibold uppercase tracking-[0.06em] text-tenue">La nostra recensione</span>

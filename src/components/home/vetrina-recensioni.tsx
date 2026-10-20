@@ -1,17 +1,15 @@
 // Le recensioni in home (richiesta del proprietario, 20/10/2026: «posizionamento e trattamento
 // premium»). La piu' recente in vetrina: copertina larga, il voto nella sua figura sopra il bordo
 // dell'immagine, titolo, riassunto del verdetto e invito a leggerla; la barra laterale ha il colore
-// della fascia del voto, come la scheda del verdetto. Le altre seguono in fila come locandine.
+// della fascia del voto, sempre, come la scheda del verdetto (richiesta del proprietario). Le altre seguono in fila come locandine.
 
 import { ArrowRightIcon } from "@phosphor-icons/react/ssr";
 import { CartaArticolo } from "@/components/carta-articolo";
 import Link from "@/components/collegamento";
-import { FiguraVoto } from "@/components/recensione/figura-voto";
+import { BarraFascia, FiguraVoto } from "@/components/recensione/figura-voto";
 import type { Articolo } from "@/lib/cms/tipi";
-import { fascia, votoDaMeta } from "@/lib/recensione";
+import { votoDaMeta } from "@/lib/recensione";
 import { FilaScorrevole } from "./fila-scorrevole";
-
-const BARRA = { alta: "bg-azione", media: "bg-ciano", bassa: "bg-viola" } as const;
 
 function Vetrina({ a, sezione }: { a: Articolo; sezione: string }) {
   const voto = votoDaMeta(a.meta);
@@ -24,7 +22,7 @@ function Vetrina({ a, sezione }: { a: Articolo; sezione: string }) {
       data-misura-dettaglio={sezione}
       className="group relative block overflow-hidden rounded-xl border border-linea bg-superficie transition-[border-color,transform] duration-150 active:scale-[0.99] [@media(hover:hover)]:hover:border-link"
     >
-      {voto && <span className={`absolute inset-y-0 left-0 z-10 w-1.5 ${BARRA[fascia(voto)]}`} aria-hidden="true" />}
+      {voto && <BarraFascia voto={voto} />}
       <span className="relative block aspect-[16/9] bg-superficie-alta">
         {a.immagine && (
           // eslint-disable-next-line @next/next/no-img-element
