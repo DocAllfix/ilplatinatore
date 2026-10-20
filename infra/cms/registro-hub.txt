@@ -1,0 +1,16 @@
+# Registro degli hub (approvato dal proprietario il 20/10/2026).
+# Una sezione per riga: «Nome: parola, parola». L'ordine conta: un articolo va nella prima sezione che combacia.
+# Una parola che finisce con * vale con qualunque finale (collezionabil* = collezionabile, collezionabili).
+# Generico: la sezione per i titoli che non combaciano con niente. Esclusi: i tag che non sono giochi (slug).
+
+Collezionabili: collezionabil*, posizion*, dove trovar*, come trovar*, trovare tutt*, ambre, disegni, collilungh*, calderon*, spiritell*, manufatt*, documenti, segreti, nascost*, tesor*, forzier*, chiavi, reliquie, sorgenti
+Sfide ed eventi: sbc, sfid*, challenge, obiettiv*, event*, stagion*, battle pass, ricompens*, ultimate team, myteam, future stars, guanto di sfida, settimanal*, giornalier*, override
+Enigmi e puzzle: enigm*, puzzle, rompicap*, soluzion*, codic*, congegn*, risolvere, sigill*, password, combinazion*
+Boss: boss, sconfigger*, battere, batterl*, affrontare, uccider*, supremo, duello
+Missioni e storia: mission*, quest, profezi*, capitol*, storia, finale, finali, incaric*, epilogo, racconto*, trama
+Trofei: trofe*, platino, mancabil*, roadmap, 100%
+Build, armi e abilità: build, arma, armi, abilita, potenzi*, equipaggiament*, armatur*, statistich*, talent*, cure, fiale, crafting, ricett*, materiali, upgrade, livell*, classi, classe, skill, perk*, magie, poteri, incantesim*, archetip*, modificator*, personaggi*
+Novità e uscite: uscita, data di, prezzo, pre-order, preorder, trailer, annunc*, rivelat*, vendit*, aggiornament*, patch, requisiti, dlc, espansion*, esce, lancio, gratis, ps plus, game pass, rimborso, specifiche
+
+Generico: Come fare e consigli
+Esclusi: novita, playstation-5, xbox, nintendo-switch, warhammer-40000

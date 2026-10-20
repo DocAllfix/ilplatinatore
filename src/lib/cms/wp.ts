@@ -9,6 +9,7 @@
 import { cmsUrl, cmsUrlContenuti, credenzialiCms, sitoPubblico, PER_PAGINA } from "./config";
 import { mappaPost, mappaVoce, decodificaEntita } from "./mappa";
 import { seoDaYoast } from "./seo";
+import { leggiRegistro, type Registro } from "../registro-hub";
 import type { Articolo, PaginaWP, PostWP, Seo, TermineCompletoWP, VoceArticolo } from "./tipi";
 
 // tempi brevi: con il CMS lento meglio una sezione in meno che una pagina che non risponde
@@ -205,6 +206,16 @@ export async function tagDegliUltimi(dopo: Date): Promise<number[][]> {
     if (!r || p >= r.pagine) break;
   }
   return out;
+}
+
+/**
+ * Il registro degli hub (mu-plugin, sezione 10): quali tag sono hub e le parole delle sezioni.
+ * Il CMS che non risponde e' un errore: resta la versione buona della pagina.
+ */
+export async function registroHub(): Promise<Registro> {
+  const r = await chiamata<{ testo?: unknown }>("/platinatore/v1/registro-hub");
+  if (typeof r?.dati?.testo !== "string") throw new Error("registro degli hub: il CMS non ha risposto");
+  return leggiRegistro(r.dati.testo);
 }
 
 /** Il testo di ads.txt (mu-plugin, sezione 9). Il CMS che non risponde e' un errore: resta la versione buona. */

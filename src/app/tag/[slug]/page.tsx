@@ -6,6 +6,7 @@ import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { jsonLd } from "@/lib/cms/seo";
 import { seoTermine, tuttiITermini } from "@/lib/cms/wp";
 import { descrizioneHub } from "@/lib/hub";
+import { titoloHub } from "@/lib/registro-hub";
 import { datiHub, type DatiHub } from "@/lib/hub-dati";
 
 export const revalidate = 3600;
@@ -20,13 +21,14 @@ export async function generateMetadata({ params }: PageProps<"/tag/[slug]">): Pr
   const d = await datiHub(slug);
   if (!d) return metadatiTermine("tag", slug);
   // Hub (piano 04): titolo e descrizione nuovi al posto di «<Gioco> Archivi» senza descrizione
-  // (Fase 0, punto 5). Canonical, robots e il resto restano quelli di Yoast.
+  // (Fase 0, punto 5), fatti con le sezioni che l'hub ha davvero (registro, 20/10/2026): niente
+  // «trofei e Platino» per un gioco che non li ha. Canonical, robots e il resto restano di Yoast.
   const seo = await seoTermine("tag", slug);
   if (!seo) return {};
   const i = seo.title?.lastIndexOf(" -") ?? -1;
   const coda = seo.title && i > -1 ? seo.title.slice(i) : "";
-  const titolo = `${d.nome}: guide, trofei e Platino${coda}`;
-  const descrizione = descrizioneHub(d.gioco, d.nome);
+  const titolo = `${titoloHub(d.nome, d.argomenti)}${coda}`;
+  const descrizione = descrizioneHub(d.gioco, d.nome, d.argomenti);
   return metadatiDaSeo({ ...seo, title: titolo, ogTitle: titolo, description: descrizione, ogDescription: descrizione });
 }
 
@@ -37,7 +39,7 @@ function schemaHub(d: DatiHub) {
   return {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `${d.nome}: guide, trofei e Platino`,
+    name: titoloHub(d.nome, d.argomenti),
     url: `${base}/tag/${d.slug}/`,
     inLanguage: "it-IT",
     about: {

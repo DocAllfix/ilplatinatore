@@ -2,7 +2,8 @@
 // Ogni sezione dichiara il suo criterio in pagina, come chiede il PDF (02).
 
 import type { Articolo } from "./cms/tipi";
-import { articoliModificati, articoliPerSlug, sezioniHome, tagDegliUltimi, terminePerSlug, tuttiITermini, ultimiPubblicati, type SezioneHome } from "./cms/wp";
+import { articoliModificati, articoliPerSlug, registroHub, sezioniHome, tagDegliUltimi, terminePerSlug, tuttiITermini, ultimiPubblicati, type SezioneHome } from "./cms/wp";
+import { eHub, type Registro } from "./registro-hub";
 import { piuCliccati } from "./gsc";
 import { giochiDelMomento, paroleDa, perModifica, senzaRipetizioni, titoloContiene } from "./home";
 import { giornoRoma, NOMI_FORMATO, numeroSfida } from "./sfida";
@@ -25,7 +26,7 @@ const dataBreve = (iso: string) =>
   new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
 const giorniFa = (oggi: Date, n: number) => new Date(oggi.getTime() - n * 86_400_000);
 
-async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeof tuttiITermini>>): Promise<SezioneDati | null> {
+async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeof tuttiITermini>>, registro: Registro): Promise<SezioneDati | null> {
   const meta = (t: (typeof tag)[number], k: string) => (typeof t.meta?.[k] === "string" ? (t.meta[k] as string) : "");
 
   if (s.regola === "piu-letti") {
@@ -42,7 +43,7 @@ async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeo
 
   if (s.regola === "giochi-momento") {
     const giorni = Number(s.parametro) || 30;
-    const giochi = new Set(tag.filter((t) => meta(t, "pl_sfida") === "1" || meta(t, "pl_gioco") === "1").map((t) => t.id));
+    const giochi = new Set(tag.filter((t) => eHub(t.slug, registro)).map((t) => t.id));
     const scelti = giochiDelMomento(await tagDegliUltimi(giorniFa(oggi, giorni)), giochi, 6);
     if (!scelti.length) return null;
     const nomi = scelti.map((id) => tag.find((t) => t.id === id)?.name).filter(Boolean);
@@ -82,7 +83,7 @@ async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeo
     // i giochi con l'hub, dal piu' coperto; l'immagine e' quella del loro articolo piu' recente
     const quanti = Number(s.parametro) || 12;
     const giochi = tag
-      .filter((t) => meta(t, "pl_gioco") === "1" && t.count > 0)
+      .filter((t) => eHub(t.slug, registro) && t.count > 0)
       .sort((a, b) => b.count - a.count)
       .slice(0, quanti);
     if (!giochi.length) return null;
@@ -117,14 +118,14 @@ async function sezione(s: SezioneHome, oggi: Date, tag: Awaited<ReturnType<typeo
 
 /** La home: l'hero (gli ultimi 3 pubblicati, piano 07) e le sezioni. */
 export async function datiHome(oggi: Date): Promise<{ hero: Articolo[]; sezioni: SezioneDati[] }> {
-  const [elenco, tag, hero] = await Promise.all([sezioniHome(), tuttiITermini("tags"), ultimiPubblicati(3)]);
+  const [elenco, tag, hero, registro] = await Promise.all([sezioniHome(), tuttiITermini("tags"), ultimiPubblicati(3), registroHub()]);
   // Una sezione VUOTA (nessun articolo per la sua regola) non compare: e' normale. Una sezione FALLITA
   // (CMS lento o in errore) invece fa fallire tutta la home: cosi' Next tiene la versione buona di prima
   // invece di salvare una home a meta' per un'ora (17/10/2026: home salvata con la sola sfida). Al build,
   // la pubblicazione fallisce e resta online quella precedente.
   const entro = <T,>(p: Promise<T>, ms: number, nome: string) =>
     Promise.race([p, new Promise<never>((_, no) => setTimeout(() => no(new Error(`Home: la sezione «${nome}» non ha risposto in ${ms / 1000} s`)), ms))]);
-  const tutte = (await Promise.all(elenco.map((s) => entro(sezione(s, oggi, tag), 20_000, s.titolo)))).filter(
+  const tutte = (await Promise.all(elenco.map((s) => entro(sezione(s, oggi, tag, registro), 20_000, s.titolo)))).filter(
     (x): x is SezioneDati => x !== null,
   );
   // gli articoli dell'hero non si ripetono nelle sezioni sotto

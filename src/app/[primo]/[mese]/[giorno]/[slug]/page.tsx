@@ -22,7 +22,8 @@ import { Correlato } from "@/components/guida/correlato";
 import { collezionabiliDaRighe, collocaCorrelati, correlatiDaCampi, estraiTabelleOggetti, righeDaCampi } from "@/lib/guida/collezionabili";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { jsonLd } from "@/lib/cms/seo";
-import { articoloPerId, articoloPerSlug, indirizzoAttuale, terminePerSlug, tuttiGliArticoli } from "@/lib/cms/wp";
+import { articoloPerId, articoloPerSlug, indirizzoAttuale, terminePerSlug, tuttiGliArticoli, registroHub } from "@/lib/cms/wp";
+import { eHub } from "@/lib/registro-hub";
 import { SchedaGioco } from "@/components/gioco/scheda-gioco";
 import { schedaDaDescrizione } from "@/lib/scheda-gioco";
 
@@ -103,14 +104,14 @@ export default async function PaginaArticolo({ params }: Parametri) {
   );
   // Fase 5: gli spazi di HB dopo il 1°, 3°, 4°, 5° e 7° paragrafo, come Advanced Ads oggi
   const pezzi = dividiCorpo(inserisciAnnunci(html));
-  const termini = await Promise.all(a.tag.map((t) => terminePerSlug("tags", t.slug)));
+  const [termini, registro] = await Promise.all([Promise.all(a.tag.map((t) => terminePerSlug("tags", t.slug))), registroHub()]);
   const giochi: Array<{ slug: string; nome: string; dati: ReturnType<typeof schedaDaDescrizione> }> = [];
   const altriTag: typeof a.tag = [];
   a.tag.forEach((t, i) => {
     const tt = termini[i];
     const dati = schedaDaDescrizione(tt?.description);
-    const segnato = tt?.meta?.pl_gioco === "1" || tt?.meta?.pl_sfida === "1";
-    if (dati || segnato) giochi.push({ slug: t.slug, nome: t.nome, dati });
+    // ogni tag e' il suo gioco, tranne gli esclusi del registro (scelta del proprietario, 20/10/2026)
+    if (tt && eHub(t.slug, registro)) giochi.push({ slug: t.slug, nome: t.nome, dati });
     else altriTag.push(t);
   });
   const idsTrofei = gruppi.flatMap((g) => g.voci.map((v) => v.id));

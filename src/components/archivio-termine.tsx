@@ -10,7 +10,8 @@ import { descrizioneTag, schedaDaDescrizione } from "@/lib/scheda-gioco";
 import { immagineSchema, metadatiDaSeo, seoPaginata } from "@/lib/cms/metadati";
 import { conImmaginePrincipale } from "@/lib/cms/seo";
 import { numeroPagina } from "@/lib/cms/pagina";
-import { paginaArticoli, seoTermine, terminePerSlug, tuttiGliAutori } from "@/lib/cms/wp";
+import { paginaArticoli, registroHub, seoTermine, terminePerSlug, tuttiGliAutori } from "@/lib/cms/wp";
+import { eHub } from "@/lib/registro-hub";
 import type { Seo } from "@/lib/cms/tipi";
 
 export type Tipo = "category" | "tag" | "author";
@@ -24,8 +25,9 @@ async function termine(tipo: Tipo, slug: string): Promise<Termine | null> {
   }
   const t = await terminePerSlug(tipo === "category" ? "categories" : "tags", slug);
   if (!t) return null;
-  const segnato = t.meta?.pl_gioco === "1" || t.meta?.pl_sfida === "1";
-  return { id: t.id, nome: t.name, descrizione: t.description || undefined, gioco: segnato };
+  // ogni tag e' un gioco, tranne gli esclusi del registro (scelta del proprietario, 20/10/2026)
+  const gioco = tipo === "tag" && eHub(slug, await registroHub());
+  return { id: t.id, nome: t.name, descrizione: t.description || undefined, gioco };
 }
 
 function base(tipo: Tipo, slug: string) {

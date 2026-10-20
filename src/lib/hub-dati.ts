@@ -1,14 +1,16 @@
 // Raccoglie dal CMS tutto quello che serve all'hub di un gioco (piano 04). Solo lato server.
-// Se il tag non e' segnato come gioco restituisce null e la pagina resta l'archivio di oggi.
+// Ogni tag con articoli e' un hub, tranne gli esclusi del registro (scelta del proprietario,
+// 20/10/2026): per quelli restituisce null e la pagina resta l'archivio di oggi.
 
 import { PER_PAGINA } from "./cms/config";
-import { articoliDelTag, articoloPerSlug, terminePerSlug } from "./cms/wp";
+import { articoliDelTag, articoloPerSlug, registroHub, terminePerSlug } from "./cms/wp";
 import type { Articolo, Immagine } from "./cms/tipi";
 import { collezionabiliDaCampi } from "./guida/collezionabili";
 import { schedaDaCampi, trofeiDaCampi } from "./guida/campi";
 import { estraiChecklist } from "./guida/checklist";
 import { estraiScheda, type Scheda } from "./guida/scheda";
-import { copertinaHub, giocoDaMeta, guidaPlatinoDalTitolo, perAiuto, type Gioco } from "./hub";
+import { copertinaHub, giocoDaMeta, guidaPlatinoDalTitolo, type Gioco } from "./hub";
+import { argomentiHub, eHub, perSezione } from "./registro-hub";
 import { schedaDaDescrizione, type SchedaGioco } from "./scheda-gioco";
 
 /** Un articolo con spunte: l'hub legge dal browser quante ne ha fatte il lettore. */
@@ -25,7 +27,9 @@ export type DatiHub = {
   copertina?: Immagine;
   scheda: Scheda | null;
   iniziaQui: Articolo[];
-  gruppi: ReturnType<typeof perAiuto<Articolo>>;
+  gruppi: ReturnType<typeof perSezione<Articolo>>;
+  /** le parole brevi delle sezioni presenti, per titolo e descrizione («Platino», «collezionabili») */
+  argomenti: string[];
   notizie: Articolo[];
   tracciabili: Tracciabile[];
   aggiornato?: string;
@@ -36,11 +40,12 @@ export type DatiHub = {
 const NOTIZIE = /^news$|notizi/i;
 
 export async function datiHub(slug: string): Promise<DatiHub | null> {
-  const t = await terminePerSlug("tags", slug);
-  const gioco = giocoDaMeta(t?.meta);
-  if (!t || !gioco) return null;
+  const [t, registro] = await Promise.all([terminePerSlug("tags", slug), registroHub()]);
+  if (!t || !eHub(slug, registro) || !t.count) return null;
+  const gioco = giocoDaMeta(t.meta);
 
   const articoli = await articoliDelTag(t.id);
+  if (!articoli.length) return null;
   // la guida al Platino: quella del campo; se manca, quella trovata dal titolo (scelta dell'utente,
   // 18/10/2026: con 56 hub nessuno compilerebbe il campo a mano)
   const slugPlatino = gioco.guidaPlatino ?? guidaPlatinoDalTitolo(articoli)?.slug;
@@ -70,6 +75,7 @@ export async function datiHub(slug: string): Promise<DatiHub | null> {
     else if (trofei.length) tracciabili.push({ id: a.id, titolo: a.titolo, percorso: a.percorso, ids: trofei, unita: "trofei" });
   }
 
+  const gruppi = perSezione(guide, t.name, registro);
   const perSlug = new Map(articoli.map((a) => [a.slug, a]));
   const aggiornato = articoli.map((a) => a.modificato ?? a.data).sort().at(-1);
   return {
@@ -81,7 +87,8 @@ export async function datiHub(slug: string): Promise<DatiHub | null> {
     copertina: copertinaHub(platino, guide),
     scheda,
     iniziaQui: gioco.iniziaQui.map((s) => perSlug.get(s)).filter((a): a is Articolo => Boolean(a)),
-    gruppi: perAiuto(guide),
+    gruppi,
+    argomenti: argomentiHub(gruppi.map((g) => g.aiuto), Boolean(platino), registro),
     notizie,
     tracciabili,
     aggiornato,

@@ -1,39 +1,12 @@
-// Hub del gioco (PDF 04, piano 04): dati del gioco dai campi del tag (mu-plugin, sezione 6) e tipo
-// di aiuto di ogni guida dedotto dal titolo (scelta dell'utente, 17/10/2026). Funzioni pure.
+// Hub del gioco (PDF 04, piano 04): dati facoltativi del gioco dai campi del tag (mu-plugin, sezione 6).
+// Le sezioni dell'hub e quali tag sono hub li decide il registro (src/lib/registro-hub.ts). Funzioni pure.
+
+import { descrizioneDaSezioni } from "./registro-hub";
 
 type Meta = Record<string, unknown> | undefined;
 
-export const AIUTI = [
-  "Platino e trofei",
-  "Collezionabili",
-  "Missioni",
-  "Boss",
-  "Armi e potenziamenti",
-  "Meccaniche e consigli",
-] as const;
-export type Aiuto = (typeof AIUTI)[number];
-
-const normale = (s: string) =>
-  s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "");
-
-// L'ordine conta: vince la prima regola che combacia. Una guida ai collezionabili che cita un trofeo
-// («17 disegni e il trofeo Il Bestiario») e' una guida ai collezionabili.
-const REGOLE: Array<[Aiuto, RegExp]> = [
-  ["Collezionabili", /collezionabil|\bambre\b|\bamber\b|\bdisegni\b|\bcollectible/],
-  ["Missioni", /\bmission[ei]\b|\bquest\b|\bcompletare\b/],
-  ["Boss", /\bboss\b|sconfiggere/],
-  ["Platino e trofei", /platino|\btrofe|mancabil|dopo il finale|\b100%/],
-  ["Armi e potenziamenti", /\barmi\b|potenzia|abilita|\bcure\b|\bfiale\b|\bbuild\b|equipaggiament/],
-];
-
-/** Il tipo di aiuto dal titolo; quello che non combacia con niente e' «Meccaniche e consigli». */
-export function tipoAiuto(titolo: string): Aiuto {
-  const t = normale(titolo);
-  return REGOLE.find(([, rx]) => rx.test(t))?.[0] ?? "Meccaniche e consigli";
-}
+/** Il nome di una sezione dell'hub: le sezioni stanno nel registro del CMS (src/lib/registro-hub.ts). */
+export type Aiuto = string;
 
 export type Gioco = {
   presentazione: string;
@@ -48,9 +21,12 @@ export type Gioco = {
 
 const str = (v: unknown) => (typeof v === "string" ? v.replace(/\s*[–—]\s*/g, "-").trim() : "");
 
-/** I dati del gioco, o null se il tag non e' segnato come gioco: allora resta l'archivio di oggi. */
-export function giocoDaMeta(meta: Meta): Gioco | null {
-  if (!meta || str(meta.pl_gioco) !== "1") return null;
+/**
+ * I dati facoltativi del gioco dai campi del tag. Non decidono piu' se il tag e' un hub: lo e' ogni
+ * tag non escluso dal registro (scelta del proprietario, 20/10/2026).
+ */
+export function giocoDaMeta(meta: Meta): Gioco {
+  meta ??= {};
   const uscita = str(meta.pl_uscita);
   const slug = (s: string) => s.replace(/\/+$/, "").split("/").pop()!.toLowerCase();
   return {
@@ -71,19 +47,10 @@ export function giocoDaMeta(meta: Meta): Gioco | null {
   };
 }
 
-/** Le guide divise per tipo di aiuto, nell'ordine di AIUTI; i tipi vuoti non compaiono. */
-export function perAiuto<T extends { titolo: string }>(guide: T[]): Array<{ aiuto: Aiuto; guide: T[] }> {
-  const gruppi = new Map<Aiuto, T[]>();
-  for (const g of guide) {
-    const a = tipoAiuto(g.titolo);
-    gruppi.set(a, [...(gruppi.get(a) ?? []), g]);
-  }
-  return AIUTI.filter((a) => gruppi.has(a)).map((aiuto) => ({ aiuto, guide: gruppi.get(aiuto)! }));
-}
-
-/** Descrizione per i motori: la presentazione tagliata su una parola, sotto i 160 caratteri. */
-export function descrizioneHub(g: Gioco, nome: string): string {
-  const base = g.presentazione || `Tutte le guide di ${nome}: Platino, trofei, collezionabili e missioni.`;
+/** Descrizione per i motori: la presentazione tagliata su una parola, o quella fatta dalle sezioni presenti. */
+export function descrizioneHub(g: Gioco, nome: string, argomenti: string[]): string {
+  if (!g.presentazione) return descrizioneDaSezioni(nome, argomenti);
+  const base = g.presentazione;
   if (base.length <= 158) return base;
   return `${base.slice(0, 155).replace(/\s+\S*$/, "")}…`;
 }

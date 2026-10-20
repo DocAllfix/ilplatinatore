@@ -149,12 +149,12 @@ function CartaPlatino({ a }: { a: Articolo }) {
         <img src={a.immagine.src} srcSet={a.immagine.srcset} sizes="176px" alt="" loading="lazy" className="h-full min-h-28 w-full object-cover" />
       ) : (
         <span className="flex items-center justify-center bg-superficie-alta">
-          <IconaAiuto aiuto="Platino e trofei" className="size-8 text-viola-testo" />
+          <IconaAiuto aiuto="Trofei" className="size-8 text-viola-testo" />
         </span>
       )}
       <span className="min-w-0 p-3">
         <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.06em] text-viola-testo">
-          <IconaAiuto aiuto="Platino e trofei" className="size-4" />
+          <IconaAiuto aiuto="Trofei" className="size-4" />
           Guida al Platino
         </span>
         <span className="mt-1 block font-bold leading-snug text-balance [@media(hover:hover)]:group-hover:text-link">{senzaGioco(a.titolo)}</span>
@@ -238,10 +238,10 @@ export function Hub({ d }: { d: DatiHub }) {
       testo: "Capitolo per capitolo, con le tabelle dei mancanti.",
       corpo: <ElencoBreve guide={gruppo("Collezionabili")} />,
     },
-    gruppo("Platino e trofei").length > 0 && {
+    gruppo("Trofei").length > 0 && {
       titolo: "Pulizia finale",
       testo: "Gli ultimi trofei e cosa fare dopo i titoli di coda.",
-      corpo: <ElencoBreve guide={gruppo("Platino e trofei")} />,
+      corpo: <ElencoBreve guide={gruppo("Trofei")} />,
     },
   ].filter(Boolean) as Array<{ titolo: string; testo: string; corpo: React.ReactNode }>;
 

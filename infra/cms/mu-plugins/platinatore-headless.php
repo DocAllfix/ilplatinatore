@@ -576,5 +576,52 @@ add_action('rest_api_init', function () {
     ));
 });
 
+/* ---------------------------------------------------------------------------------------
+ * 10. REGISTRO DEGLI HUB (approvato dal proprietario il 20/10/2026)
+ *
+ * Ogni tag e' l'hub del suo gioco, tranne gli esclusi; le sezioni dell'hub nascono dalle parole
+ * dei titoli. Il testo si scrive in Strumenti > Registro degli hub e il sito lo legge da qui
+ * (lettura e regole in src/lib/registro-hub.ts). Testo di partenza: infra/cms/registro-hub.txt.
+ * ------------------------------------------------------------------------------------- */
+
+add_action('rest_api_init', function () {
+    register_rest_route('platinatore/v1', '/registro-hub', array(
+        'methods'             => 'GET',
+        'permission_callback' => '__return_true',
+        'callback'            => function () {
+            return rest_ensure_response(array('testo' => (string) get_option('platinatore_registro_hub', '')));
+        },
+    ));
+});
+
+add_action('admin_menu', function () {
+    add_management_page('Registro degli hub', 'Registro degli hub', 'edit_others_posts', 'platinatore-registro-hub', function () {
+        if (isset($_POST['platinatore_registro_hub']) && check_admin_referer('platinatore_registro_hub')) {
+            update_option('platinatore_registro_hub', sanitize_textarea_field(wp_unslash($_POST['platinatore_registro_hub'])), false);
+            echo '<div class="notice notice-success"><p>Salvato. Gli hub si aggiornano in pochi secondi.</p></div>';
+            if (defined('PLATINATORE_SITO_PUBBLICO') && defined('PLATINATORE_REVALIDATE_TOKEN')) {
+                wp_remote_post(rtrim(PLATINATORE_SITO_PUBBLICO, '/') . '/api/revalidate/', array(
+                    'timeout' => 3, 'blocking' => true,
+                    'headers' => array('Content-Type' => 'application/json', 'x-cms-token' => PLATINATORE_REVALIDATE_TOKEN),
+                    'body'    => '{}',
+                ));
+            }
+        }
+        echo '<div class="wrap"><h1>Registro degli hub</h1>';
+        echo '<p>Ogni tag diventa la pagina del suo gioco (hub), tranne quelli in <code>Esclusi</code>. Le sezioni dell hub nascono dai titoli degli articoli.</p>';
+        echo '<ul style="list-style:disc;padding-left:2em">';
+        echo '<li>Una sezione per riga: <code>Nome: parola, parola, parola</code>. L ordine conta: un articolo va nella prima sezione che combacia.</li>';
+        echo '<li>Una parola che finisce con <code>*</code> vale con qualunque finale: <code>collezionabil*</code> vale per collezionabile e collezionabili. Maiuscole e accenti non contano.</li>';
+        echo '<li><code>Generico: nome</code> e la sezione per i titoli che non combaciano con niente, sempre per ultima.</li>';
+        echo '<li><code>Esclusi: slug, slug</code> sono i tag che non sono giochi: restano archivi normali.</li>';
+        echo '<li>Le righe che iniziano con <code>#</code> sono note.</li></ul>';
+        echo '<form method="post">';
+        wp_nonce_field('platinatore_registro_hub');
+        echo '<textarea name="platinatore_registro_hub" rows="20" class="large-text code">' . esc_textarea(get_option('platinatore_registro_hub', '')) . '</textarea>';
+        submit_button('Salva');
+        echo '</form></div>';
+    });
+});
+
 // NB dal riferimento: l'elenco delle rotte REST NON va filtrato a mano (`rest_endpoints`): un
 // filtro cosi' ha mandato in errore fatale tutta la REST API.
