@@ -136,6 +136,10 @@ CONFRONTATI = ["titolo", "contenuto", "riassunto", "slug", "stato", "autore", "d
 
 def differenze(a, h):
     campi = [c for c in CONFRONTATI if a[c] != h[c]]
+    # su Aruba le pubblicazioni programmate partono solo con una visita: «programmato» con data gia'
+    # passata e' «pubblicato» in ritardo, non una differenza (il CMS pubblica puntuale col cron)
+    if "stato" in campi and {a["stato"], h["stato"]} == {"future", "publish"} and (a["data_gmt"] or "") < time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime()):
+        campi.remove("stato")
     # le bozze mai pubblicate non hanno data GMT su uno dei due lati: non e' una differenza
     if "data_gmt" in campi and a["stato"] in ("draft", "pending") and not (a["data_gmt"] and h["data_gmt"]):
         campi.remove("data_gmt")
