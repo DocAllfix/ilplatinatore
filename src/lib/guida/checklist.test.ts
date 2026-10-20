@@ -53,3 +53,24 @@ describe("ancore dei titoli", () => {
     expect(html).toContain('<h3 id="fase-1">');
   });
 });
+
+describe("piu' tabelle di trofei sotto lo stesso titolo (parita' del 20/10/2026, Hellraiser Revival)", () => {
+  it("ogni tabella e' un gruppo suo, con il suo h3 e un id diverso", () => {
+    const tab = (nome: string) => `<figure class="wp-block-table"><table><thead><tr><th>Trofeo</th><th>Come ottenerlo</th></tr></thead><tbody><tr><td>${nome}</td><td>x</td></tr></tbody></table></figure>`;
+    const html = `<h2>Lista dei trofei</h2><h3>Trofeo di platino</h3>${tab("To Hell and Back")}<h3>Trofei d’oro</h3>${tab("Come Here, Damn You")}<h3>Trofei d’argento</h3>${tab("Lord of War")}<h3>Trofei di bronzo</h3>${tab("Codebreaker")}`;
+    const { gruppi, corpo } = estraiChecklist(sanificaHtml(html));
+    expect(gruppi.map((g) => [g.titolo, g.voci[0].nome])).toEqual([
+      ["Trofeo di platino", "To Hell and Back"],
+      ["Trofei d’oro", "Come Here, Damn You"],
+      ["Trofei d’argento", "Lord of War"],
+      ["Trofei di bronzo", "Codebreaker"],
+    ]);
+    expect(new Set(gruppi.map((g) => g.id)).size).toBe(4);
+    expect(dividiCorpo(corpo).filter((p) => "gruppo" in p)).toHaveLength(4);
+  });
+  it("titoli uguali: id diversi lo stesso", () => {
+    const t = `<table><tr><th>Trofeo</th></tr><tr><td>A</td></tr></table>`;
+    const { gruppi } = estraiChecklist(`<h2>Trofei</h2>${t}${t.replace(">A<", ">B<")}`);
+    expect(gruppi.map((g) => g.id)).toEqual(["checklist-trofei", "checklist-trofei-2"]);
+  });
+});

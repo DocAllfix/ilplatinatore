@@ -71,11 +71,15 @@ export function estraiChecklist(html: string): { gruppi: Gruppo[]; corpo: string
     const intestazioni = celle(righe[0] ?? "");
     if (!/^trofe/i.test(intestazioni[0] ?? "")) return blocco;
 
+    // il titolo piu' vicino, h2 o h3: con piu' tabelle sotto lo stesso h2 («Trofei d'oro», «Trofei
+    // d'argento» come h3) ogni gruppo prende il suo nome
     const prima = html.slice(0, posizione);
-    const titoli = [...prima.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/gi)];
-    const titolo = titoli.length ? testo(titoli[titoli.length - 1][1] ?? "") : "Trofei";
+    const titoli = [...prima.matchAll(/<(h[23])[^>]*>([\s\S]*?)<\/\1>/gi)];
+    const titolo = titoli.length ? testo(titoli[titoli.length - 1][2] ?? "") : "Trofei";
+    // id unico anche con titoli uguali: si confronta con l'id COMPLETO (parita' del 20/10/2026:
+    // confrontato senza il prefisso, quattro tabelle prendevano lo stesso id e se ne vedeva una sola)
     let id = slug(titolo) || "trofei";
-    for (let n = 2; gruppi.some((g) => g.id === id); n++) id = `${slug(titolo)}-${n}`;
+    for (let n = 2; gruppi.some((g) => g.id === `checklist-${id}`); n++) id = `${slug(titolo) || "trofei"}-${n}`;
 
     const voci: VoceTrofeo[] = [];
     for (const r of righe.slice(1)) {
