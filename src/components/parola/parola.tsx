@@ -153,10 +153,10 @@ function Gioco({
       </p>
 
       {/* legenda dei colori (richiesta del proprietario): gli stessi colori delle caselle */}
-      <ul aria-label="Legenda dei colori" className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
+      <ul aria-label="Legenda dei colori" className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 text-[0.8125rem]">
         {(["giusta", "presente", "assente"] as const).map((s) => (
-          <li key={s} className="flex items-center gap-1.5">
-            <span className={`cifre flex size-6 items-center justify-center rounded border-2 text-xs font-bold ${COLORE[s]}`} aria-hidden="true">
+          <li key={s} className="flex items-center gap-1 whitespace-nowrap">
+            <span className={`cifre flex size-5 items-center justify-center rounded border-2 text-[0.6875rem] font-bold ${COLORE[s]}`} aria-hidden="true">
               A
             </span>
             {LEGENDA[s]}
