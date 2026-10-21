@@ -2,6 +2,12 @@
 
 Scritto il 20/10/2026. Il dominio **resta registrato su Aruba**: cambiano solo i server DNS (chi risponde alla domanda «dove sta www.ilplatinatore.it?»). Si fa in **due momenti separati**, così il giorno del passaggio il rischio è uno solo.
 
+## Stato (21/10/2026)
+- **Zona creata su Cloudflare** (piano Free, account dell'utente), in attesa del cambio dei nameserver. 43 record copiati dal DNS pubblico e verificati identici, tutti «solo DNS»: `python -I scripts/dns/copia-zona.py --confronta` (esce con 1 se qualcosa non torna).
+- **Nameserver da mettere su Aruba** (Gestione DNS → Modifica server DNS): `coco.ns.cloudflare.com` e `shane.ns.cloudflare.com`.
+- DNSSEC non attivo sul dominio: il cambio dei nameserver non lo rompe.
+- Da fare: esportazione della zona dal pannello Aruba (confronto dei nomi nascosti, per esempio un selettore DKIM); dopo il cambio, controllo della propagazione e della posta.
+
 ## Perché in due momenti
 
 | Momento | Che cosa cambia | Che cosa vede il lettore | Rischio |
