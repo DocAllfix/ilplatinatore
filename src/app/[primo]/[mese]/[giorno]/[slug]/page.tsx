@@ -24,9 +24,10 @@ import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { jsonLd } from "@/lib/cms/seo";
 import { articoliDelTag, articoloPerId, articoloPerSlug, indirizzoAttuale, terminePerSlug, tuttiGliArticoli, registroHub } from "@/lib/cms/wp";
 import { eHub } from "@/lib/registro-hub";
-import { guidaPlatinoDalTitolo } from "@/lib/hub";
-import { correlatiAutomatici, eRecensione, estraiVerdetto } from "@/lib/recensione";
+import { eRecensione, estraiVerdetto } from "@/lib/recensione";
+import { correlatiAutomatici, sceltaCorrelati } from "@/lib/correlati-auto";
 import { SchedaVerdetto } from "@/components/recensione/scheda-verdetto";
+import { InvitoParola } from "@/components/parola/invito";
 import { sitoPubblico } from "@/lib/cms/config";
 import { SchedaGioco } from "@/components/gioco/scheda-gioco";
 import { schedaDaDescrizione } from "@/lib/scheda-gioco";
@@ -107,15 +108,16 @@ export default async function PaginaArticolo({ params }: Parametri) {
   const iGioco = a.tag.findIndex((t, i) => termini[i] && eHub(t.slug, registro));
   // correlati: quelli scelti a mano (campo pl_correlati); in una recensione senza scelte, automatici:
   // una guida dello stesso gioco ogni due sezioni, prima quella al Platino (scelta dell'utente, 20/10/2026)
+  // In tutti gli articoli (richiesta del proprietario, 21/10/2026): dallo stesso gioco, con le
+  // etichette di sempre (Guida al Platino, La nostra recensione, Trofeo mancabile, Boss complicato,
+  // L'ultima news, Leggi anche). Senza gioco, dal primo tag. Quelli scelti a mano valgono sopra.
   let correlati = correlatiDaCampi(a.meta);
-  if (!correlati.length && eRecensione(a) && iGioco >= 0) {
-    const notizia = (x: { categorie: Array<{ slug: string }> }) => x.categorie.some((c) => /^news$|notizi/i.test(c.slug));
-    const guide = (await articoliDelTag(termini[iGioco]!.id)).filter((x) => x.id !== a.id && !eRecensione(x) && !notizia(x));
-    const recenti = [...guide].sort((x, y) => (y.modificato ?? y.data).localeCompare(x.modificato ?? x.data));
+  const iTag = iGioco >= 0 ? iGioco : a.tag.findIndex((_, i) => termini[i]);
+  if (!correlati.length && iTag >= 0) {
+    const altri = (await articoliDelTag(termini[iTag]!.id)).filter((x) => x.id !== a.id);
     correlati = correlatiAutomatici(
       indice.map((v) => v.id),
-      recenti,
-      guidaPlatinoDalTitolo(guide),
+      sceltaCorrelati(altri, { gioco: iGioco >= 0 ? a.tag[iGioco].nome : null, registro }),
     );
   }
   const { html, collocati } = collocaCorrelati(conAncore, correlati);
@@ -257,6 +259,8 @@ export default async function PaginaArticolo({ params }: Parametri) {
         )}
       </div>
 
+      {/* «La parola di oggi» a fine lettura (gioco 4, variante A scelta dal proprietario, 21/10/2026) */}
+      <InvitoParola />
       {/* Fase 5: Floor Ad dopo il contenuto (HB lo fissa in basso), come oggi */}
       <SpazioHB id={FLOOR_AD.id} nome={FLOOR_AD.nome} />
       {/* Il gioco a fine articolo, come scheda col bagliore (piano 07); gli altri tag come etichette */}

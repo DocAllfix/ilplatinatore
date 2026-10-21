@@ -2,7 +2,6 @@
 // (che il CMS rende come sul sito di oggi, mu-plugin sezione 11), la scheda del verdetto e i
 // correlati automatici. Funzioni pure.
 
-import type { Correlato } from "./guida/collezionabili";
 
 export type Voto = { valore: number; scala: number };
 export type Fascia = "alta" | "media" | "bassa";
@@ -65,31 +64,4 @@ export function estraiVerdetto(html: string): { voto: Voto | null; titolo: strin
     fine += p[0].length;
   }
   return { voto: { valore, scala }, titolo, verdetto: paragrafi.join("\n"), corpo: html.slice(0, inizio) + SEGNAPOSTO_VERDETTO + html.slice(fine) };
-}
-
-/**
- * Correlati automatici della recensione: una guida dello stesso gioco ogni due sezioni (dopo la 2a,
- * la 4a, la 6a), prima la guida al Platino. Valgono solo se la redazione non li ha scelti a mano.
- */
-export function correlatiAutomatici(
-  idSezioni: string[],
-  guide: Array<{ slug: string }>,
-  platino: { slug: string } | null,
-): Correlato[] {
-  const ordinate = [...(platino ? [platino] : []), ...guide.filter((g) => g.slug !== platino?.slug)];
-  // mai nell'ultima sezione, che chiude col verdetto: quel posto passa alla sezione prima
-  const ultima = idSezioni.length - 1;
-  const indici = new Set<number>();
-  for (let i = 1; i < idSezioni.length && indici.size < 3; i += 2) {
-    const j = i === ultima ? i - 1 : i;
-    if (j > 0 && !indici.has(j)) indici.add(j);
-  }
-  const posti = [...indici].sort((x, y) => x - y).map((i) => idSezioni[i]);
-  return posti.slice(0, ordinate.length).map((dopo, i) => ({
-    id: `automatico-${i + 1}`,
-    tipo: i === 0 && platino ? "Guida al Platino" : "Leggi anche",
-    articolo: ordinate[i].slug,
-    perche: "",
-    dopo,
-  }));
 }

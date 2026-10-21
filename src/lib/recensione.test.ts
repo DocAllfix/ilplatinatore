@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { dividiCorpo } from "./guida/checklist";
-import { correlatiAutomatici, estraiVerdetto, fascia, SEGNAPOSTO_VERDETTO, votoDaMeta, votoTesto } from "./recensione";
+import { estraiVerdetto, fascia, SEGNAPOSTO_VERDETTO, votoDaMeta, votoTesto } from "./recensione";
 
 // il verdetto di Control Resonant come lo rende il CMS (uguale al sito su Aruba)
 const HTML = `<p>prima</p>
@@ -42,26 +42,6 @@ describe("voto", () => {
     expect(votoDaMeta({ pl_voto: "7.5", pl_voto_scala: "10" })).toEqual({ valore: 7.5, scala: 10 });
     expect(votoDaMeta({ pl_voto: "" })).toBeNull();
     expect(votoDaMeta(undefined)).toBeNull();
-  });
-});
-
-describe("correlati automatici", () => {
-  it("mai nell'ultima sezione (chiude col verdetto): il posto passa alla sezione prima", () => {
-    // Control Resonant: 4 sezioni, dopo la 2a e (invece che dopo la 4a, l'ultima) dopo la 3a
-    expect(correlatiAutomatici(["a", "b", "c", "d"], [{ slug: "x" }, { slug: "y" }], null).map((x) => x.dopo)).toEqual(["b", "c"]);
-  });
-  it("uno ogni due sezioni, prima la guida al Platino, al massimo tre", () => {
-    const c = correlatiAutomatici(["a", "b", "c", "d", "e", "f", "g", "h"], [{ slug: "x" }, { slug: "p" }, { slug: "y" }, { slug: "z" }], { slug: "p" });
-    expect(c.map((x) => [x.dopo, x.articolo, x.tipo])).toEqual([
-      ["b", "p", "Guida al Platino"],
-      ["d", "x", "Leggi anche"],
-      ["f", "y", "Leggi anche"],
-    ]);
-  });
-  it("con poche sezioni o poche guide se ne mettono meno", () => {
-    expect(correlatiAutomatici(["a", "b", "c"], [{ slug: "x" }, { slug: "y" }], null).map((x) => x.articolo)).toEqual(["x"]);
-    expect(correlatiAutomatici(["a", "b"], [{ slug: "x" }], null)).toEqual([]);
-    expect(correlatiAutomatici(["a"], [{ slug: "x" }], null)).toEqual([]);
   });
 });
 
