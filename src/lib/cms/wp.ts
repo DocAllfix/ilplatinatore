@@ -224,6 +224,13 @@ export async function registroHub(): Promise<Registro> {
   return leggiRegistro(r.dati.testo);
 }
 
+/** L'elenco delle parole del gioco «La parola» (mu-plugin, sezione 12). CMS muto = errore. */
+export async function paroleSfida(): Promise<string> {
+  const r = await chiamata<{ testo?: unknown }>("/platinatore/v1/parole");
+  if (typeof r?.dati?.testo !== "string") throw new Error("parole della sfida: il CMS non ha risposto");
+  return r.dati.testo;
+}
+
 /** Il testo di ads.txt (mu-plugin, sezione 9). Il CMS che non risponde e' un errore: resta la versione buona. */
 export async function testoAdsTxt(): Promise<string> {
   const r = await chiamata<{ testo?: unknown }>("/platinatore/v1/ads-txt");

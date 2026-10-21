@@ -1,0 +1,119 @@
+# Parole della sfida «La parola» (gioco 4). Una per riga: livello | parola | gioco (slug del tag).
+# Facile = i nomi dei giochi: li prende da soli dagli hub, qui non servono.
+# Medio = software house, difficile = boss. Il gioco collegato e' quello del cui hub si parla alla fine.
+# Massimo 14 lettere (spazi, trattini e apostrofi non contano), niente cifre.
+
+medio | FromSoftware | elden-ring
+medio | Remedy | control-resonant
+medio | Supergiant | hades-ii
+medio | Housemarque | saros
+medio | Sucker Punch | ghost-of-yotei
+medio | Capcom | resident-evil-requiem
+medio | Game Science | black-myth-wukong
+medio | Bethesda | starfield
+medio | Insomniac Games | marvels-wolverine
+medio | IO Interactive | 007-first-light
+medio | Team Ninja | nioh-3
+medio | Epic Games | fortnite
+medio | Visual Concepts | nba-2k27
+medio | Mobius Digital | outer-wilds
+medio | LocalThunk | balatro
+medio | Studio MDHR | cuphead
+medio | Motion Twin | dead-cells
+medio | Poncle | vampire-survivors
+medio | Guerrilla | horizon-forbidden-west
+medio | Embark Studios | arc-raiders
+medio | Arrowhead | helldivers-2
+medio | Ryu Ga Gotoku | yakuza-kiwami-3
+medio | Sloclap | sifu
+medio | Ubisoft | assassins-creed-shadows
+medio | Rockstar | gta-6
+medio | Bungie | marathon
+medio | Mega Crit | slay-the-spire-2
+medio | Pocketpair | palworld
+medio | Warhorse | kingdom-come-deliverance-2
+medio | Shift Up | stellar-blade
+medio | Hazelight | split-fiction
+medio | Niantic | pokemon-go
+medio | Arc System Works | marvel-tokon
+medio | Game Freak | beast-of-reincarnation
+medio | Naughty Dog | the-last-of-us
+medio | Santa Monica | god-of-war
+medio | Mojang | minecraft-dungeons
+medio | Unknown Worlds | subnautica
+medio | Iron Gate | valheim
+medio | Black Salt Games | dredge
+medio | One More Level | valor-mortis
+medio | Supermassive | directive-8020
+medio | TT Games | lego-batman-leredita-del-cavaliere-oscuro
+medio | Playground | forza-horizon-6
+medio | Pearl Abyss | crimson-desert
+medio | Keen Games | enshrouded
+medio | Landfall | content-warning
+medio | Team Salvato | doki-doki
+medio | Nintendo | donkey-kong-bananza
+medio | Hotta Studio | neverness-to-everness
+medio | Netmarble | the-seven-deadly-sins-origin
+medio | Bandai Namco | code-vein-ii
+medio | Tribute Games | scott-pilgrim-ex
+
+difficile | Tigre Yin | black-myth-wukong
+difficile | Ciglio Giallo | black-myth-wukong
+difficile | Kang-jin Loong | black-myth-wukong
+difficile | Erlang | black-myth-wukong
+difficile | Fuban | black-myth-wukong
+difficile | Simon | clair-obscur-expedition-33
+difficile | Hedron | control-resonant
+difficile | Draven | crimson-desert
+difficile | Lucian Bastier | crimson-desert
+difficile | Ludvig | crimson-desert
+difficile | Muskan | crimson-desert
+difficile | Rusten | crimson-desert
+difficile | Goyen | crimson-desert
+difficile | T’rukan | crimson-desert
+difficile | Karanda | crimson-desert
+difficile | Gristle | crimson-desert
+difficile | Corno Bianco | crimson-desert
+difficile | Walter Lanford | crimson-desert
+difficile | Zanna Nera | crimson-desert
+difficile | Lithus | crimson-desert
+difficile | Hemon Beindel | crimson-desert
+difficile | Beloth | crimson-desert
+difficile | Hexe Marie | crimson-desert
+difficile | Regina Ragno | crimson-desert
+difficile | Tenebrum | crimson-desert
+difficile | Saigord | crimson-desert
+difficile | Kearush | crimson-desert
+difficile | Myurdin | crimson-desert
+difficile | Gregor | crimson-desert
+difficile | Fortain | crimson-desert
+difficile | Placidusax | elden-ring
+difficile | Lord Saito | ghost-of-yotei
+difficile | Takezo | ghost-of-yotei
+difficile | Caronte | hades-ii
+difficile | Cariddi | hades-ii
+difficile | Polifemo | hades-ii
+difficile | Crono | hades-ii
+difficile | Cerbero | hades-ii
+difficile | Scilla | hades-ii
+difficile | Ecate | hades-ii
+difficile | Nathaniel Essex | marvels-wolverine
+difficile | Sabretooth | marvels-wolverine
+difficile | Deathstrike | marvels-wolverine
+difficile | Omega Red | marvels-wolverine
+difficile | Vic Gatore | mouse-p-i-for-hire
+difficile | Prima Donna | mouse-p-i-for-hire
+difficile | Mezuki | nioh-3
+difficile | Hiruko | nioh-3
+difficile | Dohatsu-ten | onimusha
+difficile | Blazamut Ryu | palworld
+difficile | Scavaluna | pragmata
+difficile | Kuroki | sifu
+difficile | Mul’gath | the-spell-brigade
+difficile | Krog’wa | the-spell-brigade
+difficile | Sol’phish | the-spell-brigade
+difficile | Lothaire | valor-mortis
+difficile | Aurelius | valor-mortis
+difficile | Mantichana | vampire-crawlers
+difficile | The Directer | vampire-survivors
+difficile | Ruinous Gouma | warriors-abyss

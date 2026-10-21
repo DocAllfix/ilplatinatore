@@ -188,6 +188,13 @@ body {
   to { transform: scale(1) translateY(0); opacity: 1; }
 }
 
+/* «La parola»: la riga che non ha abbastanza lettere fa un piccolo «no» */
+@keyframes scuoti {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
 }

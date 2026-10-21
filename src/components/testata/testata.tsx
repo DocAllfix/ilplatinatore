@@ -19,6 +19,7 @@ const VOCI = [
   { href: "/category/recensioni/", testo: "Recensioni", rilievo: true },
   { href: "/category/approfondimenti/", testo: "Approfondimenti" },
   { href: "/sfida/", testo: "Sfida del giorno" },
+  { href: "/sfida/parola/", testo: "La parola" },
 ];
 
 const ICONA = "flex size-11 shrink-0 items-center justify-center rounded-full transition-[background-color,color,transform] duration-150 active:scale-[0.94] [@media(hover:hover)]:hover:bg-superficie-alta";

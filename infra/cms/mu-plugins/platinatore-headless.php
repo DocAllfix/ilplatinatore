@@ -689,5 +689,50 @@ function platinatore_salva_voto($id)
 // priorita' bassa: i campi sono pronti prima dell avviso al sito (rest_after_insert_post)
 add_action('save_post_post', 'platinatore_salva_voto', 5);
 
+/* ---------------------------------------------------------------------------------------
+ * 12. LA PAROLA (gioco 4, Wordle sui videogiochi, 21/10/2026)
+ *
+ * Livello facile: i nomi dei giochi, presi dagli hub dal sito. Medio (software house) e difficile
+ * (boss): questo elenco, una riga per parola «livello | parola | slug del gioco». Il sito lo legge
+ * da qui (lettura e regole in src/lib/parola.ts). Testo di partenza: infra/cms/parole-sfida.txt.
+ * ------------------------------------------------------------------------------------- */
+
+add_action('rest_api_init', function () {
+    register_rest_route('platinatore/v1', '/parole', array(
+        'methods'             => 'GET',
+        'permission_callback' => '__return_true',
+        'callback'            => function () {
+            return rest_ensure_response(array('testo' => (string) get_option('platinatore_parole_sfida', '')));
+        },
+    ));
+});
+
+add_action('admin_menu', function () {
+    add_management_page('Parole della sfida', 'Parole della sfida', 'edit_others_posts', 'platinatore-parole', function () {
+        if (isset($_POST['platinatore_parole_sfida']) && check_admin_referer('platinatore_parole')) {
+            update_option('platinatore_parole_sfida', sanitize_textarea_field(wp_unslash($_POST['platinatore_parole_sfida'])), false);
+            echo '<div class="notice notice-success"><p>Salvato. Le parole di domani terranno conto delle modifiche.</p></div>';
+            if (defined('PLATINATORE_SITO_PUBBLICO') && defined('PLATINATORE_REVALIDATE_TOKEN')) {
+                wp_remote_post(rtrim(PLATINATORE_SITO_PUBBLICO, '/') . '/api/revalidate/', array(
+                    'timeout' => 3, 'blocking' => true,
+                    'headers' => array('Content-Type' => 'application/json', 'x-cms-token' => PLATINATORE_REVALIDATE_TOKEN),
+                    'body'    => '{}',
+                ));
+            }
+        }
+        echo '<div class="wrap"><h1>Parole della sfida</h1>';
+        echo '<p>Il gioco «La parola»: una parola al giorno per livello. Il livello facile usa da solo i nomi dei giochi degli hub.</p>';
+        echo '<ul style="list-style:disc;padding-left:2em">';
+        echo '<li>Una parola per riga: <code>medio | Remedy | control-resonant</code> (software house) oppure <code>difficile | Hedron | control-resonant</code> (boss).</li>';
+        echo '<li>Il terzo campo e lo slug del gioco: alla fine della partita si propone il suo hub.</li>';
+        echo '<li>Al massimo 14 lettere (spazi, trattini e apostrofi non contano), niente cifre. Le righe che iniziano con <code>#</code> sono note.</li></ul>';
+        echo '<form method="post">';
+        wp_nonce_field('platinatore_parole');
+        echo '<textarea name="platinatore_parole_sfida" rows="24" class="large-text code">' . esc_textarea(get_option('platinatore_parole_sfida', '')) . '</textarea>';
+        submit_button('Salva');
+        echo '</form></div>';
+    });
+});
+
 // NB dal riferimento: l'elenco delle rotte REST NON va filtrato a mano (`rest_endpoints`): un
 // filtro cosi' ha mandato in errore fatale tutta la REST API.
