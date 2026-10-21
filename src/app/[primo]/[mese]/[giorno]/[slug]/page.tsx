@@ -22,7 +22,7 @@ import { Correlato } from "@/components/guida/correlato";
 import { collezionabiliDaRighe, collocaCorrelati, correlatiDaCampi, estraiTabelleOggetti, righeDaCampi } from "@/lib/guida/collezionabili";
 import { metadatiDaSeo } from "@/lib/cms/metadati";
 import { jsonLd } from "@/lib/cms/seo";
-import { articoliDelTag, articoloPerId, articoloPerSlug, indirizzoAttuale, terminePerSlug, tuttiGliArticoli, registroHub } from "@/lib/cms/wp";
+import { articoloPerId, articoloPerSlug, indirizzoAttuale, terminePerSlug, tuttiGliArticoli, tuttiITermini, registroHub } from "@/lib/cms/wp";
 import { eHub } from "@/lib/registro-hub";
 import { eRecensione, estraiVerdetto } from "@/lib/recensione";
 import { correlatiAutomatici, sceltaCorrelati } from "@/lib/correlati-auto";
@@ -114,7 +114,15 @@ export default async function PaginaArticolo({ params }: Parametri) {
   let correlati = correlatiDaCampi(a.meta);
   const iTag = iGioco >= 0 ? iGioco : a.tag.findIndex((_, i) => termini[i]);
   if (!correlati.length && iTag >= 0) {
-    const altri = (await articoliDelTag(termini[iTag]!.id)).filter((x) => x.id !== a.id);
+    // dall'elenco leggero di tutti gli articoli (gia' in cache per sitemap e indirizzi), filtrato in
+    // memoria: nessuna richiesta in piu' al CMS per articolo (21/10/2026: scaricare l'elenco del gioco
+    // per ogni articolo portava la pubblicazione da 4 a oltre 15 minuti)
+    const [tutti, categorie] = await Promise.all([tuttiGliArticoli(), tuttiITermini("categories")]);
+    const slugCategoria = new Map(categorie.map((c) => [c.id, c.slug]));
+    const idTag = termini[iTag]!.id;
+    const altri = tutti
+      .filter((v) => v.id !== a.id && v.tag?.includes(idTag))
+      .map((v) => ({ ...v, categorie: (v.categorie ?? []).map((id) => ({ slug: slugCategoria.get(id) ?? "" })) }));
     correlati = correlatiAutomatici(
       indice.map((v) => v.id),
       sceltaCorrelati(altri, { gioco: iGioco >= 0 ? a.tag[iGioco].nome : null, registro }),
