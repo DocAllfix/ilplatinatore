@@ -7,6 +7,7 @@ Si lancia dalla macchina dell'amministratore (l'SSH e' aperto solo da li'), una 
   python -I infra/cms/sposta-server.py --stato      che cosa c'e' adesso (sola lettura)
   python -I infra/cms/sposta-server.py --prepara    crea il CX33 e ci copia tutto, il vecchio resta acceso
   python -I infra/cms/sposta-server.py --cambia     ultima copia, spegne il vecchio, sposta l'IP (CMS fermo ~10 min)
+  python -I infra/cms/sposta-server.py --cambia-dns se il nuovo e' in un'altra localita': dopo il cambio del record A
   python -I infra/cms/sposta-server.py --chiudi     istantanea del vecchio, poi lo cancella (dopo qualche giorno)
 
 Token in .env.segreti (HETZNER_API_TOKEN), mai stampato. Il database si copia con un dump (non i file
@@ -24,7 +25,11 @@ from pathlib import Path
 RADICE = Path(__file__).resolve().parents[2]
 VECCHIO_NOME = "platinatore-cms"
 NUOVO_NOME = "platinatore-cms-cx33"
-TIPO, LUOGO, IMMAGINE = "cx33", "nbg1", "ubuntu-24.04"
+TIPO, IMMAGINE = "cx33", "ubuntu-24.04"
+# Norimberga prima: e' la localita' del vecchio, l'unica in cui l'IPv4 si puo' spostare (stesso indirizzo).
+# Altrove (scelta dell'utente, 21/10/2026: «non perdiamo tempo») si prepara lo stesso, e il record A di
+# cms.ilplatinatore.it va cambiato sul nuovo indirizzo.
+LUOGHI = ["nbg1", "fsn1", "hel1"]
 IP_ID = 155919564  # IPv4 primario 49.13.164.162 (auto_delete spento, protetto dalla cancellazione)
 IP = "49.13.164.162"
 FIREWALL_ID = 11817006
@@ -156,13 +161,19 @@ def stato():
     print(f"IPv4 {IP}: assegnato a {ipp['assignee_id']}, auto_delete {ipp['auto_delete']}, protezione {ipp['protection']}")
 
 
-def prepara():
+def luogo_libero():
     t = api("GET", f"/server_types?name={TIPO}")["server_types"][0]
-    if not any(l["name"] == LUOGO and l["available"] for l in t["locations"]):
-        raise SystemExit(f"{TIPO} non disponibile a {LUOGO}")
+    liberi = {l["name"] for l in t["locations"] if l["available"]}
+    return next((l for l in LUOGHI if l in liberi), None)
+
+
+def prepara():
     nuovo = server(NUOVO_NOME)
+    LUOGO = nuovo["location"]["name"] if nuovo else luogo_libero()
+    if not LUOGO:
+        raise SystemExit(f"{TIPO} non disponibile in nessuna localita' europea")
     if not nuovo:
-        print("[1] creo il CX33")
+        print(f"[1] creo il CX33 a {LUOGO}")
         chiavi = [k["id"] for k in api("GET", "/ssh_keys")["ssh_keys"] if k["name"] == "platinatore-cms"]
         r = api("POST", "/servers", {"name": NUOVO_NOME, "server_type": TIPO, "location": LUOGO, "image": IMMAGINE,
                                       "ssh_keys": chiavi, "firewalls": [{"firewall": FIREWALL_ID}],
@@ -194,6 +205,9 @@ def cambia():
     vecchio, nuovo = server(VECCHIO_NOME), server(NUOVO_NOME)
     if not nuovo:
         raise SystemExit("prima --prepara")
+    if nuovo["location"]["name"] != vecchio["location"]["name"]:
+        raise SystemExit(f"il nuovo e' a {nuovo['location']['name']}: l'IPv4 non si sposta fra localita'. "
+                         f"Prima il record A di cms.ilplatinatore.it -> {ip_di(nuovo)}, poi --cambia-dns")
     nip = ip_di(nuovo)
     print("[1] CMS fermo sul vecchio (niente scritture), cron sospesi")
     ssh(IP, f"crontab -l > /root/crontab.trasloco && crontab -r; cd {CARTELLA} && docker compose stop wp caddy")
@@ -229,6 +243,30 @@ def cambia():
     print("Fatto. Il vecchio e' spento e intatto (via di ritorno). Dopo qualche giorno: --chiudi")
 
 
+def cambia_dns():
+    """Nuovo in un'altra localita': quando cms.ilplatinatore.it punta gia' al nuovo, ultima copia e cron."""
+    import socket
+    vecchio, nuovo = server(VECCHIO_NOME), server(NUOVO_NOME)
+    nip = ip_di(nuovo)
+    risolto = socket.gethostbyname("cms.ilplatinatore.it")
+    if risolto != nip:
+        raise SystemExit(f"cms.ilplatinatore.it risponde ancora {risolto}, non {nip}: aspettare il DNS")
+    print("[1] CMS fermo sul vecchio, cron sospesi")
+    ssh(IP, f"crontab -l > /root/crontab.trasloco && crontab -r; cd {CARTELLA} && docker compose stop wp caddy")
+    print("[2] ultima copia: file cambiati e database")
+    copia_cartella(nip)
+    copia_volumi(nip)
+    copia_database(nip)
+    ssh(nip, f"cd {CARTELLA} && docker compose up -d --wait")
+    print("[3] cron sul nuovo")
+    ssh(nip, "crontab -", entrata=ssh(IP, "cat /root/crontab.trasloco"))
+    print("[4] spengo il vecchio (via di ritorno: riaccenderlo e rimettere il DNS)")
+    aspetta_azione(api("POST", f"/servers/{vecchio['id']}/actions/shutdown")["action"])
+    regola_firewall(False)
+    prova_http(nip)
+    print("Fatto. Dopo qualche giorno: --chiudi")
+
+
 def chiudi():
     vecchio = server(VECCHIO_NOME)
     if not vecchio:
@@ -243,4 +281,4 @@ def chiudi():
 
 if __name__ == "__main__":
     fase = next((a for a in sys.argv[1:] if a.startswith("--")), "--stato")
-    {"--stato": stato, "--prepara": prepara, "--cambia": cambia, "--chiudi": chiudi}[fase]()
+    {"--stato": stato, "--prepara": prepara, "--cambia": cambia, "--cambia-dns": cambia_dns, "--chiudi": chiudi}[fase]()
