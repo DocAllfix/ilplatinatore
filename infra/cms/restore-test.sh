@@ -55,3 +55,8 @@ if [ -n "$STORAGE_BOX" ]; then
   [ "$MANCANTI" -le 50 ] || { echo "ERRORE: troppe immagini non copiate fuori" >&2; exit 1; }
 fi
 echo "[restore-test] VERIFICATO: da questo backup si riparte."
+
+# segnale di vita per l'allarme (healthchecks.io, 21/10/2026): arriva solo se la prova e' passata;
+# se manca, dopo il margine scatta l'email
+HC=$(grep -E '^HEALTHCHECK_RIPRISTINO_URL=' .env | cut -d= -f2- || true)
+[ -n "$HC" ] && curl -fsS -m 10 --retry 3 "$HC" >/dev/null || true
