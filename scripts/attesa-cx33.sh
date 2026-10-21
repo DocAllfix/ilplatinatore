@@ -4,8 +4,21 @@
 # Altrove si ferma dopo --prepara: serve il record A di cms.ilplatinatore.it sul nuovo indirizzo.
 cd "$(dirname "$0")/.."
 fine=$(( $(date +%s) + 48*3600 ))
+errori=0
 while [ "$(date +%s)" -lt "$fine" ]; do
-  riga=$(python -X utf8 -I infra/cms/sposta-server.py --stato 2>&1 | grep "disponibile in")
+  # Un errore isolato (rete) si riprova; tre di fila (6 minuti) fermano il controllo, cosi' non resta muto.
+  if ! uscita=$(python -X utf8 -I infra/cms/sposta-server.py --stato 2>&1) || ! echo "$uscita" | grep -q "disponibile in"; then
+    errori=$((errori + 1))
+    if [ "$errori" -ge 3 ]; then
+      echo "$(date '+%d/%m %H:%M') ERRORE DEL CONTROLLO, 3 volte di fila:"
+      echo "$uscita" | tail -5
+      exit 2
+    fi
+    sleep 120
+    continue
+  fi
+  errori=0
+  riga=$(echo "$uscita" | grep "disponibile in")
   if [ -n "$riga" ] && ! echo "$riga" | grep -q "nessun luogo"; then
     echo "$(date '+%d/%m %H:%M') $riga"
     python -X utf8 -u -I infra/cms/sposta-server.py --prepara || { echo "PREPARAZIONE FALLITA"; exit 1; }

@@ -34,16 +34,28 @@
 		{$ADMIN_UTENTE} {$ADMIN_HASH}
 	}
 
+	# I blocchi stanno dentro `handle`: un `respond` sciolto viene DOPO `handle` nell'ordine di Caddy, e
+	# dal 17/10/2026 (quando e' arrivato `handle { reverse_proxy }`) non scattava piu': il 22/10 readme.html,
+	# license.txt e sitemap_index.xml rispondevano 200. Gli `handle` si escludono a vicenda e quello senza
+	# filtro, sotto, vale per ultimo.
+
 	# XML-RPC non serve a un CMS headless ed e' il bersaglio piu' battuto di WordPress
-	respond /xmlrpc.php 403
+	@xmlrpc path /xmlrpc.php
+	handle @xmlrpc {
+		respond 403
+	}
 
 	@vietati path /wp-config.php /.env /debug.log /readme.html /license.txt /wp-content/debug.log
-	respond @vietati 403
+	handle @vietati {
+		respond 403
+	}
 
 	# Niente sitemap ne' llms.txt del CMS: elencherebbero gli articoli sul dominio sbagliato.
 	# Il mu-plugin le spegne gia', ma un aggiornamento di Yoast le ha riaccese una volta.
 	@sitemap path /wp-sitemap*.xml /sitemap*.xml /sitemap_index.xml /*-sitemap.xml /*-sitemap*.xml /sitemap.xsl /main-sitemap.xsl /llms.txt
-	respond @sitemap 404
+	handle @sitemap {
+		respond 404
+	}
 
 	request_body {
 		max_size 64MB
