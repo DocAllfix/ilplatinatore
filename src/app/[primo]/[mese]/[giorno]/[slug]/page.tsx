@@ -25,7 +25,7 @@ import { jsonLd } from "@/lib/cms/seo";
 import { articoloPerId, articoloPerSlug, indirizzoAttuale, terminePerSlug, tuttiGliArticoli, tuttiITermini, registroHub } from "@/lib/cms/wp";
 import { eHub } from "@/lib/registro-hub";
 import { eRecensione, estraiVerdetto } from "@/lib/recensione";
-import { correlatiAutomatici, sceltaCorrelati } from "@/lib/correlati-auto";
+import { altriSenzaTag, correlatiAutomatici, sceltaCorrelati } from "@/lib/correlati-auto";
 import { SchedaVerdetto } from "@/components/recensione/scheda-verdetto";
 import { InvitoParola } from "@/components/parola/invito";
 import { sitoPubblico } from "@/lib/cms/config";
@@ -113,19 +113,23 @@ export default async function PaginaArticolo({ params }: Parametri) {
   // L'ultima news, Leggi anche). Senza gioco, dal primo tag. Quelli scelti a mano valgono sopra.
   let correlati = correlatiDaCampi(a.meta);
   const iTag = iGioco >= 0 ? iGioco : a.tag.findIndex((_, i) => termini[i]);
-  if (!correlati.length && iTag >= 0) {
+  if (!correlati.length) {
     // dall'elenco leggero di tutti gli articoli (gia' in cache per sitemap e indirizzi), filtrato in
     // memoria: nessuna richiesta in piu' al CMS per articolo (21/10/2026: scaricare l'elenco del gioco
     // per ogni articolo portava la pubblicazione da 4 a oltre 15 minuti)
-    const [tutti, categorie] = await Promise.all([tuttiGliArticoli(), tuttiITermini("categories")]);
+    const [tuttiId, categorie] = await Promise.all([tuttiGliArticoli(), tuttiITermini("categories")]);
     const slugCategoria = new Map(categorie.map((c) => [c.id, c.slug]));
-    const idTag = termini[iTag]!.id;
-    const altri = tutti
-      .filter((v) => v.id !== a.id && v.tag?.includes(idTag))
+    const tutti = tuttiId
+      .filter((v) => v.id !== a.id)
       .map((v) => ({ ...v, categorie: (v.categorie ?? []).map((id) => ({ slug: slugCategoria.get(id) ?? "" })) }));
+    // con un tag: lo stesso tag; senza tag (26 articoli il 21/10/2026): lo stesso nome nel titolo
+    const { altri, gioco } =
+      iTag >= 0
+        ? { altri: tutti.filter((v) => v.tag?.includes(termini[iTag]!.id)), gioco: iGioco >= 0 ? a.tag[iGioco].nome : null }
+        : altriSenzaTag(a.titolo, a.categoria?.slug, tutti);
     correlati = correlatiAutomatici(
       indice.map((v) => v.id),
-      sceltaCorrelati(altri, { gioco: iGioco >= 0 ? a.tag[iGioco].nome : null, registro }),
+      sceltaCorrelati(altri, { gioco, registro }),
     );
   }
   const { html, collocati } = collocaCorrelati(conAncore, correlati);

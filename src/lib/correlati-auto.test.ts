@@ -57,3 +57,16 @@ describe("posizione dei correlati", () => {
     expect(correlatiAutomatici(["a", "b"], scelte)).toEqual([]);
   });
 });
+
+describe("articoli senza tag", () => {
+  it("lo stesso nome nel titolo, altrimenti la stessa categoria", async () => {
+    const { altriSenzaTag, giocoDalTitolo } = await import("./correlati-auto");
+    expect(giocoDalTitolo("Castlevania: Belmont’s Curse, tutti i boss")).toBe("Castlevania");
+    const tutti = [
+      guida("cv", "Castlevania: armi e reliquie", "2026-10-15"),
+      guida("altro", "Hades 2: guida", "2026-10-10"),
+    ];
+    expect(altriSenzaTag("Castlevania: guida per principianti", "guide", tutti)).toEqual({ altri: [tutti[0]], gioco: "Castlevania" });
+    expect(altriSenzaTag("Un titolo senza due punti", "guide", tutti).altri).toHaveLength(2);
+  });
+});

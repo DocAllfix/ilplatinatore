@@ -43,6 +43,30 @@ export function sceltaCorrelati(altri: ArticoloLeggero[], opts: { gioco: string 
 }
 
 /**
+ * Il nome del gioco ricavato dal titolo, per gli articoli senza tag: la parte prima dei primi due
+ * punti o della prima virgola («Castlevania: Belmont’s Curse, tutti i boss» → «Castlevania»).
+ * Null se e' troppo corta o troppo lunga per essere un nome.
+ */
+export function giocoDalTitolo(titolo: string): string | null {
+  const m = titolo.match(/^([^:,–—]{3,40})[:,–—]/);
+  return m ? m[1].trim() : null;
+}
+
+/**
+ * Ripiego per un articolo SENZA tag (21/10/2026: 26 articoli pubblicati, le guide di Castlevania
+ * comprese): gli articoli il cui titolo comincia con lo stesso nome; se non ce ne sono, quelli della
+ * stessa categoria, piu' recenti.
+ */
+export function altriSenzaTag<A extends ArticoloLeggero>(titolo: string, categoria: string | undefined, tutti: A[]): { altri: A[]; gioco: string | null } {
+  const nome = giocoDalTitolo(titolo);
+  if (nome) {
+    const stessi = tutti.filter((a) => giocoDalTitolo(a.titolo)?.toLowerCase() === nome.toLowerCase());
+    if (stessi.length) return { altri: stessi, gioco: nome };
+  }
+  return { altri: categoria ? tutti.filter((a) => a.categorie.some((c) => c.slug === categoria)) : [], gioco: null };
+}
+
+/**
  * Dove vanno: uno ogni due sezioni (dopo la 2a, la 4a, la 6a), mai nell'ultima, che chiude
  * l'articolo (in una recensione, col verdetto): quel posto passa alla sezione prima.
  */
