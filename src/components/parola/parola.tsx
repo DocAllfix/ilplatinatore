@@ -32,6 +32,7 @@ const COLORE: Record<Stato, string> = {
   assente: "border-[#3d2d80] bg-[#3d2d80] text-white",
 };
 const PAROLA_STATO: Record<Stato, string> = { giusta: "al posto giusto", presente: "presente, in un altro posto", assente: "assente" };
+const LEGENDA: Record<Stato, string> = { giusta: "Posto giusto", presente: "C’è, ma altrove", assente: "Non c’è" };
 const RIGHE_TASTI = ["QWERTYUIOP", "ASDFGHJKL", "+ZXCVBNM-"];
 
 const chiave = (livello: Livello, giorno: number) => `platinatore:parola:${livello}:${giorno}`;
@@ -150,6 +151,18 @@ function Gioco({
         Indovina <strong className="text-testo">{NOMI_LIVELLO[livello].cosa}</strong> in {TENTATIVI_PAROLA} tentativi: {segreto.length} lettere
         {pezzi.length > 1 ? `, ${pezzi.length} parole` : ""}.
       </p>
+
+      {/* legenda dei colori (richiesta del proprietario): gli stessi colori delle caselle */}
+      <ul aria-label="Legenda dei colori" className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
+        {(["giusta", "presente", "assente"] as const).map((s) => (
+          <li key={s} className="flex items-center gap-1.5">
+            <span className={`cifre flex size-6 items-center justify-center rounded border-2 text-xs font-bold ${COLORE[s]}`} aria-hidden="true">
+              A
+            </span>
+            {LEGENDA[s]}
+          </li>
+        ))}
+      </ul>
 
       <div className="flex flex-col gap-1.5">
         {Array.from({ length: TENTATIVI_PAROLA }, (_, r) => {
