@@ -65,7 +65,20 @@ function Riga({ pezzi, testo, esiti, etichetta, scuoti }: { pezzi: number[]; tes
   );
 }
 
-function Gioco({ parola, livello, giorno, numero }: { parola: Parola; livello: Livello; giorno: number; numero: number }) {
+function Gioco({
+  parola,
+  livello,
+  giorno,
+  numero,
+  prossimo,
+}: {
+  parola: Parola;
+  livello: Livello;
+  giorno: number;
+  numero: number;
+  /** il livello successivo ancora da giocare oggi, per proporlo a fine partita */
+  prossimo?: { livello: Livello; vai: () => void };
+}) {
   const segreto = lettere(parola.nome);
   const pezzi = useMemo(() => schema(parola.nome) ?? [segreto.length], [parola.nome, segreto.length]);
   const p = usePartita(chiave(livello, giorno), (t) => t === segreto, TENTATIVI_PAROLA);
@@ -133,7 +146,7 @@ function Gioco({ parola, livello, giorno, numero }: { parola: Parola; livello: L
 
   return (
     <div className="flex flex-col gap-5" style={stile}>
-      <p className="text-center text-[0.9375rem] text-tenue">
+      <p className="text-balance text-center text-[0.9375rem] text-tenue">
         Indovina <strong className="text-testo">{NOMI_LIVELLO[livello].cosa}</strong> in {TENTATIVI_PAROLA} tentativi: {segreto.length} lettere
         {pezzi.length > 1 ? `, ${pezzi.length} parole` : ""}.
       </p>
@@ -186,6 +199,16 @@ function Gioco({ parola, livello, giorno, numero }: { parola: Parola; livello: L
             <ShareNetworkIcon weight="bold" className="size-4" aria-hidden="true" />
             {copiato ? "Risultato copiato" : "Copia il risultato"}
           </button>
+          {prossimo && (
+            <button
+              type="button"
+              onClick={prossimo.vai}
+              className="mx-auto inline-flex min-h-11 items-center gap-1.5 rounded-full bg-viola px-4 font-semibold text-su-viola transition-transform duration-150 active:scale-[0.97]"
+            >
+              Prova il livello {NOMI_LIVELLO[prossimo.livello].nome}
+              <ArrowRightIcon weight="bold" className="size-4" aria-hidden="true" />
+            </button>
+          )}
           <p className="text-sm text-tenue">Nuove parole a mezzanotte.</p>
         </section>
       ) : (
@@ -253,6 +276,8 @@ export function LaParola({ dati }: { dati: DatiParola }) {
     );
 
   const parola = dati.parole[livello]!;
+  const dopo = disponibili.slice(disponibili.indexOf(livello) + 1).concat(disponibili.slice(0, disponibili.indexOf(livello)));
+  const prossimoLivello = dopo.find((l) => !fatti.has(l));
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-5">
       <header className="flex flex-col items-center gap-1 text-center">
@@ -279,7 +304,14 @@ export function LaParola({ dati }: { dati: DatiParola }) {
           </button>
         ))}
       </div>
-      <Gioco key={livello} parola={parola} livello={livello} giorno={dati.giorno} numero={dati.numero} />
+      <Gioco
+        key={livello}
+        parola={parola}
+        livello={livello}
+        giorno={dati.giorno}
+        numero={dati.numero}
+        prossimo={prossimoLivello ? { livello: prossimoLivello, vai: () => setLivello(prossimoLivello) } : undefined}
+      />
     </div>
   );
 }
