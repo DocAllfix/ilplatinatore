@@ -8,7 +8,8 @@ Scritto il 20/10/2026. Il dominio **resta registrato su Aruba**: cambiano solo i
 - DNSSEC non attivo sul dominio: il cambio dei nameserver non lo rompe.
 - **22/10/2026, nameserver cambiati su Aruba** dal proprietario. Alle 14:46 Google (8.8.8.8) e Cloudflare (1.1.1.1) rispondono `coco`/`shane`; `--confronta` 43 su 43 identici; dai nameserver di Cloudflare `@` e `www` → 89.46.107.229 (Aruba), `cms` → 49.13.164.162, MX `mx.ilplatinatore.it`, SPF e DMARC come prima; sito su Aruba 200, nudo → 301, `ads.txt` md5 `9ea4cc6b` invariato. Zona Cloudflare ancora «pending» (verifica di attivazione chiesta via API: Cloudflare la conferma da solo nelle ore seguenti).
 - **22/10/2026, zona attiva** (15:07). **Immagini su R2**: Worker `platinatore-immagini` su `img.ilplatinatore.it` (unico record aggiunto, dietro il proxy, dichiarato in `copia-zona.py`); il sito inoltra `/wp-content/uploads/` li' con gli stessi indirizzi pubblici di oggi. Provati: byte uguali al CMS, 304, 404 senza conservazione, immagine mancante presa dal CMS e salvata su R2, 0 immagini rotte su Pixel e iPhone.
-- Da fare: prova della posta (una email inviata e una ricevuta, SPF e DMARC «pass»); esportazione della zona dal pannello Aruba (nomi nascosti, per esempio un selettore DKIM).
+- **22/10/2026, esportazione della zona di Aruba** ricevuta: 6 record che dall'esterno non si vedevano aggiunti su Cloudflare (solo DNS): **`a1._domainkey` (firma DKIM della posta di Aruba)**, `stat` e `statistiche`, `sms`, `_xmpp-client._tcp` e `_xmpp-server._tcp`. Il DKIM e' mancato dal cambio dei nameserver (circa 14:30) fino alle 21:15: le email di quelle ore sono uscite senza firma valida (DMARC «none», non rifiutate). Escluso apposta `localhost` → 127.0.0.1 (non serve, ed e' una debolezza nota). `--confronta`: 49 su 49 identici, piu' `img` voluto.
+- Da fare: prova della posta (una email inviata e una ricevuta, SPF, DKIM e DMARC «pass»).
 
 ## Perché in due momenti
 

@@ -15,7 +15,9 @@ RADICE = Path(__file__).resolve().parents[2]
 D = "ilplatinatore.it"
 NOMI = ["", "www", "mail", "mx", "smtp", "pop", "pop3", "imap", "webmail", "autodiscover", "autoconfig", "ftp", "cms",
         "_dmarc", "default._domainkey", "aruba._domainkey", "dkim._domainkey", "_autodiscover._tcp", "admin",
-        "_domainconnect", "pec", "posta", "smtps", "imaps", "pop3s"]
+        "_domainconnect", "pec", "posta", "smtps", "imaps", "pop3s",
+        # dall'esportazione della zona di Aruba (22/10/2026): nomi che dall'esterno non si indovinano
+        "a1._domainkey", "stat", "statistiche", "sms", "_xmpp-client._tcp", "_xmpp-server._tcp"]
 TIPI = {1: "A", 28: "AAAA", 5: "CNAME", 15: "MX", 16: "TXT", 257: "CAA", 33: "SRV"}
 VELOCI = {D, f"www.{D}"}
 
