@@ -143,6 +143,8 @@ facile | PGA Tour | pga-tour-2k25
 facile | Phantom Blade | phantom-blade-zero
 facile | Resident Evil | resident-evil-requiem
 facile | Sekiro | sekiro-shadows-die-twice
+facile | Spider-Man | marvels-spider-man-2
+facile | Wolverine | marvels-wolverine
 facile | Silent Hill | silent-hill-townfall
 facile | Slay the Spire | slay-the-spire-2
 facile | Isaac | the-binding-of-isaac
