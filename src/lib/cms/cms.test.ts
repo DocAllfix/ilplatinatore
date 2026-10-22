@@ -3,6 +3,7 @@ import { noindex } from "./config";
 import { decodificaEntita, percorsoArticolo } from "./mappa";
 import { numeroPagina } from "./pagina";
 import { sanificaHtml } from "./sanitize";
+import { indirizzoXml, urlset } from "./sitemap";
 import { conImmaginePrincipale, jsonLd, riportaInProfondita, riportaSuPubblico, schemaPaginato } from "./seo";
 
 const CMS = "https://cms.ilplatinatore.it";
@@ -172,5 +173,34 @@ describe("schema delle pagine N degli archivi", () => {
     const due = (conImmaginePrincipale(conImmaginePrincipale(senza, u1, img), u1, img) as typeof senza)["@graph"];
     expect(due.filter((n) => n["@type"] === "ImageObject")).toHaveLength(1);
     expect(conImmaginePrincipale(senza, u1, undefined)).toBe(senza);
+  });
+});
+
+describe("immagini nelle sitemap, come Yoast", () => {
+  it("codifica i caratteri non ASCII e lascia stare quelli gia' codificati", () => {
+    expect(indirizzoXml(`${PUB}/wp-content/uploads/2026/03/Metal-Gear-Solid-Δ-Snake-Eater.png`)).toBe(
+      `${PUB}/wp-content/uploads/2026/03/Metal-Gear-Solid-%CE%94-Snake-Eater.png`,
+    );
+    expect(indirizzoXml(`${PUB}/a/LEGO®-BATMAN™-1°-single‑player-mamma….webp`)).toBe(
+      `${PUB}/a/LEGO%C2%AE-BATMAN%E2%84%A2-1%C2%B0-single%E2%80%91player-mamma%E2%80%A6.webp`,
+    );
+    expect(indirizzoXml(`${PUB}/a/gia-%CE%94.png?v=1&x=2`)).toBe(`${PUB}/a/gia-%CE%94.png?v=1&amp;x=2`);
+  });
+  it("scrive image:image dentro la voce, nell'ordine dato", async () => {
+    const r = urlset([
+      { loc: `${PUB}/2026/10/20/a/`, lastmod: "2026-10-20T10:00:00+00:00", immagini: [`${PUB}/x.jpg`, `${PUB}/y.webp`] },
+      { loc: `${PUB}/2026/10/21/b/` },
+    ]);
+    const xml = await r.text();
+    expect(xml).toContain('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"');
+    expect(xml).toContain(
+      `<lastmod>2026-10-20T10:00:00+00:00</lastmod>
+		<image:image>
+			<image:loc>${PUB}/x.jpg</image:loc>
+		</image:image>
+		<image:image>
+			<image:loc>${PUB}/y.webp</image:loc>`,
+    );
+    expect(xml.match(/<image:image>/g)).toHaveLength(2);
   });
 });

@@ -5,14 +5,33 @@
 
 export const PER_SITEMAP = 1000; // come Yoast
 
-export type Voce = { loc: string; lastmod?: string };
+/** `immagini`: come Yoast, l'immagine in evidenza e quelle del testo (Google Immagini le trova da qui). */
+export type Voce = { loc: string; lastmod?: string; immagini?: string[]; id?: number };
+
+/**
+ * Un indirizzo come lo scrive Yoast: i caratteri non ASCII codificati (Δ -> %CE%94), il resto com'e'
+ * (un %XX gia' presente non si codifica due volte), poi le entita' dell'XML.
+ */
+export function indirizzoXml(u: string): string {
+  return u
+    .replace(/[^\x21-\x7e]/gu, (c) => encodeURIComponent(c))
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
 export function urlset(voci: Voce[]): Response {
   const corpo = voci
-    .map((v) => `\t<url>\n\t\t<loc>${v.loc}</loc>${v.lastmod ? `\n\t\t<lastmod>${v.lastmod}</lastmod>` : ""}\n\t</url>`)
+    .map((v) => {
+      const lastmod = v.lastmod ? `\n\t\t<lastmod>${v.lastmod}</lastmod>` : "";
+      const immagini = (v.immagini ?? [])
+        .map((i) => `\n\t\t<image:image>\n\t\t\t<image:loc>${indirizzoXml(i)}</image:loc>\n\t\t</image:image>`)
+        .join("");
+      return `\t<url>\n\t\t<loc>${v.loc}</loc>${lastmod}${immagini}\n\t</url>`;
+    })
     .join("\n");
   return xml(`<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${corpo}
 </urlset>`);
 }

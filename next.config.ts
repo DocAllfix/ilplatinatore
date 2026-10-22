@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
   // Tutti gli indirizzi di oggi finiscono con la barra. I file con estensione (/feed/ a parte,
   // /sitemap_index.xml, /ads.txt) restano come sono.
   trailingSlash: true,
+  // Il rimando verso la barra lo fa la regola in `redirects()` con 301, come WordPress oggi: quello
+  // automatico di Next risponde 308. Google li tratta uguali, ma l'obiettivo e' «identico».
+  skipTrailingSlashRedirect: true,
 
   // Modello di cache classico, come il riferimento EvalisDeck: pagine generate al build,
   // `revalidate` e `dynamicParams`. Con Cache Components e Partial Prefetching, il primo visitatore
@@ -53,6 +56,9 @@ const nextConfig: NextConfig = {
   // indirizzi secondari di WordPress che non hanno una pagina propria
   async redirects() {
     return [
+      // senza barra finale -> con la barra, 301 (la query resta). Esclusi i file: l'ultimo pezzo
+      // con un'estensione (/ads.txt, /sitemap_index.xml, /wp-content/uploads/…jpg)
+      { source: "/:percorso((?!.*\\.[^/]+$).*[^/])", destination: "/:percorso/", statusCode: 301 },
       { source: "/wp-sitemap.xml", destination: "/sitemap_index.xml", statusCode: 301 },
       { source: "/comments/feed/", destination: "/feed/", statusCode: 301 },
       { source: "/tag/:slug/feed/", destination: "/feed/", statusCode: 301 },

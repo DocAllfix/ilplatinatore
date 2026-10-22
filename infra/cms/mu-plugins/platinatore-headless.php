@@ -736,3 +736,69 @@ add_action('admin_menu', function () {
 
 // NB dal riferimento: l'elenco delle rotte REST NON va filtrato a mano (`rest_endpoints`): un
 // filtro cosi' ha mandato in errore fatale tutta la REST API.
+
+/* ---------------------------------------------------------------------------------------
+ * 13. IMMAGINI DELLE SITEMAP (22/10/2026)
+ *
+ * Le sitemap degli articoli di oggi (Yoast) elencano per ogni articolo l immagine in evidenza e
+ * quelle del testo: e cosi che Google Immagini le trova. Il sito le ricostruisce con lo STESSO
+ * analizzatore di Yoast (WPSEO_Sitemap_Image_Parser), quindi stesse immagini e stesso ordine.
+ * Il calcolo legge il testo di tutti gli articoli: si conserva e si rifa solo quando un articolo
+ * viene salvato o eliminato. Risposta: { "id articolo": ["indirizzo", ...] } (indirizzi del CMS,
+ * il sito li riporta sul dominio pubblico).
+ * ------------------------------------------------------------------------------------- */
+
+function platinatore_immagini_sitemap()
+{
+    $salvate = get_transient('platinatore_immagini_sitemap');
+    if (is_array($salvate)) {
+        return $salvate;
+    }
+    if (!class_exists('WPSEO_Sitemap_Image_Parser')) {
+        return null;
+    }
+    $parser = new WPSEO_Sitemap_Image_Parser();
+    $ids = get_posts(array(
+        'post_type'      => 'post',
+        'post_status'    => 'publish',
+        'posts_per_page' => -1,
+        'fields'         => 'ids',
+        'no_found_rows'  => true,
+    ));
+    $tutte = array();
+    foreach ($ids as $id) {
+        $post = get_post($id);
+        $elenco = array();
+        foreach ($parser->get_images($post) as $immagine) {
+            if (!empty($immagine['src'])) {
+                $elenco[] = $immagine['src'];
+            }
+        }
+        if ($elenco) {
+            $tutte[(string) $id] = array_values($elenco);
+        }
+    }
+    set_transient('platinatore_immagini_sitemap', $tutte, DAY_IN_SECONDS);
+    return $tutte;
+}
+
+add_action('save_post', function () {
+    delete_transient('platinatore_immagini_sitemap');
+});
+add_action('deleted_post', function () {
+    delete_transient('platinatore_immagini_sitemap');
+});
+
+add_action('rest_api_init', function () {
+    register_rest_route('platinatore/v1', '/immagini-sitemap', array(
+        'methods'             => 'GET',
+        'permission_callback' => '__return_true',
+        'callback'            => function () {
+            $tutte = platinatore_immagini_sitemap();
+            if ($tutte === null) {
+                return new WP_Error('yoast_assente', 'Analizzatore delle immagini di Yoast non disponibile', array('status' => 503));
+            }
+            return rest_ensure_response((object) $tutte);
+        },
+    ));
+});

@@ -8,7 +8,7 @@
 
 import { cmsUrl, cmsUrlContenuti, credenzialiCms, sitoPubblico, PER_PAGINA } from "./config";
 import { mappaPost, mappaVoce, decodificaEntita } from "./mappa";
-import { seoDaYoast } from "./seo";
+import { riportaSuPubblico, seoDaYoast } from "./seo";
 import { leggiRegistro, type Registro } from "../registro-hub";
 import type { Articolo, PaginaWP, PostWP, Seo, TermineCompletoWP, VoceArticolo } from "./tipi";
 
@@ -222,6 +222,23 @@ export async function registroHub(): Promise<Registro> {
   const r = await chiamata<{ testo?: unknown }>("/platinatore/v1/registro-hub");
   if (typeof r?.dati?.testo !== "string") throw new Error("registro degli hub: il CMS non ha risposto");
   return leggiRegistro(r.dati.testo);
+}
+
+/**
+ * Le immagini di ogni articolo per le sitemap, calcolate sul CMS dall'analizzatore di Yoast
+ * (mu-plugin, sezione 13): id articolo -> indirizzi, gia' riportati sul dominio pubblico.
+ * CMS muto = errore: resta la sitemap buona.
+ */
+export async function immaginiSitemap(): Promise<Map<number, string[]>> {
+  const r = await chiamata<Record<string, unknown>>("/platinatore/v1/immagini-sitemap");
+  if (!r?.dati || typeof r.dati !== "object") throw new Error("immagini delle sitemap: il CMS non ha risposto");
+  const { cms, pubblico } = ctx();
+  const m = new Map<number, string[]>();
+  for (const [id, elenco] of Object.entries(r.dati)) {
+    if (!Array.isArray(elenco)) continue;
+    m.set(Number(id), elenco.filter((u): u is string => typeof u === "string").map((u) => riportaSuPubblico(u, cms, pubblico)));
+  }
+  return m;
 }
 
 /** L'elenco delle parole del gioco «La parola» (mu-plugin, sezione 12). CMS muto = errore. */

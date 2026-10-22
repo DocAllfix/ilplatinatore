@@ -9,7 +9,7 @@
 import { sitoPubblico } from "./config";
 import { PER_SITEMAP, urlset, type Voce } from "./sitemap";
 import type { VoceArticolo } from "./tipi";
-import { tuttiGliArticoli } from "./wp";
+import { immaginiSitemap, tuttiGliArticoli } from "./wp";
 
 const lastmod = (iso?: string) => (iso ? iso.replace(/\.\d+Z$|Z$/, "+00:00") : undefined);
 
@@ -24,7 +24,7 @@ export async function fileArticoli(): Promise<Voce[][]> {
   const pub = sitoPubblico();
   const tutti = await tuttiGliArticoli();
   const ordinati = [...tutti].sort((a, b) => (a.modificato ?? a.data).localeCompare(b.modificato ?? b.data));
-  const voci: Voce[] = ordinati.map((a) => ({ loc: `${pub}${a.percorso}`, lastmod: dataYoast(a) }));
+  const voci: Voce[] = ordinati.map((a) => ({ id: a.id, loc: `${pub}${a.percorso}`, lastmod: dataYoast(a) }));
   const piuRecente = voci.map((v) => v.lastmod).filter(Boolean).sort().at(-1);
   const file: Voce[][] = [];
   for (let i = 0; i < voci.length; i += PER_SITEMAP) file.push(voci.slice(i, i + PER_SITEMAP));
@@ -33,11 +33,12 @@ export async function fileArticoli(): Promise<Voce[][]> {
   return file;
 }
 
-/** Il file numero `n` (1, 2, 3…) delle sitemap degli articoli; 404 se non esiste. */
+/** Il file numero `n` (1, 2, 3…) delle sitemap degli articoli, con le immagini; 404 se non esiste. */
 export async function sitemapArticoli(n: number): Promise<Response> {
-  const fetta = (await fileArticoli())[n - 1];
+  const [file, immagini] = await Promise.all([fileArticoli(), immaginiSitemap()]);
+  const fetta = file[n - 1];
   if (!fetta?.length) return new Response("Not found", { status: 404 });
-  return urlset(fetta);
+  return urlset(fetta.map((v) => (v.id ? { ...v, immagini: immagini.get(v.id) } : v)));
 }
 
 /** Per ogni categoria o tag (id), il lastmod dell'articolo piu' recente che lo contiene. */
