@@ -61,11 +61,15 @@ def main():
     su_cf = {chiave(r["name"], r["type"], dato_cf(r)) for r in esistenti}
     attesi = {chiave(n, t, d) for n, t, d, _ in oggi}
     if "--confronta" in sys.argv:
-        manca = attesi - su_cf; in_piu = su_cf - attesi
+        # nomi aggiunti apposta su Cloudflare, che il sito su Aruba non aveva: si elencano, non sono differenze
+        voluti = {"img.ilplatinatore.it"}  # Worker delle immagini su R2 (infra/cloudflare/), dal 22/10/2026
+        manca = attesi - su_cf; in_piu = {x for x in su_cf - attesi if x[0] not in voluti}
+        for r in esistenti:
+            if r["name"] in voluti: print("  voluto:", r["name"], r["type"], "proxy" if r.get("proxied") else "")
         print(f"record di oggi: {len(attesi)}, su Cloudflare: {len(su_cf)}")
         for x in sorted(manca): print("  manca su Cloudflare:", x)
         for x in sorted(in_piu): print("  in piu' su Cloudflare:", x)
-        proxati = [r["name"] for r in esistenti if r.get("proxied")]
+        proxati = [r["name"] for r in esistenti if r.get("proxied") and r["name"] not in voluti]
         if proxati: print("  ATTENZIONE dietro il proxy:", proxati)
         print("identici" if not manca and not in_piu and not proxati else "DIFFERENZE")
         return 1 if (manca or in_piu or proxati) else 0
