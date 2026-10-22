@@ -6,7 +6,8 @@ Scritto il 20/10/2026. Il dominio **resta registrato su Aruba**: cambiano solo i
 - **Zona creata su Cloudflare** (piano Free, account dell'utente), in attesa del cambio dei nameserver. 43 record copiati dal DNS pubblico e verificati identici, tutti «solo DNS»: `python -I scripts/dns/copia-zona.py --confronta` (esce con 1 se qualcosa non torna).
 - **Nameserver da mettere su Aruba** (Gestione DNS → Modifica server DNS): `coco.ns.cloudflare.com` e `shane.ns.cloudflare.com`.
 - DNSSEC non attivo sul dominio: il cambio dei nameserver non lo rompe.
-- Da fare: esportazione della zona dal pannello Aruba (confronto dei nomi nascosti, per esempio un selettore DKIM); dopo il cambio, controllo della propagazione e della posta.
+- **22/10/2026, nameserver cambiati su Aruba** dal proprietario. Alle 14:46 Google (8.8.8.8) e Cloudflare (1.1.1.1) rispondono `coco`/`shane`; `--confronta` 43 su 43 identici; dai nameserver di Cloudflare `@` e `www` → 89.46.107.229 (Aruba), `cms` → 49.13.164.162, MX `mx.ilplatinatore.it`, SPF e DMARC come prima; sito su Aruba 200, nudo → 301, `ads.txt` md5 `9ea4cc6b` invariato. Zona Cloudflare ancora «pending» (verifica di attivazione chiesta via API: Cloudflare la conferma da solo nelle ore seguenti).
+- Da fare: prova della posta (una email inviata e una ricevuta, SPF e DMARC «pass»); esportazione della zona dal pannello Aruba (nomi nascosti, per esempio un selettore DKIM); a zona attiva, dominio delle immagini su R2.
 
 ## Perché in due momenti
 
