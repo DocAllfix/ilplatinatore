@@ -1,8 +1,11 @@
 import type { NextConfig } from "next";
 
-// Il CMS e' l'origine delle immagini: /wp-content/uploads/... resta lo STESSO indirizzo di oggi sul
-// dominio pubblico (Google Immagini non perde niente) e viene inoltrato al CMS.
+// /wp-content/uploads/... resta lo STESSO indirizzo di oggi sul dominio pubblico (Google Immagini non
+// perde niente) e viene inoltrato a img.ilplatinatore.it: il Worker di Cloudflare con le immagini su
+// R2, che prende dal CMS (e salva) quelle non ancora copiate (infra/cloudflare/immagini-worker.js).
+// Cosi' le immagini non dipendono dal server del CMS. IMMAGINI_URL=<indirizzo del CMS> torna indietro.
 const CMS = (process.env.CMS_URL ?? "").replace(/\/+$/, "");
+const IMMAGINI = (process.env.IMMAGINI_URL || (CMS ? "https://img.ilplatinatore.it" : "")).replace(/\/+$/, "");
 
 // noindex su tutto finche' SITO_NOINDEX non e' esattamente "0" (vedi src/lib/cms/config.ts)
 const NOINDEX = process.env.SITO_NOINDEX !== "0";
@@ -50,7 +53,7 @@ const nextConfig: NextConfig = {
   },
 
   async rewrites() {
-    return CMS ? [{ source: "/wp-content/uploads/:percorso*", destination: `${CMS}/wp-content/uploads/:percorso*` }] : [];
+    return IMMAGINI ? [{ source: "/wp-content/uploads/:percorso*", destination: `${IMMAGINI}/wp-content/uploads/:percorso*` }] : [];
   },
 
   // indirizzi secondari di WordPress che non hanno una pagina propria
