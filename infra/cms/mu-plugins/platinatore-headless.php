@@ -724,6 +724,7 @@ add_action('admin_menu', function () {
         echo '<p>Il gioco «La parola»: una parola al giorno per livello. Il livello facile usa da solo i nomi dei giochi degli hub.</p>';
         echo '<ul style="list-style:disc;padding-left:2em">';
         echo '<li>Una parola per riga: <code>medio | Remedy | control-resonant</code> (software house) oppure <code>difficile | Hedron | control-resonant</code> (boss).</li>';
+        echo '<li>Livello facile: esce da solo il nome del gioco dell hub. Se il nome non si puo giocare (oltre 14 lettere, cifre, due punti) si scrive il nome breve: <code>facile | Wukong | black-myth-wukong</code>.</li>';
         echo '<li>Il terzo campo e lo slug del gioco: alla fine della partita si propone il suo hub.</li>';
         echo '<li>Al massimo 14 lettere (spazi, trattini e apostrofi non contano), niente cifre. Le righe che iniziano con <code>#</code> sono note.</li></ul>';
         echo '<form method="post">';

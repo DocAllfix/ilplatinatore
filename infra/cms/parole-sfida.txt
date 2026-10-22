@@ -117,3 +117,37 @@ difficile | Aurelius | valor-mortis
 difficile | Mantichana | vampire-crawlers
 difficile | The Directer | vampire-survivors
 difficile | Ruinous Gouma | warriors-abyss
+
+# FACILE: nome breve del gioco, al posto del nome dell'hub che non si puo' giocare (troppo lungo, con cifre
+# o con i due punti). Scelti dal proprietario il 22/10/2026. I giochi senza riga qui escono con il nome dell'hub.
+facile | Aion | aion-2
+facile | Assassin's Creed | assassins-creed-shadows
+facile | Battlefield | battlefield-6
+facile | Wukong | black-myth-wukong
+facile | Control | control-resonant
+facile | Death Stranding | death-stranding-2-on-the-beach
+facile | Donkey Kong | donkey-kong-bananza
+facile | EA Sports FC | ea-sports-fc-26
+facile | Forza Horizon | forza-horizon-6
+facile | GTA VI | gta-6
+facile | Helldivers II | helldivers-2
+facile | Hellraiser | hellraiser-revival
+facile | Horizon | horizon-forbidden-west
+facile | LEGO Batman | lego-batman-leredita-del-cavaliere-oscuro
+facile | Madden | madden-nfl-26
+facile | Minecraft | minecraft-dungeons
+facile | Monster Hunter | monster-hunter-wilds
+facile | Mouse PI for Hire | mouse-p-i-for-hire
+facile | Nioh | nioh-3
+facile | PGA Tour | pga-tour-2k25
+facile | Phantom Blade | phantom-blade-zero
+facile | Resident Evil | resident-evil-requiem
+facile | Sekiro | sekiro-shadows-die-twice
+facile | Silent Hill | silent-hill-townfall
+facile | Slay the Spire | slay-the-spire-2
+facile | Isaac | the-binding-of-isaac
+facile | Tomodachi Life | tomodachi-life-living-the-dream
+facile | TopSpin | topspin-2k25
+facile | Warriors Abyss | warriors-abyss
+facile | Wild Arms | wild-arms-4
+facile | Yakuza Kiwami | yakuza-kiwami-3

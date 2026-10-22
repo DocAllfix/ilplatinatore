@@ -66,4 +66,15 @@ describe("elenco delle parole", () => {
       ["difficile", "Hedron", "control-resonant"],
     ]);
   });
+  it("una riga facile da' il nome breve del gioco, e alla fine si torna all'hub con il nome vero", async () => {
+    const { leggiParole, schema } = await import("./parola");
+    const giochi = new Map([["black-myth-wukong", "Black Myth: Wukong"], ["cuphead", "Cuphead"]]);
+    const p = leggiParole("facile | Wukong | black-myth-wukong\nfacile | Nessuno | gioco-che-non-c-e\n", giochi);
+    expect(p.map((x) => [x.livello, x.nome, x.gioco.nome])).toEqual([
+      ["facile", "Wukong", "Black Myth: Wukong"],
+      ["facile", "Cuphead", "Cuphead"],
+    ]);
+    expect(schema("Black Myth: Wukong")).toBeNull();
+    expect(schema(p[0].nome)).toEqual([6]);
+  });
 });

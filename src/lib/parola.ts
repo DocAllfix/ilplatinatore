@@ -94,15 +94,21 @@ export function condivisione(numero: number, livello: Livello, segreto: string, 
 
 /**
  * L'elenco del CMS («livello | parola | slug del gioco») piu' i giochi degli hub per il facile.
- * Una parola il cui gioco non e' un hub (o non c'e') non entra: il rimando finale non saprebbe dove andare.
+ * Una riga «facile | Wukong | black-myth-wukong» da' il nome breve con cui il gioco esce nel facile, al
+ * posto del nome dell'hub (troppo lungo, con cifre o con i due punti non si potrebbe giocare; scelta del
+ * proprietario del 22/10/2026). Una parola il cui gioco non e' un hub (o non c'e') non entra: il rimando
+ * finale non saprebbe dove andare.
  */
 export function leggiParole(testo: string, giochi: Map<string, string>): Parola[] {
-  const out: Parola[] = [...giochi].map(([slug, nome]) => ({ livello: "facile" as const, nome, gioco: { nome, slug } }));
+  const brevi = new Map<string, string>();
+  const altre: Parola[] = [];
   for (const riga of testo.split(/\r?\n/)) {
     if (!riga.trim() || riga.trim().startsWith("#")) continue;
     const [livello, nome, slug] = riga.split("|").map((x) => x.trim());
-    if ((livello !== "medio" && livello !== "difficile") || !nome || !slug || !giochi.has(slug)) continue;
-    out.push({ livello, nome, gioco: { nome: giochi.get(slug)!, slug } });
+    if (!nome || !slug || !giochi.has(slug)) continue;
+    if (livello === "facile") brevi.set(slug, nome);
+    else if (livello === "medio" || livello === "difficile") altre.push({ livello, nome, gioco: { nome: giochi.get(slug)!, slug } });
   }
-  return out;
+  const facili: Parola[] = [...giochi].map(([slug, nome]) => ({ livello: "facile" as const, nome: brevi.get(slug) ?? nome, gioco: { nome, slug } }));
+  return [...facili, ...altre];
 }
