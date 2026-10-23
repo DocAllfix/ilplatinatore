@@ -565,16 +565,91 @@ add_action('admin_menu', function () {
  * REST): il testo si legge da qui e il sito lo serve su /ads.txt, aggiornabile senza pubblicare.
  * ------------------------------------------------------------------------------------- */
 
+/*
+ * Dal 23/10/2026 il file si aggiorna da Strumenti > ads.txt (ogni nuovo partner di HB): si incolla
+ * il file intero e si salva, il sito lo serve cosi com e entro pochi secondi. Finche quella pagina non
+ * ha mai salvato niente vale il testo di Advanced Ads con la sua intestazione (gli stessi byte di oggi).
+ */
+
+/** Il file ads.txt completo, come il sito lo pubblica. Stringa vuota = nessun file valido. */
+function platinatore_ads_txt()
+{
+    $file = get_option('platinatore_ads_txt', '');
+    if (is_string($file) && trim($file) !== '') {
+        return $file;
+    }
+    $o = get_option('advanced_ads_ads_txt', array());
+    $testo = is_array($o) && isset($o['custom']) ? (string) $o['custom'] : '';
+    return trim($testo) === '' ? '' : "# Advanced Ads ads.txt\n" . $testo . "\n";
+}
+
+/**
+ * Salva il file com e, senza le pulizie di WordPress (toglierebbero caratteri): solo gli a-capo di
+ * Windows diventano di Unix, via il BOM, un solo a-capo in fondo. Vuoto = non si salva.
+ */
+function platinatore_salva_ads_txt($testo)
+{
+    $testo = str_replace(array("\r\n", "\r"), "\n", (string) $testo);
+    if (strncmp($testo, "\xEF\xBB\xBF", 3) === 0) {
+        $testo = substr($testo, 3);
+    }
+    $testo = rtrim($testo);
+    if (trim($testo) === '') {
+        return false;
+    }
+    update_option('platinatore_ads_txt', $testo . "\n", false);
+    return true;
+}
+
 add_action('rest_api_init', function () {
     register_rest_route('platinatore/v1', '/ads-txt', array(
         'methods'             => 'GET',
         'permission_callback' => '__return_true',
         'callback'            => function () {
+            $file = platinatore_ads_txt();
+            if ($file === '') {
+                // mai un ads.txt vuoto: il sito tiene l ultima versione buona
+                return new WP_Error('ads_txt_vuoto', 'ads.txt vuoto', array('status' => 503));
+            }
             $o = get_option('advanced_ads_ads_txt', array());
-            $testo = is_array($o) && isset($o['custom']) ? (string) $o['custom'] : '';
-            return rest_ensure_response(array('testo' => $testo));
+            return rest_ensure_response(array(
+                'file'  => $file,
+                'testo' => is_array($o) && isset($o['custom']) ? (string) $o['custom'] : '',
+            ));
         },
     ));
+});
+
+function platinatore_pagina_ads_txt()
+{
+    if (isset($_POST['platinatore_ads_txt']) && check_admin_referer('platinatore_ads_txt')) {
+        if (platinatore_salva_ads_txt(wp_unslash($_POST['platinatore_ads_txt']))) {
+            if (defined('PLATINATORE_SITO_PUBBLICO') && defined('PLATINATORE_REVALIDATE_TOKEN')) {
+                wp_remote_post(rtrim(PLATINATORE_SITO_PUBBLICO, '/') . '/api/revalidate/', array(
+                    'timeout' => 3, 'blocking' => true,
+                    'headers' => array('Content-Type' => 'application/json', 'x-cms-token' => PLATINATORE_REVALIDATE_TOKEN),
+                    'body'    => '{}',
+                ));
+            }
+            echo '<div class="notice notice-success"><p>Salvato. Il sito pubblica il nuovo ads.txt entro pochi secondi.</p></div>';
+        } else {
+            echo '<div class="notice notice-error"><p>Il file e vuoto: non salvato. Il sito continua a pubblicare quello di prima.</p></div>';
+        }
+    }
+    $file = platinatore_ads_txt();
+    $righe = $file === '' ? 0 : substr_count($file, "\n");
+    echo '<div class="wrap"><h1>ads.txt</h1>';
+    echo '<p>Il file che il sito pubblica su <code>/ads.txt</code> (' . intval($righe) . ' righe). Quando HB Agency manda una nuova versione: incolla qui il file intero al posto di quello vecchio, oppure aggiungi le righe nuove, e salva.</p>';
+    echo '<p>Si salva esattamente cio che e scritto qui. Un file vuoto non si salva.</p>';
+    echo '<form method="post">';
+    wp_nonce_field('platinatore_ads_txt');
+    echo '<textarea name="platinatore_ads_txt" rows="30" class="large-text code" spellcheck="false">' . esc_textarea($file) . '</textarea>';
+    submit_button('Salva');
+    echo '</form></div>';
+}
+
+add_action('admin_menu', function () {
+    add_management_page('ads.txt', 'ads.txt', 'manage_options', 'platinatore-ads-txt', 'platinatore_pagina_ads_txt');
 });
 
 /* ---------------------------------------------------------------------------------------

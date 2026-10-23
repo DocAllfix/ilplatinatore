@@ -18,6 +18,24 @@ if (!defined('WP_CLI')) {
     exit(1);
 }
 
+// «avvisa»: alla fine dell importazione si avvisa il sito, come fa il CMS quando si salva dalla
+// REST (wp-cli non passa di li e il sito resterebbe fermo fino alla rivalidazione oraria)
+if (($args[0] ?? '') === 'avvisa') {
+    if (!defined('PLATINATORE_SITO_PUBBLICO') || !defined('PLATINATORE_REVALIDATE_TOKEN')) {
+        WP_CLI::error('indirizzo del sito o token non configurati');
+    }
+    $r = wp_remote_post(rtrim(PLATINATORE_SITO_PUBBLICO, '/') . '/api/revalidate/', array(
+        'timeout' => 15,
+        'headers' => array('Content-Type' => 'application/json', 'x-cms-token' => PLATINATORE_REVALIDATE_TOKEN),
+        'body'    => '{}',
+    ));
+    if (is_wp_error($r) || wp_remote_retrieve_response_code($r) !== 200) {
+        WP_CLI::error('avviso al sito non riuscito: ' . (is_wp_error($r) ? $r->get_error_message() : wp_remote_retrieve_response_code($r)));
+    }
+    WP_CLI::success('sito avvisato');
+    return;
+}
+
 $file = $args[0] ?? '';
 $pacchetto = json_decode((string) file_get_contents($file), true);
 if (!is_array($pacchetto)) {

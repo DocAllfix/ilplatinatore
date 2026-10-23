@@ -248,11 +248,13 @@ export async function paroleSfida(): Promise<string> {
   return r.dati.testo;
 }
 
-/** Il testo di ads.txt (mu-plugin, sezione 9). Il CMS che non risponde e' un errore: resta la versione buona. */
-export async function testoAdsTxt(): Promise<string> {
-  const r = await chiamata<{ testo?: unknown }>("/platinatore/v1/ads-txt");
-  if (typeof r?.dati?.testo !== "string") throw new Error("ads.txt: il CMS non ha risposto");
-  return r.dati.testo;
+/** Il file ads.txt intero (mu-plugin, sezione 9). CMS muto o file vuoto = errore: resta la versione buona. */
+export async function fileAdsTxt(): Promise<string> {
+  const r = await chiamata<{ file?: unknown; testo?: unknown }>("/platinatore/v1/ads-txt");
+  // il file intero, gia' pronto (Strumenti > ads.txt); il CMS di prima dava solo il testo di Advanced Ads
+  if (typeof r?.dati?.file === "string" && r.dati.file.trim()) return r.dati.file;
+  if (typeof r?.dati?.testo === "string" && r.dati.testo.trim()) return `# Advanced Ads ads.txt\n${r.dati.testo}\n`;
+  throw new Error("ads.txt: il CMS non ha risposto o il file e' vuoto");
 }
 
 /** Le voci di llms.txt con le regole di Yoast: 5 articoli piu' recenti, pagine, categorie e 5 tag per numero di articoli. */

@@ -179,6 +179,12 @@ def esiste_sul_cms(rel):
     return stato == 200
 
 
+def ads_txt_cms():
+    """Il file ads.txt come il CMS lo da' al sito (mu-plugin, sezione 9), in byte."""
+    stato, _, corpo = richiesta(f"{CMS}/wp-json/platinatore/v1/ads-txt")
+    return json.loads(corpo).get("file", "").encode("utf-8") if stato == 200 else b""
+
+
 def ssh(comando):
     r = subprocess.run(["ssh", SERVER, comando], capture_output=True, text=True, encoding="utf-8")
     if r.returncode != 0:
@@ -277,6 +283,17 @@ def main():
     if evidenza_assenti:
         print(f"    ATTENZIONE immagini in evidenza che non esistono da nessuna parte: {evidenza_assenti}")
 
+    # ads.txt: lo aggiorna il proprietario su Aruba (Advanced Ads) a ogni nuovo partner di HB; il sito
+    # lo legge dal CMS (Strumenti > ads.txt). Al passaggio deve arrivare identico, byte per byte.
+    print("[3b] ads.txt")
+    st_a, _, ads_aruba = richiesta(f"{ARUBA}/ads.txt")
+    ads_cms = ads_txt_cms()
+    ads_diverso = st_a == 200 and ads_aruba.strip() != b"" and ads_aruba != ads_cms
+    if st_a != 200 or not ads_aruba.strip():
+        print(f"    ATTENZIONE: ads.txt di Aruba non letto ({st_a}), non si copia niente")
+    print(f"    Aruba {len(ads_aruba.splitlines())} righe, CMS {len(ads_cms.splitlines())} righe: "
+          f"{'DIVERSI, da copiare' if ads_diverso else 'identici'}")
+
     pacchetto = {
         "termini_nuovi": termini_nuovi,
         "media_nuovi": media_nuovi,
@@ -341,6 +358,25 @@ def main():
     if cestina and solo_cms:
         ids = " ".join(str(i) for t, i, _, _ in solo_cms)
         print(ssh(f"cd {CARTELLA_SERVER} && docker compose --profile strumenti run --rm -T cli wp post delete {ids} 2>&1"))
+    if ads_diverso:
+        print("[6] ads.txt: copia del file di Aruba")
+        (OUT / f"ads-{ora}.txt").write_bytes(ads_aruba)
+        subprocess.run(["scp", "-q", str(OUT / f"ads-{ora}.txt"), f"{SERVER}:{dir_server}/ads.txt"], check=True)
+        print(ssh(
+            f"cd {CARTELLA_SERVER} && docker compose --profile strumenti run --rm -T -v {dir_server}:/incrementale:ro cli "
+            f"sh -c 'wp option update platinatore_ads_txt < /incrementale/ads.txt' 2>&1 | grep -v Container"
+        ))
+        if ads_txt_cms() != ads_aruba:
+            print("    ERRORE: ads.txt sul CMS non e' identico a quello di Aruba")
+            ssh(f"rm -rf {dir_server}")
+            return 1
+        print("    identico byte per byte")
+    # l'importazione passa da wp-cli, non dalla REST: il sito non viene avvisato da solo (22/10/2026)
+    print("[7] avviso al sito")
+    print(ssh(
+        f"cd {CARTELLA_SERVER} && docker compose --profile strumenti run --rm -T -v {dir_server}:/incrementale:ro cli "
+        f"wp eval-file /incrementale/importa-incrementale.php avvisa 2>&1 | grep -v Container"
+    ))
     # il pacchetto contiene anche le bozze: non resta sul server
     ssh(f"rm -rf {dir_server}")
     print("Fatto. Rilancia senza --applica: deve dire 0 da creare, 0 da aggiornare e 0 file mancanti.")
