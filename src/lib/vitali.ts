@@ -9,6 +9,9 @@ export type Vitale = { name: string; value: number; delta: number; id: string; r
 
 const MISURE = new Set(["LCP", "CLS", "INP", "FCP", "TTFB"]);
 const coda: Vitale[] = [];
+// acceso solo da svuotaVitali, cioe' quando parte il NOSTRO GA4: il banner di HB crea una sua
+// `window.gtag` prima del consenso, quindi la sua esistenza non vuol dire niente
+let acceso = false;
 
 declare global {
   interface Window {
@@ -31,11 +34,12 @@ function spedisci(m: Vitale) {
 /** Una misura appena pronta: a GA4 se e' gia' acceso, altrimenti in coda. */
 export function registraVitale(m: Vitale): void {
   if (!MISURE.has(m.name)) return;
-  if (window.gtag) spedisci(m);
+  if (acceso) spedisci(m);
   else coda.push(m);
 }
 
-/** GA4 si e' acceso (consenso dato): parte la coda. */
+/** GA4 si e' acceso (consenso dato): parte la coda, e da qui in poi si spedisce subito. */
 export function svuotaVitali(): void {
+  acceso = true;
   while (coda.length) spedisci(coda.shift()!);
 }

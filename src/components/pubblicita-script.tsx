@@ -32,10 +32,17 @@ function aggiungiScript(src: string) {
   document.head.appendChild(s);
 }
 
+// Acceso o no si decide con questo segno, MAI guardando se `window.gtag` esiste: il banner del
+// consenso di HB crea una sua `gtag` prima della scelta, e dal passaggio del 23/10/2026 alle ~15
+// GA4 non e' mai partito (nessuna visita registrata) perche' qui si vedeva quella e ci si fermava.
+let ga4Acceso = false;
+
 function accendiGa4() {
-  if (window.gtag) return;
+  if (ga4Acceso) return;
+  ga4Acceso = true;
   window.dataLayer ??= [];
-  window.gtag = function gtag() {
+  // se c'e' gia' (quella di HB) fa la stessa cosa: mette i comandi nel dataLayer
+  window.gtag ??= function gtag() {
     // eslint-disable-next-line prefer-rest-params
     window.dataLayer!.push(arguments);
   };
