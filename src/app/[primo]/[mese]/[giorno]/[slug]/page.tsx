@@ -9,6 +9,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { SchedaSovrapposta } from "@/components/guida/scheda";
 import { TestataCopertina, TestataGuida } from "@/components/guida/testata";
 import { HeaderBanner, SpazioHB } from "@/components/annunci";
+import { SoloDaComputer, TraUnaPaginaELAltra } from "@/components/annunci-condizionali";
 import { BERSAGLIO_IN_IMAGE, FLOOR_AD, IN_IMAGE, INTERSTITIAL, MAGIC_LEFT, inserisciAnnunci, NEL_TESTO } from "@/lib/annunci";
 import { estraiScheda } from "@/lib/guida/scheda";
 import { collocaGruppi, schedaDaCampi, trofeiDaCampi } from "@/lib/guida/campi";
@@ -301,9 +302,14 @@ export default async function PaginaArticolo({ params }: Parametri) {
       <InvitoParola />
       {/* Fase 5: Floor Ad dopo il contenuto (HB lo fissa in basso), come oggi */}
       <SpazioHB id={FLOOR_AD.id} nome={FLOOR_AD.nome} />
-      {/* Interstitial e Magic Left: prima stavano su tutte le pagine; dal 23/10/2026 solo negli articoli */}
-      <SpazioHB id={INTERSTITIAL.id} nome={INTERSTITIAL.nome} />
-      <SpazioHB id={MAGIC_LEFT.id} nome={MAGIC_LEFT.nome} />
+      {/* Interstitial e Magic Left: solo negli articoli; l'interstitial dalla seconda pagina della visita,
+          il Magic Left solo da computer (decisioni del proprietario, ok di HB, 23/10/2026) */}
+      <TraUnaPaginaELAltra>
+        <SpazioHB id={INTERSTITIAL.id} nome={INTERSTITIAL.nome} />
+      </TraUnaPaginaELAltra>
+      <SoloDaComputer>
+        <SpazioHB id={MAGIC_LEFT.id} nome={MAGIC_LEFT.nome} />
+      </SoloDaComputer>
       {/* Il gioco a fine articolo, come scheda col bagliore (piano 07); gli altri tag come etichette */}
       {giochi.map((g) => (
         <div key={g.slug} className="mt-10">

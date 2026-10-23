@@ -198,3 +198,14 @@ body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
 }
+
+/* Header Banner di HB (304962): nel suo riquadro sotto il titolo, NON fisso in alto (decisione del
+   proprietario, ok di HB, 23/10/2026). Da telefono lo script di HB mette sul contenitore stili in linea
+   che lo fissano in cima allo schermo; una regola con !important vince sugli stili in linea. */
+#HB_Footer_Close_hbagency_space_304962 {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  transform: none !important;
+  z-index: auto !important;
+}
