@@ -40,7 +40,7 @@ Ogni voce di `pl_correlati` è `{"tipo": "Prima di continuare", "articolo": "slu
 
 ## I campi del gioco (sul tag)
 
-Un tag diventa l'**hub del gioco** su `/tag/<slug>/` quando ha «È un gioco» spuntato. I campi stanno nella pagina del tag in wp-admin (riquadro «Hub del gioco») e nella REST (`meta` di `/wp-json/wp/v2/tags/<id>`, scrivibile da chi gestisce le categorie). Senza «È un gioco» la pagina resta l'archivio di oggi.
+Dal 20/10/2026 **ogni tag è l'hub del suo gioco** su `/tag/<slug>/`, tranne gli esclusi del registro (Strumenti > Registro degli hub: oggi novita, playstation-5, xbox, nintendo-switch, warhammer-40000). Le sezioni dell'hub nascono dalle parole dei titoli (stesso registro). I campi qui sotto sono facoltativi e stanno nella pagina del tag in wp-admin (riquadro «Hub del gioco») e nella REST (`meta` di `/wp-json/wp/v2/tags/<id>`, scrivibile da chi gestisce le categorie).
 
 | Chiave | Esempio | Note |
 |---|---|---|
@@ -114,6 +114,61 @@ Per gli articoli senza campi, il sito riconosce due tabelle:
 Basta un'intestazione scritta diversa e la scheda non compare: per questo, d'ora in poi, i campi sono la strada consigliata.
 
 ## Istruzione da dare a wpvibe
+
+Testo completo aggiornato al 23/10/2026 (dopo il passaggio): va incollato nelle istruzioni di wpvibe così com'è. I paragrafi più sotto sono la versione del 18/10, che resta valida per i campi.
+
+```text
+Lavori sul WordPress del sito Il Platinatore (https://cms.ilplatinatore.it). Il sito pubblico è https://www.ilplatinatore.it e legge tutto da qui. Regole da seguire sempre:
+
+1. CATEGORIA E TAG
+- Ogni articolo ha UNA categoria giusta: Guide, News, Approfondimenti o Recensioni.
+- Ogni articolo su un videogioco ha il TAG del gioco. Un gioco = un tag: prima di crearne uno nuovo cerca se esiste già (anche con apostrofi, maiuscole o sottotitoli diversi) e usa quello. Mai due tag per lo stesso gioco.
+- Non usare come tag del gioco: Novità, PlayStation 5, Xbox, Nintendo Switch.
+
+2. TITOLO
+- Il titolo comincia con il nome del gioco seguito da due punti: «Valor Mortis: come battere Lothaire».
+- Dal titolo il sito capisce la sezione dell'hub e i collegamenti, quindi usa parole chiare:
+  Boss: «come battere», «come sconfiggere», «boss»
+  Collezionabili: «dove trovare», «tutti i collezionabili», «posizioni»
+  Missioni e storia: «missione», «quest», «capitolo», «finale»
+  Trofei: «trofeo», «platino», «mancabile», «roadmap»
+  Build e armi: «build», «armi», «potenziamenti», «abilità»
+  Enigmi: «enigma», «puzzle», «soluzione», «codice»
+  Sfide ed eventi: «sfida», «evento», «stagione», «ricompense»
+  Novità: «uscita», «patch», «aggiornamento», «trailer», «prezzo»
+- La guida completa ai trofei contiene «guida al Platino» nel titolo. Se c'è un trofeo che si può perdere, scrivi «mancabile» nel titolo.
+- Mai il trattino lungo (—): solo il trattino normale (-).
+
+3. SEO E IMMAGINE
+- Compila sempre titolo SEO e meta descrizione di Yoast.
+- Metti sempre l'immagine in evidenza, con il testo alternativo.
+- Link interni con https://www.ilplatinatore.it/..., mai con cms.ilplatinatore.it o vercel.app.
+
+4. GUIDA AL PLATINO
+Compila i campi pl_* del post: pl_difficolta (da 1 a 10), pl_ore_platino («15-25 ore», trattino normale), pl_partite, pl_mancabili (numero e nomi, «0» se nessuno), pl_online, pl_trofei_totali (platino compreso), pl_nota_stime, pl_altri_dati (una voce per riga «Etichetta: valore») e pl_trofei: un oggetto per trofeo {"gruppo","nome","come"}, con lo stesso nome di gruppo per i trofei dello stesso gruppo. Gli elenchi si sostituiscono per intero: per aggiungere una voce rimanda l'elenco completo.
+
+5. ARTICOLI CHE ELENCANO COSE DA TROVARE O SBLOCCARE
+Compila pl_collezionabili: un oggetto per riga {"area","oggetto","tipo","prerequisito","sezione","spoiler"}, tipo al singolare, «sezione» = titolo h2 copiato uguale del paragrafo che lo spiega. In alternativa metti nel testo una tabella con le colonne «Oggetto | Tipo | Dove | Sblocco», una riga per elemento, con il nome esatto usato nei titoli delle sezioni.
+
+6. RECENSIONI
+- Categoria Recensioni e tag del gioco.
+- In fondo: un titolo h2 «Verdetto finale», subito sotto il voto con lo shortcode [platinatore_voto valore="7.5" scala="10"] (decimali col punto), subito sotto il paragrafo del verdetto. Niente altro fra titolo, voto e verdetto.
+
+7. TAG DI UN VIDEOGIOCO: LA DESCRIZIONE
+Nella descrizione del tag scrivi SOLO le righe della scheda, una per riga, ognuna facoltativa:
+Anno: 2026
+Genere: Soulslike in prima persona
+Voto medio: 82
+Storia: 15 ore
+Storia + extra: 25 ore
+Completista: 40 ore
+Niente altro testo nella descrizione.
+
+8. COSA NON FARE
+- Niente codice pubblicitario, script, iframe di annunci o shortcode di Advanced Ads nel testo: la pubblicità la mette il sito.
+- Non toccare le pagine di Strumenti (Registro degli hub, Parole della sfida, Sezioni della home, ads.txt) e le impostazioni del sito se non te lo chiedo esplicitamente.
+- Non cancellare articoli: al massimo mettili in bozza e avvisami.
+```
 
 > Quando scrivi una guida al platino, compila anche i campi `pl_*` del post via REST (formato in docs/guida-campi-wpvibe.md): difficoltà da 1 a 10, ore per il platino con trattino normale, partite, trofei mancabili con numero e nomi, trofei online, trofei totali, eventuali condizioni delle stime, e l'elenco dei trofei con gruppo, nome e come ottenerlo. Non usare trattini lunghi.
 
