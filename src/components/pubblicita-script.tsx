@@ -12,6 +12,7 @@
 import { useEffect } from "react";
 import { DOMINI_VERI, GA4, SCRIPT_HB } from "@/lib/annunci";
 import type { Misura } from "@/lib/misure";
+import { svuotaVitali } from "@/lib/vitali";
 
 type DatiTcf = { gdprApplies?: boolean; eventStatus?: string; purpose?: { consents?: Record<string, boolean> } };
 type Tcf = (comando: string, versione: number, cb: (d: DatiTcf, ok: boolean) => void) => void;
@@ -41,6 +42,8 @@ function accendiGa4() {
   window.gtag("js", new Date());
   window.gtag("config", GA4);
   aggiungiScript(`https://www.googletagmanager.com/gtag/js?id=${GA4}`);
+  // le misure di velocita' raccolte prima del consenso (src/lib/vitali.ts)
+  svuotaVitali();
   // le misure d'uso, da qui in poi, vanno anche a GA4
   window.addEventListener("platinatore:misura", (e) => {
     const m = (e as CustomEvent<Misura>).detail;

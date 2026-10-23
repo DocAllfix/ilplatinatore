@@ -40,6 +40,10 @@ const nextConfig: NextConfig = {
     // del build precedente (stesso nome di file, contenuto vecchio) dopo una modifica a
     // globals.css. Un build piu' lento e' meglio di un sito che pubblica stili vecchi in silenzio.
     turbopackFileSystemCacheForBuild: false,
+    // Il CSS (11 KB compressi) dentro l'HTML invece di un file a parte: niente richiesta che blocca
+    // il primo disegno (130-170 ms nel PageSpeed del 23/10/2026). Quasi tutti arrivano da Google e
+    // leggono una pagina sola, quindi la cache del file separato servirebbe poco. Ok del proprietario.
+    inlineCss: true,
   },
 
   // Tailwind v4 passa dal loader di Turbopack (impostazione del modello di create-next-app 16.4)

@@ -3,6 +3,7 @@ import { MisureClic } from "@/components/misure-clic";
 import { Testata } from "@/components/testata/testata";
 import { RichiamoSfida } from "@/components/sfida/richiamo";
 import { PubblicitaScript } from "@/components/pubblicita-script";
+import { VitaliWeb } from "@/components/vitali-web";
 import { SpazioHB } from "@/components/annunci";
 import { INTERSTITIAL, MAGIC_LEFT } from "@/lib/annunci";
 import { Jost } from "next/font/google";
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SpazioHB id={INTERSTITIAL.id} nome={INTERSTITIAL.nome} />
         <SpazioHB id={MAGIC_LEFT.id} nome={MAGIC_LEFT.nome} />
         <PubblicitaScript />
+        <VitaliWeb />
         <footer className="border-t border-linea">
           <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-sm text-tenue">
             <span>© Il Platinatore</span>
