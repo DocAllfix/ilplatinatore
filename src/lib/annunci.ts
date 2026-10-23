@@ -13,6 +13,13 @@ export const NEL_TESTO: Array<Annuncio & { dopo: number }> = [
   { id: "345270", nome: "Video Outstream", dopo: 5 },
   { id: "304970", nome: "Mobile Leaderboard 320x100", dopo: 7 },
 ];
+/**
+ * In Image: lo script di HB mette l'annuncio SOPRA un'immagine, la piu' grande fra le prime 60 della
+ * pagina, e la sposta dentro un suo riquadro. Un'immagine con id `hb-inimage-fix` diventa l'unico
+ * bersaglio (letto dallo script il 23/10/2026). Scelta del proprietario: mai sulla testata col titolo.
+ */
+export const IN_IMAGE = "304795";
+export const BERSAGLIO_IN_IMAGE = "hb-inimage-fix";
 export const HEADER_BANNER: Annuncio = { id: "304962", nome: "Header Banner" };
 export const FLOOR_AD: Annuncio = { id: "304792", nome: "Floor Ad" };
 /** Su tutte le pagine */

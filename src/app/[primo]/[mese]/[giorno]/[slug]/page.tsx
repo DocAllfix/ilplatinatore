@@ -9,7 +9,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { SchedaSovrapposta } from "@/components/guida/scheda";
 import { TestataCopertina, TestataGuida } from "@/components/guida/testata";
 import { HeaderBanner, SpazioHB } from "@/components/annunci";
-import { FLOOR_AD, inserisciAnnunci, NEL_TESTO } from "@/lib/annunci";
+import { BERSAGLIO_IN_IMAGE, FLOOR_AD, IN_IMAGE, inserisciAnnunci, NEL_TESTO } from "@/lib/annunci";
 import { estraiScheda } from "@/lib/guida/scheda";
 import { collocaGruppi, schedaDaCampi, trofeiDaCampi } from "@/lib/guida/campi";
 import { aggiungiAncore, dividiCorpo, estraiChecklist } from "@/lib/guida/checklist";
@@ -166,7 +166,30 @@ export default async function PaginaArticolo({ params }: Parametri) {
       if ("gruppo" in p) return <div key={i}>{(posti.get(p.gruppo) ?? []).map(gruppoConNota)}</div>;
       if ("annuncio" in p) {
         const an = NEL_TESTO.find((x) => x.id === p.annuncio);
-        return an ? <SpazioHB key={i} id={an.id} nome={an.nome} /> : null;
+        if (!an) return null;
+        // In Image nelle guide con la scheda: l'immagine principale sta dietro il titolo, e HB ci
+        // metterebbe sopra l'annuncio. Qui, accanto al suo spazio, la stessa immagine nel testo fa da
+        // unico bersaglio (soluzione 1 del proprietario, 23/10/2026).
+        if (an.id === IN_IMAGE && scheda && a.immagine)
+          return (
+            <div key={i} className="my-6">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                id={BERSAGLIO_IN_IMAGE}
+                src={a.immagine.src}
+                srcSet={a.immagine.srcset}
+                sizes="(min-width: 768px) 736px, 100vw"
+                alt=""
+                width={a.immagine.larghezza}
+                height={a.immagine.altezza}
+                loading="lazy"
+                decoding="async"
+                className="h-auto w-full rounded-lg"
+              />
+              <SpazioHB id={an.id} nome={an.nome} />
+            </div>
+          );
+        return <SpazioHB key={i} id={an.id} nome={an.nome} />;
       }
       if ("verdetto" in p) {
         if (!voto) return null;
@@ -244,8 +267,11 @@ export default async function PaginaArticolo({ params }: Parametri) {
       <HeaderBanner />
 
       {!scheda && a.immagine && (
+        // senza scheda l'immagine principale e' gia' un'immagine normale prima del testo: e' lei il
+        // bersaglio di In Image (niente copia)
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          id={BERSAGLIO_IN_IMAGE}
           src={a.immagine.src}
           srcSet={a.immagine.srcset}
           sizes="(min-width: 768px) 736px, 100vw"
