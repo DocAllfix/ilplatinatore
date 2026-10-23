@@ -30,6 +30,10 @@
 	basic_auth @amministrazione {
 		{$ADMIN_UTENTE} {$ADMIN_HASH}
 	}
+	# Controllate le credenziali della porta, non arrivano a WordPress: se le vede, crede che il sito
+	# usi l'autenticazione di base e blocca le password delle applicazioni (autorizzazione di wpvibe e
+	# sezione del profilo, 23/10/2026). Solo qui: la REST (/wp-json) le password delle app le riceve.
+	request_header @amministrazione -Authorization
 
 	# I blocchi stanno dentro `handle`: un `respond` sciolto viene DOPO `handle` nell'ordine di Caddy, e
 	# dal 17/10/2026 (quando e' arrivato `handle { reverse_proxy }`) non scattava piu': il 22/10 readme.html,
