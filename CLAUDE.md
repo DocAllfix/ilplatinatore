@@ -176,3 +176,37 @@ Poi il commit «Fase N completata».
   - impressioni viste dalla concessionaria, annunci rinnovati fra tre pagine, banner del consenso mai coperto (il pulsante della sfida e il «torna su» stanno in basso a destra, il Floor Ad in basso: da guardare con gli annunci veri);
   - **CSP**: oggi assente; si mette in sola segnalazione (report-only) al passaggio, con le origini reali che HB carica, poi si stringe;
   - nessun contatore aggregato delle misure d'uso senza consenso: senza GA4 restano solo nel `dataLayer`.
+
+#### Fase 6, Migrazione dei dati e preparazione del passaggio (completata il 23/10/2026)
+- **Fatto**:
+  - **Importazione incrementale** da Aruba (sola lettura) al CMS: `scripts/importa/incrementale.py` + `infra/cms/importa-incrementale.php`. Confronta campo per campo, conserva gli ID di Aruba e i campi `pl_*`, copia i file mancanti, copia `ads.txt` se diverso, alla fine avvisa il sito. Ultimo giro il 22/10: 44 articoli creati, 94 aggiornati (i tag sistemati dal proprietario), poi 0 e 0.
+  - **Parità** su 2.648 indirizzi (`scripts/qa/parita.py`), 0 differenze non spiegate; archivi per data e `llms.txt` fatti.
+  - **Richieste del proprietario**: registro degli hub (ogni tag e' un hub tranne gli esclusi, sezioni dalle parole dei titoli, Strumenti > Registro degli hub); recensioni (voto con lo shortcode, figura B «Lastra inclinata», scheda del verdetto, vetrina in home); «La parola» (gioco 4, tre livelli, elenco in Strumenti > Parole della sfida, nomi brevi `facile | nome | slug`); correlati automatici in tutti gli articoli; «La parola di oggi» a fine articolo. Brief in `docs/brief/08-recensioni.md` e `09-la-parola.md`.
+  - **Server**: CMS sul CX33 a Norimberga dal 22/10 (stesso IPv4, `infra/cms/sposta-server.py`); CAX11 cancellato, istantanea «platinatore-cms CAX11 prima del trasloco» conservata.
+  - **DNS su Cloudflare** dal 22/10 (zona attiva alle 15:07): 49 record identici ad Aruba, compresi i 6 che si vedono solo dall'esportazione del pannello (firma DKIM `a1._domainkey`, `stat`, `statistiche`, `sms`, xmpp); `localhost` escluso apposta. Confronto: `scripts/dns/copia-zona.py --confronta`. Stato in `docs/passaggio-dns.md`.
+  - **Immagini da R2**: Worker `platinatore-immagini` su `img.ilplatinatore.it` (`infra/cloudflare/`), il sito inoltra `/wp-content/uploads/` li' con gli STESSI indirizzi pubblici; immagine mancante presa dal CMS e salvata. **WebP** allo stesso indirizzo: `foto.jpg.webp` preparato dal server (`infra/cms/webp/`, cron ogni 10 minuti), dato a chi legge il WebP se pesa meno, `Vary: Accept`; versione delle immagini `?v=3`.
+  - **Sitemap con le immagini**, calcolate dall'analizzatore di Yoast sul CMS (mu-plugin, sezione 13): 1.932 su 1.932 uguali al sito vero.
+  - **`ads.txt` da Strumenti > ads.txt** (mu-plugin, sezione 9): file intero salvato com'e', mai vuoto, il sito lo serve senza aggiungere niente.
+  - **Sorveglianza**: UptimeRobot (5 monitor con parola chiave) e healthchecks.io (backup notturno, prova di ripristino settimanale).
+- **Cancello**:
+  - PageSpeed della home da telefono **98** (Google, 23/10; era 87 prima del WebP), articolo 93 e hub 97 (Lighthouse locale), computer 99-100;
+  - parita' 0 differenze non spiegate; `controlli.py` 0 problemi, `criteri.py` verde; 0 immagini rotte su Pixel e iPhone;
+  - `ads.txt` identico byte per byte, provato dal salvataggio, con una riga aggiunta e tolta, con il CMS che risponde errore;
+  - importazione rilanciata a vuoto: 0 da creare, 0 da aggiornare, 0 file mancanti.
+- **Regole nate**:
+  - In Caddy un `respond` sciolto viene DOPO `handle` nell'ordine delle direttive: dal 17/10 i blocchi di xmlrpc, readme e sitemap non scattavano. I blocchi stanno dentro `handle`.
+  - Il crontab si installa da un file scritto con `printf`, poi si guardano i byte (`cat -A`): il 21/10 un `\r` letterale ha fermato il cron di WordPress per 16 ore (e avrebbe fermato i backup).
+  - Un comando interrotto o rifiutato su un sistema vero puo' essere gia' partito: prima di dire che cosa e' successo si legge il registro (Hetzner aveva gia' spento e cambiato il server).
+  - Con `trailingSlash` Next rende facoltativa la barra nelle regole: una regola «senza barra -> con la barra» rimanda ogni pagina a se stessa (anteprima in loop per 20 minuti il 22/10). Ogni regola di rimando si prova prima su indirizzi con e senza barra. Il rimando resta 308 (Google lo tratta come 301, scelta dell'utente).
+  - La zona DNS si copia dall'esportazione del pannello, non solo dal DNS pubblico: i nomi che non si indovinano (il selettore DKIM) mancano. La firma della posta e' mancata dalle 14:30 alle 21:15 del 22/10.
+  - L'importazione con wp-cli non avvisa il sito (non passa dalla REST): lo fa lo script alla fine.
+  - Una risposta che cambia formato allo stesso indirizzo vuole `Vary: Accept`, e le copie gia' in cache senza `Vary` si scavalcano cambiando la versione `?v=`.
+  - Il Worker gratuito di Cloudflare non ha la potenza per convertire immagini: le converte il server, il Worker sceglie.
+  - Nei testi con `\n`, `\r`, `\1` niente heredoc o stringhe Python: strumento di modifica o `chr()`, poi ricerca dei caratteri di controllo (successo di nuovo il 23/10 nel mu-plugin, fermato prima del caricamento).
+- **Debiti**:
+  - meta descrizione della home assente (come oggi su Aruba): la scrive il proprietario in Yoast sul nuovo CMS;
+  - «La parola»: Castlevania e Planet Zoo 2 senza nome breve (proposti «Castlevania» e «Planet Zoo»);
+  - posizioni della pubblicita' scritte nel codice (`src/lib/annunci.ts`): una pagina Strumenti > Pubblicita' e' proposta, non fatta;
+  - al passaggio: togliere `sslip.io` dal Caddyfile, revocare la password `collaudo-rest`, ricollegare wpvibe, CSP in sola segnalazione, elenco dei 410;
+  - dopo il passaggio: cancellare l'istantanea del CAX11; ruotare le chiavi passate in chat (Cloudflare, Hetzner, Vercel, UptimeRobot, healthchecks, Search Console);
+  - per Quart4 Parete: il limite gratuito del Worker (100.000 richieste al giorno) va rifatto con il traffico vero.
