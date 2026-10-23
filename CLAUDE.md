@@ -99,7 +99,7 @@ Poi il commit «Fase N completata».
   - Il build si fa su Vercel, non in locale (memoria e percorsi di Windows).
   - Commit prima di qualsiasi prova che rompe apposta qualcosa.
   - Il mu-plugin si controlla con `php -l` su una copia temporanea nel contenitore, e solo dopo si sostituisce quello attivo (17/10/2026: un apostrofo non protetto ha fermato il CMS di lavoro per circa un minuto). Nei testi PHP fra apici singoli, niente apostrofi.
-  - Modifiche ai file con espressioni regolari: mai attraverso stringhe Python normali (`` diventa un carattere invisibile, `` un altro): si usa lo strumento di modifica o un file di testo copiato com'è, e dopo si cercano i caratteri di controllo.
+  - Modifiche ai file con espressioni regolari: mai attraverso stringhe Python normali (`\b` diventa un carattere invisibile, `\1` un altro): si usa lo strumento di modifica o un file di testo copiato com'è, e dopo si cercano i caratteri di controllo.
   - Cache di sviluppo di Next rotta («HMR hash mismatch», pagine che si ricaricano da sole): si ferma il server sulla propria porta e si cancella `.next`.
 - **Debiti aperti**:
   - allarme «uomo morto» dei backup predisposto ma senza `HEALTHCHECK_URL` (serve un account healthchecks.io dall'utente);
