@@ -4,8 +4,6 @@ import { Testata } from "@/components/testata/testata";
 import { RichiamoSfida } from "@/components/sfida/richiamo";
 import { PubblicitaScript } from "@/components/pubblicita-script";
 import { VitaliWeb } from "@/components/vitali-web";
-import { SpazioHB } from "@/components/annunci";
-import { INTERSTITIAL, MAGIC_LEFT } from "@/lib/annunci";
 import { Jost } from "next/font/google";
 import Link from "@/components/collegamento";
 import "./globals.css";
@@ -46,9 +44,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-5">{children}</main>
         <MisureClic />
         <RichiamoSfida />
-        {/* Fase 5: i due formati di HB presenti su tutte le pagine, come oggi */}
-        <SpazioHB id={INTERSTITIAL.id} nome={INTERSTITIAL.nome} />
-        <SpazioHB id={MAGIC_LEFT.id} nome={MAGIC_LEFT.nome} />
+        {/* la pubblicita' sta solo negli articoli (decisione del proprietario, 23/10/2026): lo script di HB
+            parte solo dove la pagina ha i suoi spazi */}
         <PubblicitaScript />
         <VitaliWeb />
         <footer className="border-t border-linea">

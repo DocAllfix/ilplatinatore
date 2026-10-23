@@ -61,6 +61,11 @@ function accendiGa4() {
 export function PubblicitaScript() {
   useEffect(() => {
     if (!DOMINI_VERI.includes(window.location.hostname)) return;
+    // Solo dove la pagina ha spazi di HB, cioe' negli articoli (decisione del proprietario, 23/10/2026):
+    // lo script chiede annunci per TUTTI i formati della sua lista anche se la pagina non ha lo spazio,
+    // quindi l'unico modo sicuro per avere home e sezioni senza pubblicita' e' non caricarlo li'.
+    // Effetto voluto: niente banner del consenso su quelle pagine, e GA4 (che lo aspetta) non parte.
+    if (!document.querySelector('[id^="hbagency_space_"], [class*="hbagency_space_"]')) return;
     aggiungiScript(SCRIPT_HB);
     // il banner del consenso arriva con lo script di HB: si aspetta la sua API, poi la scelta
     let tentativi = 0;
