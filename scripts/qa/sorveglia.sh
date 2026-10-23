@@ -3,7 +3,7 @@
 # pubblicazione, .github/workflows/). Esce con 1 se anche un solo controllo fallisce.
 # Uso: SITO=https://... CMS=https://... scripts/qa/sorveglia.sh [rompi]
 set -u
-SITO=${SITO:-https://ilplatinatore.vercel.app}
+SITO=${SITO:-https://www.ilplatinatore.it}
 CMS=${CMS:-https://cms.ilplatinatore.it}
 errori=0
 prova() { # descrizione, indirizzo, testo che deve esserci (facoltativo)
@@ -33,9 +33,12 @@ prova "Immagine dal CMS"     "$CMS/wp-content/uploads/2026/10/Valor-Mortis-guida
 if [ "${1:-}" = "rompi" ]; then
   prova "Guasto messo apposta" "$SITO/pagina-che-non-esiste-per-prova/"
 fi
-# il sito di prova deve restare fuori da Google finche' non si passa
-if ! curl -sSI -m 20 "$SITO/" | grep -qi '^x-robots-tag: noindex'; then
-  echo "::error::Il sito di prova ha perso il noindex"; errori=$((errori+1))
+# dal passaggio (23/10/2026): il sito vero DEVE essere indicizzabile, gli indirizzi di Vercel MAI
+if curl -sSI -m 20 "https://www.ilplatinatore.it/" | grep -qi '^x-robots-tag: noindex'; then
+  echo "::error::Il sito vero e' in noindex: sparisce da Google"; errori=$((errori+1))
+fi
+if ! curl -sSI -m 20 "https://ilplatinatore.vercel.app/" | grep -qi '^x-robots-tag: noindex'; then
+  echo "::error::ilplatinatore.vercel.app ha perso il noindex: doppione del sito vero"; errori=$((errori+1))
 fi
 [ "$errori" -eq 0 ] || { echo "$errori controlli falliti"; exit 1; }
 echo "tutti i controlli verdi"

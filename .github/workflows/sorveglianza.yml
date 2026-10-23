@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      SITO: https://ilplatinatore.vercel.app
+      SITO: https://www.ilplatinatore.it
       CMS: https://cms.ilplatinatore.it
     steps:
       - uses: actions/checkout@v4

@@ -32,10 +32,10 @@ jobs:
           pip install playwright==1.48.0
           python -m playwright install --with-deps chromium
       - name: Accessibilita' e struttura
-        run: python -I scripts/qa/controlli.py https://ilplatinatore.vercel.app
+        run: python -I scripts/qa/controlli.py https://www.ilplatinatore.it --indicizzabile
       - name: Criteri del PDF
         if: always()
-        run: python -I scripts/qa/criteri.py https://ilplatinatore.vercel.app
+        run: python -I scripts/qa/criteri.py https://www.ilplatinatore.it
       - name: Rapporti
         if: always()
         uses: actions/upload-artifact@v4

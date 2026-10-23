@@ -21,7 +21,7 @@ jobs:
       - name: Attesa della pubblicazione su Vercel
         run: |
           for i in $(seq 1 50); do
-            v=$(curl -s -m 20 https://ilplatinatore.vercel.app/ | grep -o 'name="platinatore-versione" content="[0-9a-f]*"' | grep -o '[0-9a-f]\{40\}' || true)
+            v=$(curl -s -m 20 https://www.ilplatinatore.it/ | grep -o 'name="platinatore-versione" content="[0-9a-f]*"' | grep -o '[0-9a-f]\{40\}' || true)
             if [ "$v" = "${GITHUB_SHA}" ]; then echo "pubblicata la versione ${GITHUB_SHA:0:7}"; exit 0; fi
             sleep 30
           done

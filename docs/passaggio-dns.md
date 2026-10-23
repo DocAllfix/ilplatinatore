@@ -2,6 +2,13 @@
 
 Scritto il 20/10/2026. Il dominio **resta registrato su Aruba**: cambiano solo i server DNS (chi risponde alla domanda «dove sta www.ilplatinatore.it?»). Si fa in **due momenti separati**, così il giorno del passaggio il rischio è uno solo.
 
+## Passaggio fatto (23/10/2026)
+- 12:02 ultima importazione da Aruba (0 da creare, 0 da aggiornare, ads.txt identico); 12:15 domini su Vercel (`www` principale, `ilplatinatore.it` -> 301 su `www`), `SITO_PUBBLICO=https://www.ilplatinatore.it`, `SITO_NOINDEX=0` solo in produzione; `*.vercel.app` sempre noindex per regola sul nome.
+- **12:19:23 DNS su Cloudflare**: A di `@` e `www` da 89.46.107.229 a 76.76.21.21, AAAA di Aruba cancellati. Certificato di Vercel alle 12:22. Valori per il ritorno in `scripts/dns/out/ritorno-aruba-*.json` (A 89.46.107.229, AAAA 2a00:6d40:4:1::c263:229).
+- Controlli sul dominio vero: `controlli.py --indicizzabile` 0 problemi, `criteri.py` verde, ads.txt identico, sitemap e robots come previsto, HB e banner del consenso attivi, GA4 solo dopo il consenso.
+- CMS: `SITO_PUBBLICO` sul server a `www`, avviso al sito provato (200); tolto `sslip.io`; revocata la password `collaudo-rest` (l'importazione da Aruba non deve piu' girare: riporterebbe il CMS alle versioni vecchie).
+- Sorveglianza (UptimeRobot e GitHub Actions) spostata su `www`.
+
 ## Stato (21/10/2026)
 - **Zona creata su Cloudflare** (piano Free, account dell'utente), in attesa del cambio dei nameserver. 43 record copiati dal DNS pubblico e verificati identici, tutti «solo DNS»: `python -I scripts/dns/copia-zona.py --confronta` (esce con 1 se qualcosa non torna).
 - **Nameserver da mettere su Aruba** (Gestione DNS → Modifica server DNS): `coco.ns.cloudflare.com` e `shane.ns.cloudflare.com`.
