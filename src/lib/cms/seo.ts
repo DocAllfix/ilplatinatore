@@ -19,8 +19,10 @@ function escapeRe(s: string): string {
  * Versione degli indirizzi delle immagini caricate. Cambiarla obbliga browser e Vercel a riscaricarle:
  * il 17/10/2026 alcuni 502 (WordPress fermo) erano stati conservati per 30 giorni come se fossero
  * immagini, e i telefoni le mostravano rotte. Il CMS ignora il parametro e serve lo stesso file.
+ * "3" (23/10/2026): le copie conservate prima del WebP non avevano `Vary: Accept`, e Vercel avrebbe
+ * continuato a dare il JPG/PNG pesante a tutti per 30 giorni.
  */
-export const VERSIONE_IMMAGINI = "2";
+export const VERSIONE_IMMAGINI = "3";
 const RX_CARICATE = /(\/wp-content\/uploads\/[^"'\s?#)]+\.(?:jpe?g|png|webp|avif|gif))(?![?\w])/gi;
 
 /** Aggiunge la versione agli indirizzi delle immagini caricate (una volta sola). */
