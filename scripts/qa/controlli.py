@@ -46,7 +46,7 @@ LARGHEZZE = (("m", {"width": 390, "height": 844}), ("t", {"width": 1024, "height
 PICCOLI = """() => [...document.querySelectorAll('a,button,input,select,[role=button],[role=checkbox]')].filter(e => {
   const r = e.getBoundingClientRect(); const s = getComputedStyle(e);
   if (!r.width || s.visibility === 'hidden' || e.closest('[inert],[aria-hidden=true]')) return false;
-  if (e.closest('p,li,td,figcaption') && s.display === 'inline') return false;  // link dentro il testo
+  if (e.closest('p,li,td,figcaption,h1,h2,h3,h4,h5,h6') && s.display === 'inline') return false;  // link dentro il testo
   return r.height < 44 || r.width < 24;
 }).map(e => (e.innerText || e.getAttribute('aria-label') || e.tagName).trim().slice(0, 40) + ' ' +
   Math.round(e.getBoundingClientRect().width) + 'x' + Math.round(e.getBoundingClientRect().height))"""

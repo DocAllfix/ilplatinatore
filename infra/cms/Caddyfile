@@ -8,10 +8,7 @@
 # nessuno le linka (il frontend riscrive ogni URL sul dominio pubblico), quindi il rischio di
 # lasciarle senza noindex qui e' basso. Il sito di prova su vercel.app mette il suo noindex.
 
-# TEMPORANEO (16/10/2026): 49-13-164-162.sslip.io risolve subito nell'IP del server, mentre i DNS
-# secondari di Aruba non hanno ancora propagato cms.ilplatinatore.it. Serve solo perche' Vercel
-# possa leggere il CMS in HTTPS. Da togliere appena cms.ilplatinatore.it ha il suo certificato.
-{$DOMINIO_CMS}, 49-13-164-162.sslip.io {
+{$DOMINIO_CMS} {
 	@immagini path /wp-content/uploads/*
 
 	header {
