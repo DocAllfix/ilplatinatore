@@ -71,6 +71,13 @@ const nextConfig: NextConfig = {
     ];
     return [
       { source: "/:percorso*", headers: NOINDEX ? [...sicurezza, { key: "X-Robots-Tag", value: "noindex, nofollow" }] : sicurezza },
+      // gli indirizzi di Vercel (ilplatinatore.vercel.app e quelli delle singole pubblicazioni) non vanno
+      // mai su Google, nemmeno dopo il passaggio: sarebbero un doppione di www.ilplatinatore.it
+      {
+        source: "/:percorso*",
+        has: [{ type: "host", value: ".*\\.vercel\\.app" }],
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
     ];
   },
 };
