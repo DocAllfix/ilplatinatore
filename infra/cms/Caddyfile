@@ -30,10 +30,13 @@
 	basic_auth @amministrazione {
 		{$ADMIN_UTENTE} {$ADMIN_HASH}
 	}
-	# Controllate le credenziali della porta, non arrivano a WordPress: se le vede, crede che il sito
-	# usi l'autenticazione di base e blocca le password delle applicazioni (autorizzazione di wpvibe e
-	# sezione del profilo, 23/10/2026). Solo qui: la REST (/wp-json) le password delle app le riceve.
-	request_header @amministrazione -Authorization
+	# Le credenziali della porta non arrivano MAI a WordPress (23/10/2026). Se le vede, crede che il sito
+	# usi l'autenticazione di base e blocca le password delle applicazioni; e wpvibe rifiuta l'approvazione
+	# («logged-in browser session only»). Il browser le rimanda da solo a tutto il CMS, /wp-json compreso,
+	# quindi si riconoscono dal valore esatto e si tolgono ovunque: le password delle applicazioni vere
+	# (wpvibe, anteprima delle bozze) hanno un altro valore e passano.
+	@porta header Authorization "Basic {$ADMIN_BASIC}"
+	request_header @porta -Authorization
 
 	# I blocchi stanno dentro `handle`: un `respond` sciolto viene DOPO `handle` nell'ordine di Caddy, e
 	# dal 17/10/2026 (quando e' arrivato `handle { reverse_proxy }`) non scattava piu': il 22/10 readme.html,

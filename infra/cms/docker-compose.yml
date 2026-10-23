@@ -16,6 +16,9 @@ services:
       DOMINIO_CMS: ${DOMINIO_CMS:?serve DOMINIO_CMS}
       ADMIN_UTENTE: ${ADMIN_UTENTE:?serve ADMIN_UTENTE}
       ADMIN_HASH: ${ADMIN_HASH:?serve ADMIN_HASH}
+      # base64 di «utente:password» della porta d'ingresso: Caddy riconosce e toglie quelle credenziali
+      # prima di WordPress, ovunque il browser le mandi (vedi Caddyfile)
+      ADMIN_BASIC: ${ADMIN_BASIC:?serve ADMIN_BASIC}
     ports:
       - "80:80"
       - "443:443"
