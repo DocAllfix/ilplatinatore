@@ -123,6 +123,7 @@ difficile | Ruinous Gouma | warriors-abyss
 facile | Aion | aion-2
 facile | Assassin's Creed | assassins-creed-shadows
 facile | Battlefield | battlefield-6
+facile | Castlevania | castlevania-belmonts-curse
 facile | Wukong | black-myth-wukong
 facile | Control | control-resonant
 facile | Death Stranding | death-stranding-2-on-the-beach
@@ -139,6 +140,7 @@ facile | Minecraft | minecraft-dungeons
 facile | Monster Hunter | monster-hunter-wilds
 facile | Mouse PI for Hire | mouse-p-i-for-hire
 facile | Nioh | nioh-3
+facile | Planet Zoo | planet-zoo-2
 facile | PGA Tour | pga-tour-2k25
 facile | Phantom Blade | phantom-blade-zero
 facile | Resident Evil | resident-evil-requiem
