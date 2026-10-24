@@ -1,0 +1,58 @@
+# Umami: il contatore delle visite senza cookie (24/10/2026). Conta tutti i visitatori, anche chi non
+# accetta il banner del consenso (che serve solo per pubblicita' e GA4). Pannello per il proprietario su
+# https://statistiche.ilplatinatore.it, servito dal Caddy del CMS attraverso la rete interna.
+# Sul server: /opt/umami (questo file + .env con i segreti, mai nel repository).
+#   cd /opt/umami && docker compose up -d
+# Versione bloccata: si aggiorna a mano, dopo aver letto le note della versione nuova.
+
+name: platinatore-statistiche
+
+services:
+  umami:
+    image: ghcr.io/umami-software/umami:3.4.1
+    restart: unless-stopped
+    depends_on:
+      umami-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://umami:${UMAMI_DB_PASSWORD:?serve UMAMI_DB_PASSWORD}@umami-db:5432/umami
+      APP_SECRET: ${UMAMI_APP_SECRET:?serve UMAMI_APP_SECRET}
+      DISABLE_TELEMETRY: "1"
+      DISABLE_UPDATES: "1"
+      # nomi diversi da quelli standard: i blocca-pubblicita' non li riconoscono (docs.umami.is, bypass ad blockers)
+      TRACKER_SCRIPT_NAME: ${UMAMI_SCRIPT:?serve UMAMI_SCRIPT}
+      COLLECT_API_ENDPOINT: ${UMAMI_ENDPOINT:?serve UMAMI_ENDPOINT}
+    networks:
+      - interna
+      - rete-cms
+    mem_limit: 512m
+
+  # NON «db»: sulla rete del CMS «db» e' il database di WordPress (24/10/2026 Umami lo raggiungeva per errore)
+  umami-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: umami
+      POSTGRES_USER: umami
+      POSTGRES_PASSWORD: ${UMAMI_DB_PASSWORD:?serve UMAMI_DB_PASSWORD}
+      TZ: UTC
+    volumes:
+      - dati:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U umami -d umami"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - interna
+    mem_limit: 512m
+
+networks:
+  interna: {}
+  # la rete del CMS: Caddy raggiunge «umami:3000» da qui
+  rete-cms:
+    external: true
+    name: platinatore-cms_rete-cms
+
+volumes:
+  dati: {}

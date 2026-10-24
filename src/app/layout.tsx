@@ -4,6 +4,7 @@ import { Testata } from "@/components/testata/testata";
 import { RichiamoSfida } from "@/components/sfida/richiamo";
 import { PubblicitaScript } from "@/components/pubblicita-script";
 import { VitaliWeb } from "@/components/vitali-web";
+import { ContatoreVisite } from "@/components/contatore-visite";
 import { Jost } from "next/font/google";
 import Link from "@/components/collegamento";
 import "./globals.css";
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             parte solo dove la pagina ha i suoi spazi */}
         <PubblicitaScript />
         <VitaliWeb />
+        <ContatoreVisite />
         <footer className="border-t border-linea">
           <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-sm text-tenue">
             <span>© Il Platinatore</span>

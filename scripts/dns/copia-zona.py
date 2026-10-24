@@ -64,7 +64,7 @@ def main():
     attesi = {chiave(n, t, d) for n, t, d, _ in oggi}
     if "--confronta" in sys.argv:
         # nomi aggiunti apposta su Cloudflare, che il sito su Aruba non aveva: si elencano, non sono differenze
-        voluti = {"img.ilplatinatore.it"}  # Worker delle immagini su R2 (infra/cloudflare/), dal 22/10/2026
+        voluti = {"img.ilplatinatore.it", "visite.ilplatinatore.it"}  # visite: contatore Umami (infra/umami/), dal 24/10/2026  # Worker delle immagini su R2 (infra/cloudflare/), dal 22/10/2026
         manca = attesi - su_cf; in_piu = {x for x in su_cf - attesi if x[0] not in voluti}
         for r in esistenti:
             if r["name"] in voluti: print("  voluto:", r["name"], r["type"], "proxy" if r.get("proxied") else "")
