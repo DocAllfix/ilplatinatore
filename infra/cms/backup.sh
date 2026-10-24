@@ -46,6 +46,17 @@ echo "[backup] wp-content ok ($(du -h "$DEST/wp-content.tar.gz.gpg" | cut -f1))"
 
 # 3. segreti dello stack
 enc "$DEST/env.gpg" < .env
+# 3b. contatore delle visite (Umami, /opt/umami, 24/10/2026): database e suoi segreti, se c'e'
+# (un guasto qui non deve fermare il backup del CMS: si segnala e si va avanti)
+if docker ps --format '{{.Names}}' | grep -qx 'platinatore-statistiche-umami-db-1'; then
+  if docker exec platinatore-statistiche-umami-db-1 pg_dump -U umami -d umami | gzip | enc "$DEST/umami.sql.gz.gpg" \
+     && enc "$DEST/umami-env.gpg" < /opt/umami/.env; then
+    echo "[backup] umami ok ($(du -h "$DEST/umami.sql.gz.gpg" | cut -f1))"
+  else
+    rm -f "$DEST/umami.sql.gz.gpg" "$DEST/umami-env.gpg"
+    echo "[backup] ATTENZIONE: contatore delle visite (umami) NON salvato" >&2
+  fi
+fi
 ( cd "$DEST" && sha256sum ./*.gpg > SHA256SUMS )
 
 # rotazione locale
