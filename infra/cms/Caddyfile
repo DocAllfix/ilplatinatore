@@ -105,5 +105,25 @@ visite.ilplatinatore.it {
 		-Server
 	}
 	encode zstd gzip
-	reverse_proxy umami:3000
+
+	# Il pannello di Umami e' in inglese e Chrome lo traduce da solo: la traduzione riscrive la pagina sotto
+	# React e il pannello si blocca prima di aprirsi («insertBefore», 27/10/2026). Alla prima apertura dal
+	# browser si passa da /italiano, che mette la lingua di Umami (localStorage) in italiano e lascia un
+	# cookie per non ripassarci: una pagina gia' italiana il browser non la traduce.
+	# Nel testo della pagina niente graffe: Caddy le leggerebbe come segnaposto.
+	@prima_volta {
+		header Sec-Fetch-Dest document
+		not header Cookie *pl_it=1*
+		not path /italiano /pl.js /api/*
+	}
+	redir @prima_volta /italiano 302
+
+	handle /italiano {
+		header Content-Type "text/html; charset=utf-8"
+		header Cache-Control "no-store"
+		respond `<!doctype html><html lang="it" translate="no"><meta charset="utf-8"><meta name="google" content="notranslate"><meta name="viewport" content="width=device-width"><title>Visite</title><p>Apro il pannello in italiano... <a href="/">Entra</a></p><script>document.cookie="pl_it=1; max-age=31536000; path=/; secure; samesite=lax";localStorage.setItem("umami.locale",JSON.stringify("it-IT"));location.replace("/")</script></html>` 200
+	}
+	handle {
+		reverse_proxy umami:3000
+	}
 }
