@@ -17,7 +17,8 @@ Lo script di HB esclude i browser «headless» per nome: si usa l'identificativo
 
 Uso:
   python -I scripts/qa/annunci.py [--locale 3443] [--solo telefono|computer] [--scenari breve,lungo]
-  python -I scripts/qa/annunci.py --capping [--locale 3443]   interstitial: prima pagina, pagina dopo, ricarica
+  python -I scripts/qa/annunci.py --capping [--scadenza] [--locale 3443]   interstitial: consenso, prima visita,
+      pagina dopo, ricarica, nuova scheda, ritorno; con --scadenza anche la visita dopo i 30 minuti veri
   python -I scripts/qa/annunci.py --magic-telefono           prova del Magic Left da telefono (solo misura)
 Risultati in scripts/qa/out/annunci/ (JSON e schermate).
 """
@@ -25,6 +26,7 @@ import argparse
 import json
 import os
 import sys
+import time
 
 from playwright.sync_api import sync_playwright
 
@@ -55,6 +57,18 @@ RACCOLTA = r"""() => {
   try { r.slotGoogle = googletag.pubads().getSlots().map(s => corto(s.getSlotElementId())); } catch (e) { r.slotGoogle = []; }
   try { r.vinte = window.pbjs_hbagencyicd.getAllWinningBids().map(b => corto(b.adUnitCode) + ':' + b.width + 'x' + b.height); } catch (e) { r.vinte = []; }
   try { r.cba = Object.keys(window.hbagency_cba || {}).map(corto); } catch (e) { r.cba = []; }
+  // aste vere per unita': richieste ai singoli offerenti, risposte, vinte, aperte (eventi di Prebid)
+  try {
+    const conta = {};
+    const piu = (code, k) => { const c = corto(code); conta[c] ??= { offerenti: 0, risposte: 0, vinte: 0, aperte: 0 }; conta[c][k]++; };
+    for (const e of window.pbjs_hbagencyicd.getEvents()) {
+      if (e.eventType === 'bidRequested') for (const b of e.args.bids || []) piu(b.adUnitCode, 'offerenti');
+      if (e.eventType === 'bidResponse') piu(e.args.adUnitCode, 'risposte');
+      if (e.eventType === 'bidWon') piu(e.args.adUnitCode, 'vinte');
+      if (e.eventType === 'adRenderSucceeded') piu(e.args.bid?.adUnitCode || '', 'aperte');
+    }
+    r.aste = conta;
+  } catch (e) { r.aste = {}; }
   // gli spazi: id e classi hbagency_space_*
   const spazi = [...document.querySelectorAll('[id^="hbagency_space_"],[class*="hbagency_space_"]')];
   const ids = spazi.map(e => corto(e.id || [...e.classList].find(c => c.startsWith('hbagency_space_'))));
@@ -89,7 +103,15 @@ RACCOLTA = r"""() => {
   r.interstitialAperto = r.fissiHB.some(a => /304794/.test(a.id) && a.h > 200);
   const tocca = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
   r.sovrapposizioni = [];
-  for (const a of r.fissiHB.filter(a => !/304794/.test(a.id))) for (const b of r.fissiNostri) if (tocca(a, b)) r.sovrapposizioni.push(a.id + ' su ' + b.nome);
+  const fissiAnnunci = r.fissiHB.filter(a => !/304794/.test(a.id));
+  for (const a of fissiAnnunci) for (const b of r.fissiNostri) if (tocca(a, b)) r.sovrapposizioni.push(a.id + ' su ' + b.nome);
+  // fra annunci: un solo sticky alla volta, e il video flottante non deve finire sul Floor o sul Magic
+  r.sovrapposizioniHB = [];
+  fissiAnnunci.forEach((a, i) => fissiAnnunci.slice(i + 1).forEach(b => { if (tocca(a, b)) r.sovrapposizioniHB.push(a.id + ' su ' + b.id); }));
+  // quota dello schermo coperta dai riquadri fissi di HB (interstitial escluso): area e altezza
+  const dentro = (a) => ({ w: Math.max(0, Math.min(a.x + a.w, innerWidth) - Math.max(a.x, 0)), h: Math.max(0, Math.min(a.y + a.h, innerHeight) - Math.max(a.y, 0)) });
+  r.quotaFissi = { area: Math.round(100 * fissiAnnunci.reduce((t, a) => t + dentro(a).w * dentro(a).h, 0) / (innerWidth * innerHeight)),
+                   altezza: Math.round(100 * fissiAnnunci.reduce((t, a) => t + dentro(a).h, 0) / innerHeight) };
   const main = document.querySelector('main'); const col = main ? rett(main.firstElementChild || main) : null;
   r.colonna = col;
   r.suColonna = r.fissiHB.filter(a => col && /304793/.test(a.id) && tocca(a, { ...col, y: 0, h: innerHeight })).map(a => a.id);
@@ -134,8 +156,11 @@ def schermata(pg, file):
 
 
 def misura(pg, percorso, file_schermata, errori):
+    # il lettore che ha gia' scelto nel banner (l'interstitial esiste solo allora): scelta, poi la pagina di nuovo
     pg.goto(SITO + percorso, wait_until="domcontentloaded", timeout=180_000)
-    accetta_consenso(pg)
+    if accetta_consenso(pg):
+        pg.wait_for_timeout(2000)
+        pg.reload(wait_until="domcontentloaded", timeout=180_000)
     pg.wait_for_timeout(12_000)
     # scorre tutta la pagina come un lettore, poi torna su
     altezza = pg.evaluate("document.documentElement.scrollHeight")
@@ -150,6 +175,7 @@ def misura(pg, percorso, file_schermata, errori):
     pg.wait_for_timeout(1500)
     r_meta = pg.evaluate(RACCOLTA)
     r["fissiHB_meta"], r["fissiNostri_meta"], r["sovrapposizioni_meta"] = r_meta["fissiHB"], r_meta["fissiNostri"], r_meta["sovrapposizioni"]
+    r["sovrapposizioniHB_meta"], r["quotaFissi_meta"] = r_meta["sovrapposizioniHB"], r_meta["quotaFissi"]
     schermata(pg, file_schermata)
     # chiusura del Floor con la sua X: sparisce e i nostri pulsanti tornano giu' (variabile a 0)
     r["chiusuraFloor"] = pg.evaluate("""async () => {
@@ -174,6 +200,10 @@ def giudica(r, disp, nome):
         prob.append(f"spazi spenti in pagina {spenti}")
     if r["sovrapposizioni"] or r["sovrapposizioni_meta"]:
         prob.append(f"sovrapposizioni {sorted(set(r['sovrapposizioni'] + r['sovrapposizioni_meta']))}")
+    if r["sovrapposizioniHB"] or r["sovrapposizioniHB_meta"]:
+        prob.append(f"annunci uno sull'altro {sorted(set(r['sovrapposizioniHB'] + r['sovrapposizioniHB_meta']))}")
+    if max(r["quotaFissi"]["area"], r["quotaFissi_meta"]["area"]) > 30:
+        prob.append(f"riquadri fissi oltre il 30% dello schermo {r['quotaFissi']} {r['quotaFissi_meta']}")
     if r["suColonna"]:
         prob.append(f"Magic sulla colonna {r['suColonna']}")
     if r["scorrimentoOrizzontale"]:
@@ -188,6 +218,8 @@ def main() -> int:
     ap.add_argument("--solo", choices=list(DISPOSITIVI), action="append")
     ap.add_argument("--scenari", default="")
     ap.add_argument("--capping", action="store_true")
+    ap.add_argument("--ritorno", type=float, default=5, help="minuti senza schede prima del ritorno (capping)")
+    ap.add_argument("--scadenza", action="store_true", help="aspetta la scadenza vera del cookie (~30 minuti)")
     ap.add_argument("--magic-telefono", action="store_true")
     ap.add_argument("--etichetta", default="")
     a = ap.parse_args()
@@ -199,7 +231,7 @@ def main() -> int:
         browser = apri_browser(p, a.locale)
         try:
             if a.capping:
-                return prova_capping(p, browser, a.locale, pref)
+                return prova_capping(p, browser, a.locale, pref, a.ritorno, a.scadenza)
             if a.magic_telefono:
                 return prova_magic_telefono(p, browser, a.locale, pref)
             scelti = [s for s in a.scenari.split(",") if s] or list(SCENARI)
@@ -220,6 +252,7 @@ def main() -> int:
                     print(f"   spazi {[s['id'] + ('*' if s['pieno'] else '') for s in r['spazi']]} | nel testo (id, dopo §, y, h, creativo) {nel_testo}")
                     print(f"   fissi HB {[(f['id'], f['y'], f['h']) for f in r['fissiHB_meta']]} | nostri {[(f['nome'], f['y']) for f in r['fissiNostri_meta']]}")
                     print(f"   distanze {r['distanze']} | interstitial aperto {r['interstitialAperto']} | Floor: {r['chiusuraFloor']}")
+                    print(f"   quota fissi (area/altezza %) {r['quotaFissi']} meta' {r['quotaFissi_meta']} | aste spente {({k: v for k, v in r['aste'].items() if k in SPENTI})}")
                     print(f"   capping {r['cookieCapping']} cba {r['cba']} | errori {r['errori']} | PROBLEMI {r['problemi'] or 'nessuno'}")
                     ctx.close()
         finally:
@@ -230,32 +263,122 @@ def main() -> int:
     return 1 if problemi_tot else 0
 
 
-def prova_capping(p, browser, porta, pref):
-    """Interstitial: eleggibile alla prima pagina; dopo che si e' aperto, assente alla pagina dopo e ricaricando."""
-    ctx = apri_contesto(p, browser, "telefono", porta)
-    pg = ctx.new_page()
-    passi = [("prima pagina", SCENARI["medio"]), ("pagina dopo", SCENARI["lungo"]), ("ricarica", SCENARI["lungo"])]
-    esito = 0
-    for i, (nome, percorso) in enumerate(passi):
+# Solo nel browser di prova: la prima funzione nella coda di Prebid, quindi eseguita PRIMA di quella di HB che
+# prepara l'asta (e toglie le unita' col cookie del capping). Annota che cosa HB trova in hbagency_cba in
+# quell'istante. Non cambia niente: HB e Prebid usano la coda gia' esistente.
+OSSERVA_ASTA = """window.pbjs_hbagencyicd = window.pbjs_hbagencyicd || {};
+window.pbjs_hbagencyicd.que = window.pbjs_hbagencyicd.que || [];
+window.pbjs_hbagencyicd.que.push(function () { var c = window.hbagency_cba;
+  window.__cbaAllAsta = c ? (c['hbagency_space_304794'] === undefined ? 'chiave assente' : c['hbagency_space_304794']) : 'lista assente'; });"""
+
+STATO_INTERSTITIAL = """() => {
+  const o = document.getElementById('HB_Footer_Close_hbagency_space_304794');
+  const aperto = !!o && getComputedStyle(o).position === 'fixed' && o.getBoundingClientRect().height > 200;
+  const x = document.querySelector('#HB_CLOSE_hbagency_space_304794 img');
+  const bx = x && x.getBoundingClientRect();
+  return { aperto, xVisibile: !!bx && bx.width > 0 && bx.height > 0 && bx.top >= 0 && bx.bottom <= innerHeight,
+           cbaAllAsta: window.__cbaAllAsta ?? 'asta non ancora partita',
+           tcf: window.__statoTcf || null };
+}"""
+
+
+def minuti_capping(ctx):
+    for c in ctx.cookies(SITO):
+        if c["name"] == "capping_hba_hbagency_space_304794":
+            return round((c["expires"] - time.time()) / 60, 1) if c.get("expires", -1) > 0 else "di sessione"
+    return None
+
+
+def passo_capping(ctx, pg, nome, percorso, attesa=14_000, consenso=False):
+    """Una pagina (percorso None = ricarica quella aperta): aspetta l'asta, poi dice se l'interstitial e' stato
+    chiesto, dato a Google, aperto, con la X."""
+    if percorso is None:
+        pg.reload(wait_until="domcontentloaded", timeout=180_000)
+    else:
         pg.goto(SITO + percorso, wait_until="domcontentloaded", timeout=180_000)
-        if i == 0:
-            accetta_consenso(pg)
-        pg.wait_for_timeout(14_000)
-        r = pg.evaluate(RACCOLTA)
-        aperto = pg.evaluate("""() => { const o = document.getElementById('HB_Footer_Close_hbagency_space_304794');
-            return !!o && getComputedStyle(o).position === 'fixed' && o.getBoundingClientRect().height > 200; }""")
-        spazio = any(s["id"] == "304794" for s in r["spazi"])
-        scade = pg.evaluate("""() => { const c = document.cookie.split('; ').find(x => x.startsWith('capping_hba_hbagency_space_304794='));
-            if (!c) return null; try { return Math.round((JSON.parse(decodeURIComponent(c.split('=')[1])).scadenza - Date.now()) / 60000); } catch (e) { return 'illeggibile'; } }""")
-        print(f"{nome}: scade fra {scade} min | spazio {spazio} | chiesto {'304794' in r['adUnits']} | google {'304794' in r['slotGoogle']} | aperto {aperto} | cookie {r['cookieCapping']} | cba {r['cba']}")
-        schermata(pg, os.path.join(OUT, f"{pref}capping-{i}.png"))
-        if i == 0 and aperto:
-            pg.evaluate("hbManager.closeHBInterstitial('hbagency_space_304794'); hbManager.closeHB('HB_Footer_Close_hbagency_space_304794')")
-        if i > 0 and "304794" in r["cookieCapping"] and ("304794" in r["slotGoogle"] or aperto):
-            esito = 1
-            print("   PROBLEMA: capping attivo ma l'interstitial e' ancora chiesto a Google o aperto")
+    if consenso:
+        accetta_consenso(pg)
+    pg.wait_for_timeout(attesa)
+    r = pg.evaluate(RACCOLTA)
+    s = pg.evaluate(STATO_INTERSTITIAL)
+    asta = r["aste"].get("304794", {})
+    e = {"passo": nome, "ora": time.strftime("%H:%M:%S"), "spazio": any(x["id"] == "304794" for x in r["spazi"]),
+         "chiesto": "304794" in r["adUnits"] or asta.get("offerenti", 0) > 0, "offerenti": asta.get("offerenti", 0),
+         "google": "304794" in r["slotGoogle"], **s, "minutiCapping": minuti_capping(ctx)}
+    print(f"{e['ora']} {nome}: chiesto {e['chiesto']} ({e['offerenti']} offerenti) | google {e['google']} | aperto {e['aperto']}"
+          f" | X {e['xVisibile']} | chiave all'asta {e['cbaAllAsta']} | capping fra {e['minutiCapping']} min")
+    return e
+
+
+def prova_capping(p, browser, porta, pref, ritorno_min, scadenza):
+    """Interstitial e capping nativo di HB (30 minuti): consenso, prima visita, pagina dopo, ricarica, nuova scheda,
+    ritorno prima della scadenza e (con --scadenza) nuova visita dopo la scadenza VERA del cookie."""
+    problemi = []
+    ctx = apri_contesto(p, browser, "telefono", porta)
+    ctx.add_init_script(OSSERVA_ASTA)
+    pg = ctx.new_page()
+    # 0. pagina del banner del consenso, senza scelta per 25 s: niente spazio, niente apertura, capping intatto.
+    # Poi la scelta (accetto), come farebbe il lettore.
+    s0 = passo_capping(ctx, pg, "banner del consenso, 25 s senza scelta", SCENARI["medio"], attesa=25_000)
+    if s0["aperto"] or s0["spazio"] or s0["minutiCapping"] is not None:
+        problemi.append("interstitial (o il suo capping) prima della scelta nel banner del consenso")
+    if not accetta_consenso(pg):
+        problemi.append("banner del consenso non trovato")
+    pg.wait_for_timeout(3000)
+    # 1. prima pagina con la scelta salvata (lettore che torna, o pagina dopo il clic): eleggibile.
+    # L'erogazione dipende dalle offerte, quindi fino a tre pagine diverse.
+    primo = None
+    for nome in ("lungo", "breve", "news-breve"):
+        primo = passo_capping(ctx, pg, f"prima pagina con la scelta salvata ({nome})", SCENARI[nome])
+        if primo["cbaAllAsta"] != 30:
+            problemi.append(f"all'asta HB non trova il capping a 30: {primo['cbaAllAsta']}")
+        if not primo["chiesto"] or not primo["spazio"]:
+            problemi.append("con la scelta salvata e senza capping l'interstitial non e' chiesto")
+        if primo["aperto"]:
+            break
+    schermata(pg, os.path.join(OUT, f"{pref}capping-prima.png"))
+    if not primo["aperto"]:
+        print("interstitial mai erogato in tre pagine: il capping non parte (nessuna offerta), prova da ripetere")
+        ctx.close()
+        return 2
+    if not primo["xVisibile"]:
+        problemi.append("X dell'interstitial non visibile all'apertura")
+    if not isinstance(primo["minutiCapping"], float) or not 29 <= primo["minutiCapping"] <= 30.5:
+        problemi.append(f"cookie del capping non a 30 minuti: {primo['minutiCapping']}")
+    pg.evaluate("hbManager.closeHBInterstitial('hbagency_space_304794'); hbManager.closeHB('HB_Footer_Close_hbagency_space_304794')")
+
+    def bloccato(e):
+        if e["chiesto"] or e["google"] or e["aperto"] or e["spazio"]:
+            problemi.append(f"{e['passo']}: interstitial ancora presente durante il capping")
+
+    # 2. nella stessa sessione: pagina dopo, ricarica, nuova scheda
+    bloccato(passo_capping(ctx, pg, "pagina dopo", SCENARI["home"]))
+    bloccato(passo_capping(ctx, pg, "ricarica", None))
+    scheda = ctx.new_page()
+    bloccato(passo_capping(ctx, scheda, "nuova scheda", SCENARI["archivio"]))
+    # 3. ritorno prima della scadenza: tutte le schede chiuse, poi una visita nuova
+    pg.close()
+    scheda.close()
+    print(f"attesa di {ritorno_min} minuti senza schede aperte...")
+    time.sleep(ritorno_min * 60)
+    pg = ctx.new_page()
+    bloccato(passo_capping(ctx, pg, f"ritorno dopo {ritorno_min} min", SCENARI["news-breve"]))
+    # 4. nuova visita dopo la scadenza vera del cookie (nessuna modifica a mano)
+    if scadenza:
+        resto = minuti_capping(ctx)
+        if isinstance(resto, float):
+            pg.close()
+            print(f"attesa della scadenza del cookie: {resto} minuti piu' 30 secondi...")
+            time.sleep(max(0, resto * 60) + 30)
+        pg = ctx.new_page()
+        dopo = passo_capping(ctx, pg, "visita dopo la scadenza", SCENARI["medio"])
+        if not dopo["chiesto"] or not dopo["spazio"]:
+            problemi.append("dopo la scadenza l'interstitial non e' di nuovo chiesto")
+        if dopo["cbaAllAsta"] != 30:
+            problemi.append(f"dopo la scadenza HB non trova il capping a 30: {dopo['cbaAllAsta']}")
     ctx.close()
-    return esito
+    print("PROBLEMI:", problemi or "nessuno")
+    return 1 if problemi else 0
 
 
 def prova_magic_telefono(p, browser, porta, pref):

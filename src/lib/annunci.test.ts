@@ -93,11 +93,14 @@ describe("tipoPagina", () => {
 describe("formatiFissi", () => {
   const ids = (o: Parameters<typeof formatiFissi>[0]) => formatiFissi(o).map((x) => x.id);
   it("telefono: Floor e Interstitial, senza Interstitial col capping attivo", () => {
-    expect(ids({ computer: false, margineMagic: false, capping: false })).toEqual(["304792", "304794"]);
-    expect(ids({ computer: false, margineMagic: false, capping: true })).toEqual(["304792"]);
+    expect(ids({ computer: false, margineMagic: false, consenso: true, capping: false })).toEqual(["304792", "304794"]);
+    expect(ids({ computer: false, margineMagic: false, consenso: true, capping: true })).toEqual(["304792"]);
+  });
+  it("telefono: niente Interstitial finche' la scelta nel banner del consenso non e' salvata", () => {
+    expect(ids({ computer: false, margineMagic: false, consenso: false, capping: false })).toEqual(["304792"]);
   });
   it("computer: un solo sticky; finche' HB non abilita il Magic da computer, il Floor", () => {
-    expect(ids({ computer: true, margineMagic: true, capping: false })).toEqual([MAGIC_DA_COMPUTER ? "304793" : "304792"]);
-    expect(ids({ computer: true, margineMagic: false, capping: false })).toEqual(["304792"]);
+    expect(ids({ computer: true, margineMagic: true, consenso: true, capping: false })).toEqual([MAGIC_DA_COMPUTER ? "304793" : "304792"]);
+    expect(ids({ computer: true, margineMagic: false, consenso: true, capping: false })).toEqual(["304792"]);
   });
 });

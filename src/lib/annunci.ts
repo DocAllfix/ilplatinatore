@@ -147,13 +147,18 @@ export function tipoPagina(percorso: string): TipoPagina | null {
 /**
  * I formati fissi della pagina: un solo sticky alla volta (Floor oppure Magic Left), mai insieme.
  * - telefono: Floor (il Magic copre il testo e supera il 25% dello schermo) e Interstitial;
- * - computer: Magic Left se HB l'ha abilitato e il margine lo contiene (schermo da 1400 px: colonna di
- *   768 px e riquadro di 300), altrimenti Floor. L'Interstitial HB lo configura solo da telefono.
- * L'Interstitial manca anche quando il capping di HB e' attivo (il suo cookie).
+ * - computer: Magic Left se HB l'ha abilitato e il margine lo contiene (schermo da 1500 px: colonna di
+ *   768 px e riquadro di 300; sotto, il modello di HB lo nasconde), altrimenti Floor. L'Interstitial HB lo
+ *   configura solo da telefono.
+ * L'Interstitial c'e' solo se la scelta nel banner del consenso e' GIA' salvata quando la pagina si apre
+ * (`consenso`): sulla pagina del banner un offerente risponde anche senza consenso e HB lo apriva sotto il
+ * banner (7 volte su 8, 29/10/2026), consumando il capping. HB non usa uno spazio creato dopo il suo avvio,
+ * quindi non si puo' aspettare la scelta sulla stessa pagina. Manca anche col capping di HB attivo (il suo
+ * cookie).
  */
-export function formatiFissi(o: { computer: boolean; margineMagic: boolean; capping: boolean }): Annuncio[] {
+export function formatiFissi(o: { computer: boolean; margineMagic: boolean; consenso: boolean; capping: boolean }): Annuncio[] {
   if (o.computer) return [MAGIC_DA_COMPUTER && o.margineMagic ? MAGIC_LEFT : FLOOR_AD];
-  return o.capping ? [FLOOR_AD] : [FLOOR_AD, INTERSTITIAL];
+  return o.consenso && !o.capping ? [FLOOR_AD, INTERSTITIAL] : [FLOOR_AD];
 }
 
 /** Gli indirizzi su cui la pubblicita' e GA4 si accendono: solo il dominio vero, mai l'anteprima. */

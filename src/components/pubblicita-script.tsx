@@ -41,12 +41,11 @@ declare global {
   }
 }
 
-function aggiungiScript(src: string, caricato?: () => void) {
+function aggiungiScript(src: string) {
   if (document.querySelector(`script[src="${src}"]`)) return;
   const s = document.createElement("script");
   s.src = src;
   s.async = true;
-  if (caricato) s.onload = caricato;
   document.head.appendChild(s);
 }
 
@@ -77,8 +76,32 @@ function accendiGa4() {
 }
 
 const spazio = (a: Annuncio) => `hbagency_space_${a.id}`;
-// il Magic Left (300 px) sta nel margine sinistro senza toccare la colonna di 768 px
-const MARGINE_MAGIC = "(min-width: 1400px)";
+// il Magic Left (300 px) sta nel margine sinistro senza toccare la colonna di 768 px; il modello laterale di HB
+// per computer lo nasconde sotto i 1500 px (showTemplateLeft, letto il 29/10/2026): sotto, resta il Floor
+const MARGINE_MAGIC = "(min-width: 1500px)";
+
+/**
+ * Capping nativo dell'interstitial, presente PRIMA che HB decida qualunque cosa. HB legge `hbagency_cba`
+ * quando prepara l'asta (toglie l'unita' se c'e' il suo cookie) e quando l'annuncio si apre (scrive il cookie
+ * con quei minuti). Il suo script pero' dichiara da se' `var hbagency_cba=[]` e cancellerebbe una chiave messa
+ * prima (letto il 29/10/2026). Con una proprieta' a setter la sua assegnazione passa da qui: la lista resta la
+ * sua, con la nostra chiave dentro dal primo istante. Non dipende dall'ordine degli eventi ne' da ritardi.
+ */
+function preparaCapping() {
+  if (Object.getOwnPropertyDescriptor(window, "hbagency_cba")?.set) return;
+  const conCapping = (v: Record<string, number>) => {
+    v[spazio(INTERSTITIAL)] = CAPPING_INTERSTITIAL_MINUTI;
+    return v;
+  };
+  let lista = conCapping({});
+  Object.defineProperty(window, "hbagency_cba", {
+    configurable: true,
+    get: () => lista,
+    set: (v: Record<string, number>) => {
+      lista = conCapping(v && typeof v === "object" ? v : {});
+    },
+  });
+}
 
 // Decisi una volta per pagina (ogni clic ricarica la pagina intera): niente cambi a meta' visita, niente
 // spazi creati due volte.
@@ -90,6 +113,8 @@ function formatiDellaPagina(percorso: string): Annuncio[] {
     formati = formatiFissi({
       computer: window.matchMedia(COMPUTER).matches,
       margineMagic: window.matchMedia(MARGINE_MAGIC).matches,
+      // la scelta nel banner (accetto o rifiuto) sta nel cookie standard IAB TCF, scritto dal banner di HB
+      consenso: document.cookie.includes("euconsent-v2="),
       // il capping e' quello di HB: il suo cookie, scritto quando l'interstitial si apre
       capping: document.cookie.includes(`capping_hba_${spazio(INTERSTITIAL)}=`),
     });
@@ -134,12 +159,8 @@ export function PubblicitaScript() {
   useEffect(() => {
     if (!conPubblicita) return;
     // gli spazi fissi sono gia' nella pagina (questo effetto parte dopo che sono stati disegnati)
-    aggiungiScript(SCRIPT_HB, () => {
-      // Capping nativo dell'interstitial. Si aggiunge DOPO lo script: lo script dichiara da se'
-      // `var hbagency_cba=[]` e cancellerebbe una chiave messa prima (letto il 29/10/2026). HB la legge
-      // piu' tardi, all'asta (dentro pbjs.que) e quando l'annuncio si apre.
-      if (window.hbagency_cba) window.hbagency_cba[spazio(INTERSTITIAL)] = CAPPING_INTERSTITIAL_MINUTI;
-    });
+    preparaCapping();
+    aggiungiScript(SCRIPT_HB);
     // il banner del consenso arriva con lo script di HB: si aspetta la sua API, poi la scelta
     let tentativi = 0;
     const attesa = window.setInterval(() => {
