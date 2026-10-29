@@ -75,7 +75,7 @@ export function RichiamoSfida() {
           type="button"
           onClick={apri}
           aria-label="Gioca la sfida del giorno"
-          className="fixed right-3 bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+3.75rem)] z-40 flex size-12 animate-[pulsa-sfida_2.4s_ease-in-out_infinite] items-center justify-center rounded-full border-2 border-viola bg-superficie-alta text-viola-testo active:scale-[0.94]"
+          className="fixed right-3 bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+3.75rem+var(--annunci-destra,0px))] z-40 transition-[bottom] duration-[var(--durata-media)] ease-(--ease-uscita) flex size-12 animate-[pulsa-sfida_2.4s_ease-in-out_infinite] items-center justify-center rounded-full border-2 border-viola bg-superficie-alta text-viola-testo active:scale-[0.94]"
         >
           <GameControllerIcon weight="fill" className="size-6" aria-hidden="true" />
         </button>

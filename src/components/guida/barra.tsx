@@ -95,7 +95,7 @@ export function PillolaProgressione(props: Props) {
 
   return (
     <div
-      className={`fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 z-40 w-[min(100%-5.5rem,26rem)] transition-[opacity,transform] duration-[var(--durata-media)] ease-(--ease-uscita) ${
+      className={`fixed bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+var(--annunci-basso,0px))] left-3 z-40 w-[min(100%-5.5rem,26rem)] transition-[opacity,transform,bottom] duration-[var(--durata-media)] ease-(--ease-uscita) ${
         dopo ? "opacity-100" : "pointer-events-none translate-y-4 opacity-0"
       }`}
       aria-hidden={!dopo}

@@ -27,6 +27,10 @@ const nextConfig: NextConfig = {
 
   poweredByHeader: false,
 
+  // Solo per il server di sviluppo: il banco della pubblicita' (scripts/qa/annunci.py) apre il codice
+  // locale col nome del dominio vero, perche' lo script di HB parte solo li'. Sul sito pubblicato non conta.
+  allowedDevOrigins: ["www.ilplatinatore.it"],
+
   // Processi paralleli del build. Su Vercel il valore predefinito; in locale si abbassa con
   // BUILD_CPUS quando la macchina e' carica (sette processi esauriscono la memoria virtuale).
   experimental: {

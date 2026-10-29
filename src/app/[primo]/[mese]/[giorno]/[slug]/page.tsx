@@ -9,8 +9,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { SchedaSovrapposta } from "@/components/guida/scheda";
 import { TestataCopertina, TestataGuida } from "@/components/guida/testata";
 import { HeaderBanner, SpazioHB } from "@/components/annunci";
-import { SoloDaComputer, TraUnaPaginaELAltra } from "@/components/annunci-condizionali";
-import { BERSAGLIO_IN_IMAGE, FLOOR_AD, IN_IMAGE, INTERSTITIAL, MAGIC_LEFT, inserisciAnnunci, NEL_TESTO } from "@/lib/annunci";
+import { HEADER_DA_COMPUTER, inserisciAnnunci, NEL_TESTO } from "@/lib/annunci";
 import { estraiScheda } from "@/lib/guida/scheda";
 import { collocaGruppi, schedaDaCampi, trofeiDaCampi } from "@/lib/guida/campi";
 import { aggiungiAncore, dividiCorpo, estraiChecklist } from "@/lib/guida/checklist";
@@ -139,7 +138,7 @@ export default async function PaginaArticolo({ params }: Parametri) {
       (x): x is readonly [string, NonNullable<(typeof x)[1]>] => Boolean(x[1]),
     ),
   );
-  // Fase 5: gli spazi di HB dopo il 1°, 3°, 4°, 5° e 7° paragrafo, come Advanced Ads oggi
+  // Interscroller, Outstream e In Page dove la lunghezza dell'articolo lo consente (specifiche del 29/10/2026)
   const pezzi = dividiCorpo(inserisciAnnunci(html));
   const giochi: Array<{ slug: string; nome: string; dati: ReturnType<typeof schedaDaDescrizione> }> = [];
   const altriTag: typeof a.tag = [];
@@ -168,28 +167,6 @@ export default async function PaginaArticolo({ params }: Parametri) {
       if ("annuncio" in p) {
         const an = NEL_TESTO.find((x) => x.id === p.annuncio);
         if (!an) return null;
-        // In Image nelle guide con la scheda: l'immagine principale sta dietro il titolo, e HB ci
-        // metterebbe sopra l'annuncio. Qui, accanto al suo spazio, la stessa immagine nel testo fa da
-        // unico bersaglio (soluzione 1 del proprietario, 23/10/2026).
-        if (an.id === IN_IMAGE && scheda && a.immagine)
-          return (
-            <div key={i} className="my-6">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                id={BERSAGLIO_IN_IMAGE}
-                src={a.immagine.src}
-                srcSet={a.immagine.srcset}
-                sizes="(min-width: 768px) 736px, 100vw"
-                alt=""
-                width={a.immagine.larghezza}
-                height={a.immagine.altezza}
-                loading="lazy"
-                decoding="async"
-                className="h-auto w-full rounded-lg"
-              />
-              <SpazioHB id={an.id} nome={an.nome} />
-            </div>
-          );
         return <SpazioHB key={i} id={an.id} nome={an.nome} />;
       }
       if ("verdetto" in p) {
@@ -265,14 +242,12 @@ export default async function PaginaArticolo({ params }: Parametri) {
       )}
       <div id="fine-scheda" />
 
-      <HeaderBanner />
+      {/* solo da computer e solo quando HB lo avra' abilitato li' (oggi lo configura solo da telefono) */}
+      {HEADER_DA_COMPUTER && <HeaderBanner />}
 
       {!scheda && a.immagine && (
-        // senza scheda l'immagine principale e' gia' un'immagine normale prima del testo: e' lei il
-        // bersaglio di In Image (niente copia)
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          id={BERSAGLIO_IN_IMAGE}
           src={a.immagine.src}
           srcSet={a.immagine.srcset}
           sizes="(min-width: 768px) 736px, 100vw"
@@ -300,16 +275,7 @@ export default async function PaginaArticolo({ params }: Parametri) {
 
       {/* «La parola di oggi» a fine lettura (gioco 4, variante A scelta dal proprietario, 21/10/2026) */}
       <InvitoParola />
-      {/* Fase 5: Floor Ad dopo il contenuto (HB lo fissa in basso), come oggi */}
-      <SpazioHB id={FLOOR_AD.id} nome={FLOOR_AD.nome} />
-      {/* Interstitial e Magic Left: solo negli articoli; l'interstitial dalla seconda pagina della visita,
-          il Magic Left solo da computer (decisioni del proprietario, ok di HB, 23/10/2026) */}
-      <TraUnaPaginaELAltra>
-        <SpazioHB id={INTERSTITIAL.id} nome={INTERSTITIAL.nome} />
-      </TraUnaPaginaELAltra>
-      <SoloDaComputer>
-        <SpazioHB id={MAGIC_LEFT.id} nome={MAGIC_LEFT.nome} />
-      </SoloDaComputer>
+      {/* Floor, Magic Left e Interstitial li decide e li crea il regista nel layout (PubblicitaScript) */}
       {/* Il gioco a fine articolo, come scheda col bagliore (piano 07); gli altri tag come etichette */}
       {giochi.map((g) => (
         <div key={g.slug} className="mt-10">

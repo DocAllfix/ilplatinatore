@@ -1,16 +1,32 @@
 "use client";
 
-// Lo script di HB Agency e GA4 (Fase 5). Si accendono SOLO sul dominio vero (www.ilplatinatore.it):
-// sull'anteprima su vercel.app niente richieste a HB (che non conosce quel dominio) e niente visite
-// finte nelle statistiche di GA4.
-// - HB: lo script porta anche il banner del consenso (CMP certificato IAB TCF) e cerca gli spazi
-//   per id a ogni caricamento di pagina (il sito ricarica le pagine a ogni clic: scelta dell'utente).
-// - GA4 (GT-NS4PBCN4, lo stesso di oggi): parte solo DOPO il consenso dato nel banner di HB (API
-//   TCF, finalita' 1, archiviazione sul dispositivo). Riceve anche le misure d'uso degli strumenti
-//   (src/lib/misure.ts).
+// Il regista della pubblicita' di HB Agency e GA4 (riconfigurazione del 29/10/2026). Unico punto che decide
+// i formati fissi della pagina (Floor, Magic Left, Interstitial), li crea una volta sola e poi carica lo
+// script di HB, una volta sola. Gli spazi nel testo degli articoli li mette il server (src/lib/annunci.ts):
+// HB li cerca all'asta e non regge spazi creati dopo.
+// Tutto si accende SOLO sul dominio vero (www.ilplatinatore.it): sull'anteprima su vercel.app niente richieste
+// a HB (che non conosce quel dominio) e niente visite finte nelle statistiche di GA4.
+// - HB: lo script porta anche il banner del consenso (CMP certificato IAB TCF) e cerca gli spazi per id a
+//   ogni caricamento di pagina (il sito ricarica le pagine a ogni clic: scelta dell'utente).
+// - GA4 (GT-NS4PBCN4, lo stesso di oggi): parte solo DOPO il consenso dato nel banner di HB (API TCF,
+//   finalita' 1, archiviazione sul dispositivo). Riceve anche le misure d'uso (src/lib/misure.ts).
 
-import { useEffect } from "react";
-import { DOMINI_VERI, GA4, SCRIPT_HB } from "@/lib/annunci";
+import { useEffect, useSyncExternalStore } from "react";
+import { usePathname } from "next/navigation";
+import { SpazioHB } from "@/components/annunci";
+import { COMPUTER } from "@/components/annunci-condizionali";
+import {
+  CAPPING_INTERSTITIAL_MINUTI,
+  DOMINI_VERI,
+  FLOOR_AD,
+  formatiFissi,
+  GA4,
+  INTERSTITIAL,
+  OUTSTREAM,
+  SCRIPT_HB,
+  tipoPagina,
+  type Annuncio,
+} from "@/lib/annunci";
 import type { Misura } from "@/lib/misure";
 import { svuotaVitali } from "@/lib/vitali";
 
@@ -21,14 +37,16 @@ declare global {
   interface Window {
     __tcfapi?: Tcf;
     gtag?: (...a: unknown[]) => void;
+    hbagency_cba?: Record<string, number>;
   }
 }
 
-function aggiungiScript(src: string) {
+function aggiungiScript(src: string, caricato?: () => void) {
   if (document.querySelector(`script[src="${src}"]`)) return;
   const s = document.createElement("script");
   s.src = src;
   s.async = true;
+  if (caricato) s.onload = caricato;
   document.head.appendChild(s);
 }
 
@@ -58,15 +76,70 @@ function accendiGa4() {
   });
 }
 
+const spazio = (a: Annuncio) => `hbagency_space_${a.id}`;
+// il Magic Left (300 px) sta nel margine sinistro senza toccare la colonna di 768 px
+const MARGINE_MAGIC = "(min-width: 1400px)";
+
+// Decisi una volta per pagina (ogni clic ricarica la pagina intera): niente cambi a meta' visita, niente
+// spazi creati due volte.
+let decisi: { percorso: string; formati: Annuncio[] } | null = null;
+function formatiDellaPagina(percorso: string): Annuncio[] {
+  if (decisi?.percorso === percorso) return decisi.formati;
+  let formati: Annuncio[] = [];
+  if (DOMINI_VERI.includes(window.location.hostname) && tipoPagina(percorso)) {
+    formati = formatiFissi({
+      computer: window.matchMedia(COMPUTER).matches,
+      margineMagic: window.matchMedia(MARGINE_MAGIC).matches,
+      // il capping e' quello di HB: il suo cookie, scritto quando l'interstitial si apre
+      capping: document.cookie.includes(`capping_hba_${spazio(INTERSTITIAL)}=`),
+    });
+  }
+  decisi = { percorso, formati };
+  return formati;
+}
+const nessunAscolto = () => () => {};
+const nessuno: Annuncio[] = [];
+
+/**
+ * I nostri comandi fissi in basso (torna su, sfida, pillola) salgono sopra il Floor e, a destra, sopra il
+ * video che HB fa flottare: due variabili CSS, a 0 quando l'annuncio non c'e' o e' stato chiuso.
+ */
+function seguiIngombri() {
+  const radice = document.documentElement.style;
+  const ingombro = (el: Element | null, lato: (b: DOMRect) => boolean) => {
+    if (!el || getComputedStyle(el).position !== "fixed" || getComputedStyle(el).display === "none") return 0;
+    const b = el.getBoundingClientRect();
+    if (b.height < 10 || b.width < 10 || b.top >= window.innerHeight || !lato(b)) return 0;
+    return Math.round(window.innerHeight - b.top);
+  };
+  let prima = "";
+  const misura = () => {
+    const basso = ingombro(document.getElementById(`HB_Footer_Close_${spazio(FLOOR_AD)}`), (b) => b.bottom >= window.innerHeight - 4);
+    const video = ingombro(document.getElementById(spazio(OUTSTREAM)), (b) => b.right >= window.innerWidth - 40);
+    const ora = `${basso}/${video}`;
+    if (ora === prima) return;
+    prima = ora;
+    radice.setProperty("--annunci-basso", `${basso}px`);
+    radice.setProperty("--annunci-destra", `${Math.max(basso, video)}px`);
+  };
+  const t = window.setInterval(misura, 500);
+  return () => window.clearInterval(t);
+}
+
 export function PubblicitaScript() {
+  const percorso = usePathname();
+  const formati = useSyncExternalStore(nessunAscolto, () => formatiDellaPagina(percorso), () => nessuno);
+  const conPubblicita = formati.length > 0;
+
   useEffect(() => {
-    if (!DOMINI_VERI.includes(window.location.hostname)) return;
-    // Solo dove la pagina ha spazi di HB, cioe' negli articoli (decisione del proprietario, 23/10/2026):
-    // lo script chiede annunci per TUTTI i formati della sua lista anche se la pagina non ha lo spazio,
-    // quindi l'unico modo sicuro per avere home e sezioni senza pubblicita' e' non caricarlo li'.
-    // Effetto voluto: niente banner del consenso su quelle pagine, e GA4 (che lo aspetta) non parte.
-    if (!document.querySelector('[id^="hbagency_space_"], [class*="hbagency_space_"]')) return;
-    aggiungiScript(SCRIPT_HB);
+    if (!conPubblicita) return;
+    // gli spazi fissi sono gia' nella pagina (questo effetto parte dopo che sono stati disegnati)
+    aggiungiScript(SCRIPT_HB, () => {
+      // Capping nativo dell'interstitial. Si aggiunge DOPO lo script: lo script dichiara da se'
+      // `var hbagency_cba=[]` e cancellerebbe una chiave messa prima (letto il 29/10/2026). HB la legge
+      // piu' tardi, all'asta (dentro pbjs.que) e quando l'annuncio si apre.
+      if (window.hbagency_cba) window.hbagency_cba[spazio(INTERSTITIAL)] = CAPPING_INTERSTITIAL_MINUTI;
+    });
     // il banner del consenso arriva con lo script di HB: si aspetta la sua API, poi la scelta
     let tentativi = 0;
     const attesa = window.setInterval(() => {
@@ -81,7 +154,13 @@ export function PubblicitaScript() {
         if (deciso && (d.gdprApplies === false || d.purpose?.consents?.["1"])) accendiGa4();
       });
     }, 500);
-    return () => window.clearInterval(attesa);
-  }, []);
-  return null;
+    const smetti = seguiIngombri();
+    return () => {
+      window.clearInterval(attesa);
+      smetti();
+    };
+  }, [conPubblicita]);
+
+  return formati.map((a) => <SpazioHB key={a.id} id={a.id} nome={a.nome} />);
 }
+

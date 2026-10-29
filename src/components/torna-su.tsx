@@ -34,7 +34,7 @@ export function TornaSu() {
       aria-label="Torna all'inizio"
       aria-hidden={!visibile}
       tabIndex={visibile ? 0 : -1}
-      className={`fixed right-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex size-12 items-center justify-center rounded-full border border-linea bg-superficie-alta shadow-[0_8px_24px_oklch(0%_0_0/0.45)] transition-[opacity,transform] duration-[var(--durata-media)] ease-(--ease-uscita) active:scale-[0.97] [@media(hover:hover)]:hover:text-link ${
+      className={`fixed right-3 bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+var(--annunci-destra,0px))] z-40 flex size-12 items-center justify-center rounded-full border border-linea bg-superficie-alta shadow-[0_8px_24px_oklch(0%_0_0/0.45)] transition-[opacity,transform,bottom] duration-[var(--durata-media)] ease-(--ease-uscita) active:scale-[0.97] [@media(hover:hover)]:hover:text-link ${
         visibile ? "opacity-100" : "pointer-events-none translate-y-4 opacity-0"
       }`}
     >
