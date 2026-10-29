@@ -86,6 +86,8 @@ const MARGINE_MAGIC = "(min-width: 1500px)";
  * con quei minuti). Il suo script pero' dichiara da se' `var hbagency_cba=[]` e cancellerebbe una chiave messa
  * prima (letto il 29/10/2026). Con una proprieta' a setter la sua assegnazione passa da qui: la lista resta la
  * sua, con la nostra chiave dentro dal primo istante. Non dipende dall'ordine degli eventi ne' da ritardi.
+ * Si usa SOLO nelle pagine con lo spazio dell'interstitial: quando un Magic si apre (e da telefono si rinnova
+ * ogni 31 s) HB scrive il cookie per TUTTE le chiavi della lista, e altrove allungherebbe il capping all'infinito.
  */
 function preparaCapping() {
   if (Object.getOwnPropertyDescriptor(window, "hbagency_cba")?.set) return;
@@ -155,11 +157,12 @@ export function PubblicitaScript() {
   const percorso = usePathname();
   const formati = useSyncExternalStore(nessunAscolto, () => formatiDellaPagina(percorso), () => nessuno);
   const conPubblicita = formati.length > 0;
+  const conInterstitial = formati.includes(INTERSTITIAL);
 
   useEffect(() => {
     if (!conPubblicita) return;
     // gli spazi fissi sono gia' nella pagina (questo effetto parte dopo che sono stati disegnati)
-    preparaCapping();
+    if (conInterstitial) preparaCapping();
     aggiungiScript(SCRIPT_HB);
     // il banner del consenso arriva con lo script di HB: si aspetta la sua API, poi la scelta
     let tentativi = 0;
@@ -180,7 +183,7 @@ export function PubblicitaScript() {
       window.clearInterval(attesa);
       smetti();
     };
-  }, [conPubblicita]);
+  }, [conPubblicita, conInterstitial]);
 
   return formati.map((a) => <SpazioHB key={a.id} id={a.id} nome={a.nome} />);
 }

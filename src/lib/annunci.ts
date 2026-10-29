@@ -27,6 +27,13 @@ export const HEADER_BANNER: Annuncio = { id: "304962", nome: "Header Banner" };
 export const MAGIC_DA_COMPUTER = false;
 export const HEADER_DA_COMPUTER = false;
 
+/**
+ * Magic Left da telefono al posto del Floor, nella posizione e misura che decide HB (riquadro fisso 300x320 a
+ * sinistra, 38% dello schermo, sopra la colonna): scelta del proprietario del 29/10/2026, da rivalutare dopo una
+ * settimana. Con false torna il Floor.
+ */
+export const MAGIC_DA_TELEFONO = true;
+
 /** Capping dell'interstitial, in minuti: quello nativo di HB (cookie capping_hba_<spazio>). */
 export const CAPPING_INTERSTITIAL_MINUTI = 30;
 
@@ -146,7 +153,7 @@ export function tipoPagina(percorso: string): TipoPagina | null {
 
 /**
  * I formati fissi della pagina: un solo sticky alla volta (Floor oppure Magic Left), mai insieme.
- * - telefono: Floor (il Magic copre il testo e supera il 25% dello schermo) e Interstitial;
+ * - telefono: Magic Left (MAGIC_DA_TELEFONO, altrimenti Floor) e Interstitial;
  * - computer: Magic Left se HB l'ha abilitato e il margine lo contiene (schermo da 1500 px: colonna di
  *   768 px e riquadro di 300; sotto, il modello di HB lo nasconde), altrimenti Floor. L'Interstitial HB lo
  *   configura solo da telefono.
@@ -158,7 +165,8 @@ export function tipoPagina(percorso: string): TipoPagina | null {
  */
 export function formatiFissi(o: { computer: boolean; margineMagic: boolean; consenso: boolean; capping: boolean }): Annuncio[] {
   if (o.computer) return [MAGIC_DA_COMPUTER && o.margineMagic ? MAGIC_LEFT : FLOOR_AD];
-  return o.consenso && !o.capping ? [FLOOR_AD, INTERSTITIAL] : [FLOOR_AD];
+  const sticky = MAGIC_DA_TELEFONO ? MAGIC_LEFT : FLOOR_AD;
+  return o.consenso && !o.capping ? [sticky, INTERSTITIAL] : [sticky];
 }
 
 /** Gli indirizzi su cui la pubblicita' e GA4 si accendono: solo il dominio vero, mai l'anteprima. */

@@ -193,6 +193,7 @@ def misura(pg, percorso, file_schermata, errori):
 def giudica(r, disp, nome):
     """I problemi oggettivi: id doppi, id spenti in pagina, sovrapposizioni, scorrimento orizzontale."""
     prob = []
+    r["avvisi"] = []
     if r["doppi"]:
         prob.append(f"id doppi {r['doppi']}")
     spenti = sorted({s["id"] for s in r["spazi"]} & SPENTI)
@@ -202,10 +203,13 @@ def giudica(r, disp, nome):
         prob.append(f"sovrapposizioni {sorted(set(r['sovrapposizioni'] + r['sovrapposizioni_meta']))}")
     if r["sovrapposizioniHB"] or r["sovrapposizioniHB_meta"]:
         prob.append(f"annunci uno sull'altro {sorted(set(r['sovrapposizioniHB'] + r['sovrapposizioniHB_meta']))}")
-    if max(r["quotaFissi"]["area"], r["quotaFissi_meta"]["area"]) > 30:
-        prob.append(f"riquadri fissi oltre il 30% dello schermo {r['quotaFissi']} {r['quotaFissi_meta']}")
+    # il Magic da telefono sta dove lo mette HB (scelta del proprietario del 29/10/2026): avviso, non problema
+    magic = any("304793" in f["id"] for f in r["fissiHB"] + r["fissiHB_meta"])
+    quota = max(r["quotaFissi"]["area"], r["quotaFissi_meta"]["area"])
+    if quota > 30:
+        (r["avvisi"] if magic else prob).append(f"riquadri fissi al {quota}% dello schermo")
     if r["suColonna"]:
-        prob.append(f"Magic sulla colonna {r['suColonna']}")
+        r["avvisi"].append(f"Magic sulla colonna {r['suColonna']}")
     if r["scorrimentoOrizzontale"]:
         prob.append("scorrimento orizzontale")
     return prob
@@ -253,7 +257,7 @@ def main() -> int:
                     print(f"   fissi HB {[(f['id'], f['y'], f['h']) for f in r['fissiHB_meta']]} | nostri {[(f['nome'], f['y']) for f in r['fissiNostri_meta']]}")
                     print(f"   distanze {r['distanze']} | interstitial aperto {r['interstitialAperto']} | Floor: {r['chiusuraFloor']}")
                     print(f"   quota fissi (area/altezza %) {r['quotaFissi']} meta' {r['quotaFissi_meta']} | aste spente {({k: v for k, v in r['aste'].items() if k in SPENTI})}")
-                    print(f"   capping {r['cookieCapping']} cba {r['cba']} | errori {r['errori']} | PROBLEMI {r['problemi'] or 'nessuno'}")
+                    print(f"   capping {r['cookieCapping']} cba {r['cba']} | errori {r['errori']} | avvisi {r['avvisi']} | PROBLEMI {r['problemi'] or 'nessuno'}")
                     ctx.close()
         finally:
             browser.close()
@@ -347,9 +351,17 @@ def prova_capping(p, browser, porta, pref, ritorno_min, scadenza):
         problemi.append(f"cookie del capping non a 30 minuti: {primo['minutiCapping']}")
     pg.evaluate("hbManager.closeHBInterstitial('hbagency_space_304794'); hbManager.closeHB('HB_Footer_Close_hbagency_space_304794')")
 
+    # Durante il capping lo spazio non c'e' e la chiave nemmeno (HB la riscriverebbe a ogni Magic aperto): HB
+    # puo' ancora mandare l'unita' all'asta, ma non ha dove aprirla. Il cookie non deve allungarsi.
+    ultimo = [primo["minutiCapping"]]
+
     def bloccato(e):
-        if e["chiesto"] or e["google"] or e["aperto"] or e["spazio"]:
+        if e["aperto"] or e["spazio"]:
             problemi.append(f"{e['passo']}: interstitial ancora presente durante il capping")
+        m = e["minutiCapping"]
+        if not isinstance(m, float) or m > ultimo[0] + 0.2:
+            problemi.append(f"{e['passo']}: cookie del capping sparito o allungato ({ultimo[0]} -> {m})")
+        ultimo[0] = m if isinstance(m, float) else ultimo[0]
 
     # 2. nella stessa sessione: pagina dopo, ricarica, nuova scheda
     bloccato(passo_capping(ctx, pg, "pagina dopo", SCENARI["home"]))
