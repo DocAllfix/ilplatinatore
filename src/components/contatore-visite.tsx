@@ -3,9 +3,11 @@
 // Il contatore delle visite (Umami sul nostro server, infra/umami/, 24/10/2026). Senza cookie e senza
 // salvare l'IP: conta tutti i visitatori, anche dove non c'e' il banner del consenso (home e sezioni).
 // Solo sul dominio vero, mai sull'anteprima; misura anche la velocita' vista dai visitatori (data-performance).
+// I programmi che si fingono browser non caricano nemmeno lo script (src/lib/visite-filtro.ts).
 
 import { useEffect } from "react";
 import { DOMINI_VERI } from "@/lib/annunci";
+import { eUnProgramma } from "@/lib/visite-filtro";
 
 const SCRIPT = "https://visite.ilplatinatore.it/pl.js";
 const SITO_UMAMI = "666b9589-8d79-425c-86b2-23d671076067";
@@ -14,6 +16,14 @@ export function ContatoreVisite() {
   useEffect(() => {
     if (!DOMINI_VERI.includes(window.location.hostname)) return;
     if (document.querySelector(`script[src="${SCRIPT}"]`)) return;
+    const programma = eUnProgramma({
+      webdriver: navigator.webdriver === true,
+      userAgent: navigator.userAgent,
+      toccoMax: navigator.maxTouchPoints || 0,
+      larghezza: window.screen.width,
+      altezza: window.screen.height,
+    });
+    if (programma) return;
     const s = document.createElement("script");
     s.src = SCRIPT;
     s.defer = true;

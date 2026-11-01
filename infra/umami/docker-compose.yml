@@ -22,6 +22,10 @@ services:
       # nomi diversi da quelli standard: i blocca-pubblicita' non li riconoscono (docs.umami.is, bypass ad blockers)
       TRACKER_SCRIPT_NAME: ${UMAMI_SCRIPT:?serve UMAMI_SCRIPT}
       COLLECT_API_ENDPOINT: ${UMAMI_ENDPOINT:?serve UMAMI_ENDPOINT}
+      # Dal 1/11/2026 visite.ilplatinatore.it passa dal proxy di Cloudflare (blocco dei bot). Umami prende
+      # l'IP vero da cf-connecting-ip, ma con cf-ipcountry presente userebbe solo le intestazioni e
+      # lascerebbe vuote regione e citta': cosi' continua a localizzare con la sua banca dati, come prima.
+      SKIP_LOCATION_HEADERS: "1"
     networks:
       - interna
       - rete-cms
