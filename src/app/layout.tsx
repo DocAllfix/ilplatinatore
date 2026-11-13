@@ -19,6 +19,10 @@ const jost = Jost({ subsets: ["latin", "latin-ext"], variable: "--font-jost", di
 
 export const metadata: Metadata = {
   ...robotsConDopo(),
+  // Verifica di Search Console (proprieta' https://www.ilplatinatore.it/). Su Aruba la scriveva Site Kit,
+  // che col sito headless non scrive piu' nell'head: Google l'ha cercata, non l'ha trovata e il 13/11/2026
+  // ha tolto la verifica. Stesso codice di prima (Wayback, giugno-ottobre 2026). Non e' un segreto.
+  verification: { google: "-YvdFijuDgmuvZPstNhwYF9QIXcnpU4q8894PLdYWJU" },
 };
 
 export const viewport: Viewport = {
